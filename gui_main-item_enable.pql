@@ -1,0 +1,19 @@
+subprocedure ITEM_ENABLE
+| IF AN ITEM SHOULD BE ENABLED OR DISABLED BASED ON DATA IN THE DATABASE.
+| To control if a user can go there or not, use hide and show instead of enable disable.
+|
+C OLD RECS
+. ifthen ( REC_ROW_COUNT > 0) enable item VIEW_FORM
+. else                      disable item VIEW_FORM
+. endif
+C TABLE VIEW
+. ifthen ( REC_ROW_COUNT > 1) enable item PAGE_TABLE
+. else                      disable item PAGE_TABLE
+. endif
+C NEW RECS
+. ifthen ( REC_ROW_COUNT lt MAXRECS(REC_TYPE_NUM) )  enable item PAGE_NEW_KEYS
+. else                                           disable item PAGE_NEW_KEYS
+. endif
+
+end subprocedure
+

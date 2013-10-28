@@ -1,0 +1,5 @@
+c
+c CALL this in SIR MainMenu just before the END INITIAL command
+c
+.   if(timer__# gt 0)enable timer TIMER__#
+

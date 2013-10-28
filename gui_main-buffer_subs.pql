@@ -1,0 +1,23 @@
+subprocedure BUFFER_START
+<comment> write 'Sub: BUFFER_START: ' BUFFER_NAME
+. BUFF# = 1
+. delete buffer BUFFER_NAME
+. create buffer BUFFER_NAME
+end subprocedure
+
+subprocedure BUFFER_WRITE
+. if (exists(BUFFER_LINE) EQ 0) BUFFER_LINE = '| WARNING SYSTEM MISSING BUFFERLINE!'
+. insert line into buffer BUFFER_NAME numbered BUFF# from BUFFER_LINE
+. BUFF# = BUFF# + 1
+end subprocedure
+
+subprocedure BUFFER_ADD_CASE
+. ifthen (CASE_TYPE = 1 and sbst(CASE_VALUE,1,1) <> "'")
+.   BUFFER_LINE = BUFFER_LINE + '"' + upper(trimlr(CASE_VALUE)) + '"'
+. else
+.   BUFFER_LINE = BUFFER_LINE + CASE_VALUE
+. endif
+end subprocedure
+
+
+

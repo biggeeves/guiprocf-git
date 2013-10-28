@@ -1,0 +1,23 @@
+subprocedure CASE_LIST_LOAD
+<COMMENT> write 'Sub: CASE_LIST_LOAD'
+. | start with a blank canvas
+. if (dbtype(0) eq 0) exit subprocedure | caseless database
+. remove all CASE_LIST
+. ifthen (meminfo('GUI_CUSTOM.CASE_LIST_LOAD:O',1) = MEM_O)
+.   execute subroutine GUI_CUSTOM.CASE_LIST_LOAD (CASE_LIST) RETURNING (PROCEED) DYNAMIC
+<COMMENT> write ' After: User Defined CASE_LIST_LOAD, Proceed: ' PROCEED
+.   EXIT SUBPROCEDURE
+. endif
+
+. BUFFER_NAME = 'CASE_LIST_LOADER'    ; execute subprocedure BUFFER_START
+. BUFFER_LINE = 'retrieval'         ; execute subprocedure BUFFER_WRITE
+. BUFFER_LINE = '. process cases'   ; execute subprocedure BUFFER_WRITE
+. ifthen (CASE_TYPE = 1) BUFFER_LINE = 'append item ' + format(CASE_LIST) + ', trimlr(' + CASE_NAME + ')'
+. else                  BUFFER_LINE = 'append item ' + format(CASE_LIST) + ',' + CASE_NAME
+. endif
+. execute subprocedure BUFFER_WRITE
+. BUFFER_LINE = 'end cases'         ; execute subprocedure BUFFER_WRITE
+. BUFFER_LINE = 'end retrieval'     ; execute subprocedure BUFFER_WRITE
+. execute dbms ['INCLUDE BUFFER ' + BUFFER_NAME]
+end subprocedure
+

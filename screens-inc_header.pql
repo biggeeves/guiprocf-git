@@ -1,0 +1,3 @@
+execute subroutine SYSPROC.TOOLS.FILENAME (dsn('sir014')) RETURNING (PATH$,NAME$,EXT$)
+DELFILE$ = PATH$ + 'deletion_reasons.txt'
+

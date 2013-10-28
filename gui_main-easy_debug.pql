@@ -1,0 +1,10 @@
+subprocedure EASY_DEBUG
+. if ( Nglobal('GSECLEV') <> 1) EXIT SUBPROCEDURE | ONLY DBAS
+. if ( exists( EASY_DEBUG_AUTONUM ) EQ 0 ) . EASY_DEBUG_AUTONUM = 0
+. if ( EASY_DEBUG_TEXT ='START' ) EASY_DEBUG_AUTONUM = 0; EASY_DEBUG_TEXT = '.'
+. write '----------------------------------'
+. write EASY_DEBUG_AUTONUM ': ' EASY_DEBUG_TEXT
+. EASY_DEBUG_AUTONUM = EASY_DEBUG_AUTONUM + 1
+c . WAIT 10 | if you want to slow things down to visually see output, uncomment this line.
+end subprocedure
+

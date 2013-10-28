@@ -1,0 +1,21 @@
+c Created: 3/21/2013
+c By: Greg Neils
+c Brief: Create Deletion File Attribute
+c Full Description:  Sets DB_DEL_FILE to proper location
+
+program
+. string * 300 DB_DEL_FILE
+. string * 300 PATH$
+. string * 100 NAME$
+. string * 32  EXT$
+. string * 32  DB_PROC_FILE
+. integer *  1 	ESCAPERESULT
+
+. DB_PROC_FILE = 'SIR'+ PFORMAT(SYSTEM(39),'zz') +'4'
+. execute subroutine SYSPROC.TOOLS.FILENAME (dsn(DB_PROC_FILE)) RETURNING (PATH$,NAME$,EXT$)
+. DB_DEL_FILE = PATH$ + 'deletions'
+. if(fileis(DB_DEL_FILE) <> -1) t = makedir(DB_DEL_FILE)
+. DB_DEL_FILE = DB_DEL_FILE + '\deletion_reasons.txt'
+. EXECUTE DBMS ['SET ATTRIBUTE DB_DEL_FILE "'+ DB_DEL_FILE + '"']
+end program
+

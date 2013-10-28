@@ -1,0 +1,9 @@
+subprocedure OLD_KEY_DESELECT_NEXT  | DEPRICATED 10.17.2013 BY GREG NEILS
+<comment> write 'Sub: OLD_KEY_DESELECT_NEXT- getfocus: ' [getfocus(0)]
+| Default is to have something checked.  Force user to select item.
+. if (getfocus(0) eq FORM_LIST)    select item OLD_KEY_LIST_1, 0
+. if (getfocus(0) eq OLD_KEY_LIST_1) select item OLD_KEY_LIST_2, 0
+. if (getfocus(0) eq OLD_KEY_LIST_2) select item OLD_KEY_LIST_3, 0
+. if (getfocus(0) eq OLD_KEY_LIST_3) select item OLD_KEY_LIST_4, 0
+end subprocedure
+

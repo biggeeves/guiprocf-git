@@ -1,0 +1,18 @@
+c
+c Set Default Directory to DBFolder+"\users\"+USER_NAME;
+c CALL this member with USER_NAME as first parameter, e.g.: CALL DVPROCF.SYSTEM.USERDIR ($<USER_NAME>$)
+c
+program
+string * 500 dir$
+string *  40 user$
+integer *  1 x
+
+user$ = lower("<1>")           | grab the first parameter on the CALL
+ifnot(len(trim(user$)) gt 0)user$ = "NoUser"               | if no user name passed, set to NOUSER
+dir$ = dsn("PREFIX") + "users\" | construct "users" folder
+x = makedir(dir$)               | create "users" folder if it doesn't already exist
+dir$ = dir$ + user$ + "\"             | construct folder for this user
+x = makedir(dir$)                                | create user folder if it doesn't already exist
+x = setdir(dir$)                                | set user folder as the default folder for this user
+end program
+

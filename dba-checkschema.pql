@@ -1,0 +1,131 @@
+| File name: DCCPROCF.BACKUPS.CXSCHEMAS
+| Creator:   David P. Merle
+| Created:   01/01/2007
+| Updated:   07/13/2012
+| Reason:    For finding the keys and keytypes of all databases.
+program crwarn
+. integer *   1   YES NO INDEX# DATEVAR VTYPE#
+. integer *   2   REC# VAR# KEY# VARS# ICHAR# LETTER# LABELS#
+. integer *   4   NORANGE# TOTAL#
+. real    *   8   LOWER UPPER
+. string  *   1   LETTER$
+. string  *  64   KEYN$ REC$ REC$N DB$ INDEX$ CASE$ VARN$ VTYPE$
+. string  * 100   LABEL$
+. integer *   4   JAN11800 JAN12020 MIN# MAX#
+. string  * 200   SUMMARY
+. string  *  32   VARMAP
+
+. set NO INDEX# VARS# LETTER# NORANGE# TOTAL# (0) YES (1) DATEVAR (3)
+      JAN11800 (79337) JAN12020 (170648) LOWER (100000) UPPER (-100000) INDEX$ ('')
+. value labels VTYPE# (1)'String'
+                      (2)'Cat Var'
+                      (3)'Date'
+                      (4)'Time'
+                      (5)'Integer'
+                      (6)'Real Single'
+                      (7)'Real Double'
+                      (8)'Scaled'
+. SUMMARY = '<GDATA1>DCC\BackupRoutine\Reports\' + trim(dbname(0)) + '\NonStandardSchema.txt'
+
+. open (SUMMARY)   dsnvar=SUMMARY write lrecl = 250
+. DB$ = trim(dbname(0))
+. CASE$ = trim(varnamec(0,1))
+. INDEX# = dbinds(0)
+. if (INDEX# > 0) INDEX$ = ' (Has ' + format(INDEX#) + 'indexes)'
+. write (SUMMARY) 'Database: ' DB$ INDEX$
+. write (SUMMARY) 'Case: ' [pad(CASE$,' ',13,13)][vformat(0,CASE$)]
+. write (SUMMARY) '----------------------------'
+. for x = 1,len(DB$)
+.   ifthen (picture(sbst(DB$,x,1),'n') <> 0)
+.     write (SUMMARY) [pad(DB$,' ',32,32)] ' !!!! Database name has a non-standard character'
+.   endif
+. end for
+
+. REC# = 0
+. KEY# = 1
+. KEYN$ = trim(varnamec(REC#,KEY#))
+| Non Standard Rec Names
+. for REC# = 1,nrecs(0)
+.   ifthen (nkeys(REC#) ge 0)
+.     VARS# = VARS# + nvars(REC#)
+.     REC$N = trim(recname(REC#))
+.     write (RECINF) 10T REC$N
+.     REC$ =  format(REC#,3) + '.' + REC$N
+.     for LETTER# = 1,len(REC$N)
+.       ifthen (picture(sbst(REC$N,LETTER#,1),'n') <> 0 and sbst(REC$N,LETTER#,1) <> '_')
+.         write (SUMMARY) 'Funny Rec Name: ' REC$N ',' REC$N
+.       endif
+.     end for
+.     for KEY# = 1,nkeys(REC#)
+.       KEYN$ = trim(keyname(REC#,KEY# + 1))
+.         ifthen (exists(keyname(REC#,KEY#)) = YES)
+.           write (RECINF) ['     Key ' + format(KEY#) + ': ' + pad(KEYN$,' ',13,13) + vformat(REC#,KEYN$)]
+.         endif
+.     end for
+|  Non Standard Var Names
+.     for VAR# = 1,nvars(REC#)
+.       VARN$ = trim(varname(REC#,VAR#))
+.       ifthen (len(VARN$) > 12)
+.         write (SUMMARY) DB$ ',' REC$N ',' VARN$
+.         for LETTER# = 1,len(VARN$)
+.           ifthen (picture(sbst(VARN$,LETTER#,1),'n') <> 0 and sbst(VARN$,LETTER#,1) ne '_')
+.             write (SUMMARY) 'Funny Name: ' REC$N ',' VARN$
+.           endif
+.         end for
+.       endif
+.     end for
+.   endif
+.   for VAR# = 1,nvarsc(REC#)
+.     VARN$  = trim(varnamec(REC#,VAR#))
+.     VTYPE# = vtype(REC#,VARN$)
+.     VTYPE$ = pad(vallab(VTYPE#),' ',12,12)
+.     MIN#   = nmin(REC#,VARN$)
+.     MAX#   = nmax(REC#,VARN$)
+.     VALID# = nvalid(REC#,VARN$)
+.     for LETTER# = 1,len(VARN$)
+.       if( sbst(VARN$,LETTER#,1) eq '_' , "'" ) next for | specific characters
+.       ICHAR# = ichar(sbst(VARN$,LETTER#,1))
+.       ifthen (ICHAR# >= 48 and <= 57 ) next for | 0-9
+.       elseif (ICHAR# >= 65 and <= 90 ) next for | A-Z
+.       elseif (ICHAR# >= 97 and <= 122) next for | a-z
+.       else
+.         write (SUMMARY) 'Funny Char:' 13t REC$N ',' VARN$
+.         exit for
+.       endif
+.     end for
+.     ifthen (vtype(REC#, VARN$) = DATEVAR)
+.       ifthen (nmin(REC#,VARN$) < JAN11800 or nmax(REC#,VARN$) > JAN12030)
+.         write (SUMMARY)'Range before 1800 or after 2030: ' 13t REC$N ',' VARN$ | [format(LOWER)] [format(UPPER)]
+.         NORANGE# = NORANGE# + 1
+.       endif
+|  Non Standard Date Formats
+.       VARMAP = upper(datemap(REC#,VARN$))
+.       ifnotthen (VARMAP = 'EMMIDDIYYYY' or 'EMM/DD/YYYY' or 'EMMIYYYY' or 'EMM/YYYY')
+.         ifthen (VARN$ <> 'DSTAMP' and VARN$ <> 'DCCDATE')
+.           write (SUMMARY) 'Date Map: ' 13t REC$N ',' VARN$ ',' VARMAP
+.         endif
+.       endif
+.     elseif (VTYPE# = 5 or 6 or 7 or 8)
+.       TOTAL# = TOTAL# + 1
+.       ifthen (exists(MIN#) = 0 or exists(MAX#) = 0 and VALID# < 1 and VAR# <> 1)
+.         NORANGE# = NORANGE# + 1
+.         write (SUMMARY)'No Range:' 13t REC$N ', '  VARN$ | [format(LOWER)] [format(UPPER)]
+.       endif
+.     endif
+|  Non Standard Characters in Value Labels
+.     LABELS# = nvallab(REC#,VARN$)
+.     for LABEL# = 1,LABELS#
+.       LABEL$ = vallabsn(REC#,VARN$,LABEL#)
+.       for LETTER# = 1,len(LABEL$)
+.         LETTER$ = sbst(LABEL$,LETTER#,1)
+.         ifthen (ichar(LETTER$) > 126 or ichar(LETTER$) < 32)
+.           write (SUMMARY) 'Funny Char:' 13t REC$ ',' VARN$ ',' LETTER$ ',' [ichar(LETTER$)]','LABEL$
+.         endif
+.       end for
+.     end for
+.   end for
+.  end for
+.  write (SUMMARY) 'Total with No Ranges: ' NORANGE#
+. close (SUMMARY)
+end program
+

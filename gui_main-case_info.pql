@@ -1,0 +1,22 @@
+c display case specific info
+
+subprocedure CASE_INFO
+. remove all CASE_BREAD_CRUMB
+. GEN_STR1 = '<body bgcolor="#336AF3" readonly="true"><p align="center"><font color="#FFFFFF" size="+3"><B>' + CASE_VALUE
+. append line CASE_BREAD_CRUMB,  GEN_STR1  HTML
+
+. set item DELETE_CASE_LABEL, '  Delete ' + CASE_LABEL + ':   ' + CASE_VALUE + '?'
+
+. remove all CASE_INFO
+. GEN_STR1 = '<body bgcolor="#336AF3" readonly="true">'
+. append line CASE_INFO,  GEN_STR1  HTML
+
+. ifthen (meminfo(DB_PROC_FILE+'.GUI_CUSTOM.CASE_INFO:O',1) = MEM_O)
+<COMMENT> WRITE 'CALLING ' DB_PROC_FILE '.GUI_CUSTOM.CASE_INFO:O'
+.   execute subroutine [DB_PROC_FILE+'.GUI_CUSTOM.CASE_INFO'] (CASE_VALUE CASE_INFO) RETURNING (PROCEED) DYNAMIC
+. else
+.   GEN_STR1 = '<p align="center"><font color="#FFFFFF" size="+3"><B>Selected: ' + CASE_VALUE
+.   append line CASE_INFO, GEN_STR1 HTML
+. endif
+end subprocedure
+

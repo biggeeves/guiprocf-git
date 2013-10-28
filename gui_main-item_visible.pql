@@ -1,0 +1,109 @@
+subprocedure ITEM_VISIBLE
+| first section is the show/hide portion.
+| defaults for every page
+
+. hide item TIME_LABEL | always hidden as to get here the timer will have been refreshed anyway
+c . show item MEGA_CASE_LABEL
+. show item DB_TITLE
+. show item DB_FOOTER
+. show item LOG_OUT
+. if (dbtype(0) eq 1) show item PAGE_CASEIDS;  enable item PAGE_CASEIDS
+. show item PAGE_OLD_KEYS; ifnot(m_page = VIEW_OLD_KEYS ) enable item PAGE_OLD_KEYS
+
+
+
+c GUI PROCFILE: LIVE OR RELEASE CANIDATE.
+. execute subroutine SYSPROC.TOOLS.FILENAME (dsn('GUIPROCF')) RETURNING (PATH_FILE,NAME_FILE,EXT_FILE)
+. ifthen(upper(trim(NAME_FILE)) EQ 'GUIPROCF-RC')
+.   check item USE_GUI_RC
+.   uncheck item USE_GUI_PG
+. else
+.   check item USE_GUI_PG
+.   uncheck item USE_GUI_RC
+. endif
+
+. ifthen ( DB_LOCK_STATUS EQ 1)
+.   show item LOCK_STATUS_LABEL
+.   set item LOCK_STATUS_LABEL, '   LOCKED'
+.   check item DB_LOCKER
+.   uncheck item DB_UNLOCKER
+. else
+.   hide item LOCK_STATUS_LABEL
+.   set item LOCK_STATUS_LABEL, '   DB LOCK: UNKNOWN'
+.   check item DB_UNLOCKER
+.   uncheck item DB_LOCKER
+. endif
+
+. ifthen (sglobal('COMMENT') eq '.')
+.   check item COMMENT_SHOW
+. endif
+
+. ifthen (sglobal('DEBUG_MODE') eq '.')
+.   check item TURN_DEBBUGER_ON
+. endif
+
+. ifthen (sglobal('SHOW_DEBUG_INFO') eq '1')
+.   check item POP_UP_DEBUG_INFO
+. endif
+
+C DBA BUTTON
+. hide item PAGE_DBA
+. if (I_GUI_DBA = 1) show item PAGE_DBA
+
+c page dependent items
+
+
+. ifthen (m_page = VIEW_HOME)
+.   focus item CASE_INFO
+.   disable item PAGE_CASEIDS
+.   ifthen(I_GUI_CASE_LIST EQ 1) show item CASE_LIST
+.   else hide item CASE_LIST
+.   endif
+. elseif (m_page = VIEW_NEW_KEYS)
+.   ifthen (dbtype(0) eq 1)
+.     show item CASE_BREAD_CRUMB
+.     show item CASE_BREAD_CRUMBOX
+.   else
+.     hide item CASE_BREAD_CRUMB
+.     hide item CASE_BREAD_CRUMBOX
+.   endif
+
+.   show item REC_BREAD_CRUMB
+.   show item REC_BREAD_CRUMB_BOX
+. elseif (m_page = VIEW_OLD_KEYS )
+.   disable item PAGE_OLD_KEYS
+.   ifthen (dbtype(0) eq 1)
+.     show item CASE_BREAD_CRUMB
+.     show item CASE_BREAD_CRUMBOX
+.   else
+.     hide item CASE_BREAD_CRUMB
+.     hide item CASE_BREAD_CRUMBOX
+.   endif
+.   show item REC_BREAD_CRUMB
+.   show item REC_BREAD_CRUMB_BOX
+C   DELETE CASE BUTTON
+.   hide item PAGE_CASE_DELETE
+.   ifthen (dbtype(0) eq 1)
+.     if(I_GUI_DBA = 1) show item PAGE_CASE_DELETE
+.   endif
+C   REC TABLE BUTTON
+.   hide item PAGE_TABLE
+.   if(I_GUI_REC_TABLE = 1) show item PAGE_TABLE
+.   focus item FORM_LIST
+. elseif (m_page = VIEW_TABLE)
+.   ifthen (dbtype(0) eq 1)
+.     show item CASE_BREAD_CRUMB
+.     show item CASE_BREAD_CRUMBOX
+.   else
+.     hide item CASE_BREAD_CRUMB
+.     hide item CASE_BREAD_CRUMBOX
+.   endif
+.   show item REC_BREAD_CRUMB
+.   show item REC_BREAD_CRUMB_BOX
+. elseif (m_page = VIEWCASE_DELETE)
+.   show item CASE_BREAD_CRUMB
+.   show item CASE_BREAD_CRUMBOX
+. endif
+
+end subprocedure
+

@@ -1,0 +1,18 @@
+C if some globals already exist leave them alone.
+c if globals don't exist set value to "off"
+program
+. ifthen (sglobal('COMMENT') = '')
+.   t= globals('COMMENT', '|')
+. endif
+. ifthen (sglobal('DEBUG_MODE') = '')
+.   t= globals('DEBUG_MODE', '|')
+. endif
+. ifthen (sglobal('FUTURE_DEV') = '')
+.   t= globals('FUTURE_DEV', '|')
+. endif
+. ifthen (sglobal('SHOW_CUSTOM_INFO') = '')
+.   t= globals('SHOW_CUSTOM_INFO', '|')
+. endif
+end program
+
+

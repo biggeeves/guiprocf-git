@@ -1,0 +1,83 @@
+| Creator:   Greg Neils
+| Created:   10/20/2008
+| Reason:    Adds DSTAMP variables to the record types that need it
+
+program crwarn
+
+string  *   50 array DCC_ARRAY  (6,2)
+integer *    2       ONE_REC
+integer *    1       INCLUDE_REC  | One DCC variable is missing so add the rest
+integer *    2       XVARS        | cycle through the variables
+string  *   32       VNAME        | Variable name
+integer *    1       DUMBN#       | Cycle throught the array
+string  *  200       OUTF_NAME     | Output file name
+
+DCC_ARRAY(1,2) =  "   DCCDATE   * (DATE'EMM/DD/YYYY')"
+DCC_ARRAY(2,2) =  "   DCCTIME   * (TIME'EHH:MM')"
+DCC_ARRAY(3,2) =  "   DCCWHO    * (A10)"
+DCC_ARRAY(4,2) =  "   DCCEDITS  * (I2)"
+DCC_ARRAY(5,2) =  "   DSTAMP    * (DATE'EMM/DD/YYYY')"
+DCC_ARRAY(6,2) =  "   DWHO      * (A20)"
+OUTF_NAME = DSN('PREFIX') + 'ADD_DCC_VARS.sch'
+
+c WRIT THE FILE FOR MODIFY SCHEMA
+write 'looking at :'
+. open  (DCC_VARS) dsnvar  = OUTF_NAME /write lrecl=300
+.   write (DCC_VARS) 'c Modify schemas for each record type.  Adds usual DCC Vars to each record type.' /
+                    'c PLEASE DOUBLE CHECK BEFORE AND AFTER.' /
+                    'c Created by : <USERA> ' /
+                    'c Created Date :  ' [datec(today(0),'mm/dd/yyyy')] /
+.   for ONE_REC = 1, nrecs(0)
+.     if (exists(recname(ONE_REC)) eq 0) NEXT FOR
+.     if (len(recname(ONE_REC)) eq 0) NEXT FOR
+.     DCC_ARRAY(1,1) = 'Yes'
+.     DCC_ARRAY(2,1) = 'Yes'
+.     DCC_ARRAY(3,1) = 'Yes'
+.     DCC_ARRAY(4,1) = 'Yes'
+.     DCC_ARRAY(5,1) = 'Yes'
+.     DCC_ARRAY(6,1) = 'Yes'
+.     compute INCLUDE_REC = 0  | Must have atleast one date variable to modify
+.     for XVARS = 1,nvarsc(ONE_REC)
+.       compute VNAME = trim(varnamec(ONE_REC,XVARS))
+.       if (VNAME = 'DCCDATE' )  DCC_ARRAY(1,1) = 'No'
+.       if (VNAME = 'DCCTIME')   DCC_ARRAY(2,1) = 'No'
+.       if (VNAME = 'DCCWHO' )   DCC_ARRAY(3,1) = 'No'
+.       if (VNAME = 'DCCEDITS' ) DCC_ARRAY(4,1) = 'No'
+.       if (VNAME = 'DSTAMP' )   DCC_ARRAY(5,1) = 'No'
+.       if (VNAME = 'DWHO' )     DCC_ARRAY(6,1) = 'No'
+.     end for
+.     for DUMBN# = 1,6
+.       if (DCC_ARRAY(DUMBN#,1) = 'Yes') compute INCLUDE_REC = 1
+.     end for
+.     ifthen (INCLUDE_REC EQ 1)
+.       write (DCC_VARS) 'MODIFY SCHEMA ' ONE_REC  ' / LOCK    | ' [RECNAME(ONE_REC)]
+.       write (DCC_VARS) 'ADD VARS'
+.       for DUMBN# =1 ,6
+.         if (DCC_ARRAY(DUMBN#,1) = 'Yes') write (DCC_VARS) DCC_ARRAY(DUMBN#,2)
+.       end for
+.       write (DCC_VARS) 'VAR RANGES'
+.       if ( DCC_ARRAY(1,1) EQ 'Yes' ) write (DCC_VARS) '    DCCDATE  ("01/01/2000" "01/01/2040")'
+.       if ( DCC_ARRAY(4,1) EQ 'Yes' ) write (DCC_VARS) '    DCCEDITS (0 9999)'
+.       if ( DCC_ARRAY(5,1) EQ 'Yes' ) write (DCC_VARS) '    DSTAMP   ("01/01/2000" "01/01/2040")'
+
+.       write (DCC_VARS) 'VAR LABELS'
+.       write (DCC_VARS) '    DCCDATE "Mod. Date"'
+.       write (DCC_VARS) '    DCCTIME "Mod. Time"'
+.       write (DCC_VARS) '    DCCWHO  "Mod. By"'
+.       write (DCC_VARS) '    DCCEDITS "# Mods."'
+.       write (DCC_VARS) '    DSTAMP  "Created Date"'
+.       write (DCC_VARS) '    DCCTIME "Created Time"'
+.       write (DCC_VARS) 'END SCHEMA' //
+.     endif
+.   end for
+. close (DCC_VARS)
+
+display infobox 'Modify schema located at: ' +char(13) + char(13) + dsn('DCC_VARS')  + char(13)  + char(13)  + 'Path is in SIR window too :)'
+write 'Modify schema located at: '// [dsn('DCC_VARS')] //
+
+end program
+
+
+
+
+

@@ -1,0 +1,8 @@
+C Sample Code for Customization
+
+<COMMENT> WRITE 'IN DBPROCF.GUI_CUSTOM.GUI_SETTING'
+. ifthen (sglobal('USERA' eq 'BWILLIAMS' OR 'HANDREWS')
+.   t= globals('DEBUG_MODE', '.')
+.   t= globalN('SHOW_DEBUG_INFO', 1)
+. endif
+

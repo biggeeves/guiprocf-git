@@ -1,0 +1,15 @@
+ifthen (numcases(0) = 0)
+<comment> write 'Asking for first case'
+. display textbox "What is the first case" response RESVAR CASE_TEMP_VALUE
+. ifthen (RESVAR > 0)
+<comment> write 'trying to create first case'
+.   execute subprocedure CASE_VALIDATE
+.   ifthen (PROCEED EQ 1)
+.     CASE_VALUE = CASE_TEMP_VALUE
+.     execute subprocedure CASE_NEW_LIBRARY
+.   endif
+. else
+.    write "hard to use the main gui without atleast one case"
+. endif
+endif
+

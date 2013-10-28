@@ -1,0 +1,32 @@
+subprocedure OLD_KEY_PAGE_DISPLAY_LIBRARY
+<comment> write 'Sub: OLD_KEY_PAGE_DISPLAY_LIBRARY: case_value:' CASE_VALUE
+c . if (exists(CASE_VALUE) eq 0) PROCEED = NO; display infobox 'no case id selected'; exit subprocedure
+c . if (len(pack(CASE_VALUE)) eq 0) PROCEED = NO; display infobox 'case id is zero length string'; exit subprocedure
+C . if (validate(pack(CASE_VALUE)) eq 0) PROCEED = NO; display infobox 'case id is not valid: ' + CASE_VALUE; exit subprocedure
+. execute subprocedure CASE_VALIDATE
+. if (proceed eq 0) exit subprocedure
+
+
+. ifnotthen (m_page = VIEW_OLD_KEYS)
+.   m_page = VIEW_OLD_KEYS
+.   execute subprocedure PAGE
+. endif
+. FORM_LIST_LAST_LINE = 0 | CLEAR THE I REMEMBER WHICH RECORD TYPE YOU WERE ON.  SIMPLIFIES CLICKING FOR USER TO REFRESH KEY DATA.
+. EXECUTE SUBPROCEDURE ITEM_VISIBLE
+
+. execute subprocedure CASE_INFO
+
+. execute subprocedure REC_TYPE_INFO
+
+. execute subprocedure REC_DISPLAY
+
+. execute subprocedure ALL_KEY_INI_DISPLAY
+
+. execute subprocedure OLD_REC_COUNT
+
+. execute subprocedure OLD_KEY_VISIBLE
+
+. execute subprocedure ITEM_ENABLE
+
+end subprocedure
+

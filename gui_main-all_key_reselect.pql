@@ -1,0 +1,19 @@
+subprocedure ALL_KEY_RESELECT
+<COMMENT> WRITE (CGI) 'IN ALL_KEY_RESELECT'
+. if (KEY_COUNT < 1) exit subprocedure
+|   select the keys to the newly created record, nice from a user experience
+DO REPEAT EACH_KEY = 1 2 3 4
+. if(nkeys(REC_TYPE_NUM) LT EACH_KEY ) EXIT SUBPROCEDURE | NO NEED TO CONTINUE IF LESS KEYS THAN
+. REFRESH_START_KEYNUM = EACH_KEY
+. execute subprocedure OLD_KEY_REFRESH
+. KEY$N = KEY_NAME_!EACH_KEY
+. for FOR_EACH_ITEM = 1, getnitems( OLD_KEY_LIST_!EACH_KEY )
+.   KEY$V = getitxt( OLD_KEY_LIST_!EACH_KEY, FOR_EACH_ITEM )
+.   execute subprocedure ANY_KEY_CLEAN
+.   if (KEY$V = KEY_VALUE_!EACH_KEY) select item OLD_KEY_LIST_!EACH_KEY, FOR_EACH_ITEM ; EXIT FOR
+. end for
+. IF (FOR_EACH_ITEM GT getnitems( OLD_KEY_LIST_!EACH_KEY ) ) EXIT SUBPROCEDURE
+. FOCUS ITEM OLD_KEY_LIST_!EACH_KEY
+END REPEAT
+end subprocedure
+

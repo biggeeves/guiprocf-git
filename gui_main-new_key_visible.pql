@@ -1,0 +1,18 @@
+subprocedure NEW_KEY_VISIBLE
+<comment> write 'Sub: NEW_KEY_VISIBLE- KEY_COUNT: ' KEY_COUNT
+. DO REPEAT REPX = 1 to 4
+.   ifthen (KEY_COUNT ge REPX)
+.     show item NEW_KEY_CHOICE_!REPX
+.     show item NEW_KEY_VAR_MAP_!REPX
+.     show item NEW_KEY_LABEL_!REPX
+.     show item NEW_KEY_VALUE_!REPX
+.   else
+.     hide item NEW_KEY_CHOICE_!REPX
+.     hide item NEW_KEY_VAR_MAP_!REPX
+.     hide item NEW_KEY_LABEL_!REPX
+.     hide item NEW_KEY_VALUE_!REPX
+.   endif
+.   if(getnitem(NEW_KEY_CHOICE_!REPX) eq 1) hide item NEW_KEY_CHOICE_!REPX   | A SINGLE SPACE IS THE FIRST ITEM.  THE FIRST LINE IS " ".
+. end repeat
+end subprocedure
+

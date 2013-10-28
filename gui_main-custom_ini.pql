@@ -1,0 +1,22 @@
+C Sample Code for Customization
+c CHECK FOR LOCAL DB MEMBERS AND IF THEY ARE THRE MAKE A GLOBAL REFERENCE FOR THEM
+
+global GUI_CUSTOM_PERMISSIONS = 0
+
+PROGRAM
+. string  *     32   DB_PROC_FILE
+. integer * 1 MEM_T
+. integer * 1 X
+. set MEM_T (1)
+. DB_PROC_FILE = 'SIR'+ pformat(SYSTEM(39),'zz') + '4'
+. X = GLOBALS('DB_PROC_FILE', DB_PROC_FILE )
+. ifthen (meminfo( DB_PROC_FILE + '.GUI_CUSTOM.PERMISSIONS:T', 1) = MEM_T)
+.   x = globaln('GUI_CUSTOM_PERMISSIONS', 1)
+<COMMENT> WRITE 'will include: DBPROC.GUI_CUSTOM_PERMISSIONS'
+. endif
+. ifthen (meminfo( DB_PROC_FILE + '.GUI_CUSTOM.GUI_SETTINGS:T', 1) = MEM_T)
+.   x = globaln('GUI_CUSTOM_GUI_SETTINGS', 1)  | GLOBAL HAS AN _ "UNDERSCORE IN IT.  CAREFUL!"
+<COMMENT> WRITE 'will include: DBPROC.GUI_CUSTOM.GUI_SETTINGS'
+. endif
+END PROGRAM
+

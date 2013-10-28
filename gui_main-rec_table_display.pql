@@ -1,0 +1,38 @@
+subprocedure REC_TABLE_DISPLAY
+<comment> write 'Sub: REC_TABLE_DISPLAY: Case:' CASE_VALUE'  Rec: ' REC_TYPE_NUM ', KEY_COUNT: ' KEY_COUNT
+. if (exists(REC_TYPE_NUM) eq 0) exit subprocedure
+. if (KEY_COUNT eq 0)         exit subprocedure                  | NO KEYS - NO REASON TO RUN
+. if (gettxt(OLD_KEY_LIST_1) eq 'No data') exit subprocedure    | No records with data
+<comment> write 'must also append "No data" to rec table view'
+. BUFFER_NAME = 'REC_TABLEMAKE'                        ; execute subprocedure BUFFER_START
+. BUFFER_LINE = 'retrieval crwarn'                    ; execute subprocedure BUFFER_WRITE
+. BUFFER_LINE = 'string * 32 SHOW_$'                  ; execute subprocedure BUFFER_WRITE
+. BUFFER_LINE = 'string * 600 SHOW_LINE_$'             ; execute subprocedure BUFFER_WRITE
+. BUFFER_LINE = 'set SHOW_$ SHOW_LINE_$ ("")'          ; execute subprocedure BUFFER_WRITE
+. ifthen (dbtype(0) eq 1)
+. BUFFER_LINE = 'old case is '                        ; execute subprocedure BUFFER_ADD_CASE; execute subprocedure BUFFER_WRITE
+. ENDIF
+. BUFFER_LINE = '. process rec ' + format(REC_TYPE_NUM)      ; execute subprocedure BUFFER_WRITE
+. BUFFER_LINE = '.   SHOW_LINE_$ = ""'                 ; execute subprocedure BUFFER_WRITE |ZERO THINGS OUT
+. FOR FORX = 1, KEY_COUNT
+.   KEY$N = trim(keyname(REC_TYPE_NUM, FORX + dbtype(0)))
+.   KEY$T = vtype(REC_TYPE_NUM, KEY$N)
+.   BUFFER_LINE = '.   SHOW_$ = trimlr(varget("' + KEY$N + '"))'                     ; execute subprocedure BUFFER_WRITE
+.   if (KEY$T eq 3) BUFFER_LINE = '.   SHOW_$ = replace(SHOW_$," ","/",2,0,0)'       ; execute subprocedure BUFFER_WRITE
+.   if (KEY$T eq 4) BUFFER_LINE = '.   SHOW_$ = replace(SHOW_$," ",":",3,0,0)'       ; execute subprocedure BUFFER_WRITE
+.   BUFFER_LINE = '.   SHOW_$ = "  " + SHOW_$'                                       ; execute subprocedure BUFFER_WRITE
+.   BUFFER_LINE = 'if( len(pack(vallab(' + KEY$N + '))) gt 0) SHOW_$ = SHOW_$ + "  """+ pack(vallab(' + KEY$N + ')) + """"' ; execute subprocedure BUFFER_WRITE
+.   BUFFER_LINE = '.   SHOW_$ = pad(SHOW_$," ", 27, 27)'                             ; execute subprocedure BUFFER_WRITE
+.   BUFFER_LINE = '.   SHOW_LINE_$ = SHOW_LINE_$ + SHOW_$'                             ; execute subprocedure BUFFER_WRITE | ADD VALUE LABEL AFTER A TAB
+. end for
+. BUFFER_LINE = '.   SHOW_LINE_$ = trimr(SHOW_LINE_$)         '                        ; execute subprocedure BUFFER_WRITE
+. BUFFER_LINE = '.   append item ' + format(REC_TABLE_DATA) + ', SHOW_LINE_$'        ;execute subprocedure BUFFER_WRITE
+. BUFFER_LINE = '. end rec'                       ;execute subprocedure BUFFER_WRITE
+. ifthen (DBTYPE(0) EQ 1)
+. BUFFER_LINE = 'end case is'                     ;execute subprocedure BUFFER_WRITE
+. endif
+. BUFFER_LINE = 'end retrieval'                   ;execute subprocedure BUFFER_WRITE
+. execute dbms ['INCLUDE BUFFER ' + BUFFER_NAME]
+. if (gettxt(OLD_KEY_LIST_1) = '' or exists(gettxt(OLD_KEY_LIST_1)) = 0) append item OLD_KEY_LIST_1, "No data"
+end subprocedure
+

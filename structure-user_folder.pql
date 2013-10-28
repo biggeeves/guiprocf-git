@@ -1,0 +1,23 @@
+| File name: GUIPROCF.STRUCTURE.USER_FOLDER
+| Path:      GUIPROCF
+| Creator:   Greg Neils
+| Created:   5/21/2013
+| Reason:    SET UP USER'S FOLDER
+
+program crwarn
+. integer *   1  DUMB_N#    | Cycle thru globals
+. string  * 300  USER_FOL   | What is the output folder for the user
+. integer *   1  CHK_DIR    | does the directory exists
+
+| set the output folder, and create it if necessary
+| add the USER_NAME to the path
+. USER_FOL = dsn('PREFIX') + 'USERS\'
+. if (fileis(USER_FOL) eq 0) CHK_DIR = makedir(USER_FOL) | NOT A DIRECTORY OR A FILE
+. if (CHK_DIR eq -1) write 'Can not make user directory'
+. USER_FOL = USER_FOL + sglobal('USERA') +'\'
+. if (fileis(USER_FOL) eq 0) CHK_DIR = makedir(USER_FOL) | NOT A DIRECTORY OR A FILE
+. if (CHK_DIR eq -1) write 'Can not make user directory'
+. execute dbms ["attribute USERFOLDER  filename='" + USER_FOL + "'"]
+
+end program
+

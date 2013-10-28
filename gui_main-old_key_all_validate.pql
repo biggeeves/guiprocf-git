@@ -1,0 +1,30 @@
+subprocedure OLD_KEY_ALL_VALIDATE
+<comment> write 'Sub: OLD_KEY_ALL_VALIDATE'
+| At this point the date and times are integers store in varibles defines as strings.  These do NOT validate and must be treated carefully!
+| Strange but true trick in validation.  Integers store in string variables validate appropriately.  Dates and Times however dont and must be converted to numbers to validate!
+. do repeat REPX = 1 2 3 4
+.   ifthen  (KEY_COUNT ge REPX)
+.     ifthen (KEY_TYPE_!REPX = 3 OR 4)
+.       VAL_VAR = validate(REC_TYPE_NUM, KEY_NAME_!REPX, NUMBR(KEY_VALUE_!REPX))
+.       ifthen  (VAL_VAR <> 0)
+.         VAL_VAR = validate(REC_TYPE_NUM, KEY_NAME_!REPX, KEY_VALUE_!REPX)
+.       endif
+.     else
+.       VAL_VAR = validate(REC_TYPE_NUM, KEY_NAME_!REPX, KEY_VALUE_!REPX)
+.     endif
+.     ifthen  (VAL_VAR <> 0)
+.       GEN_STR1 = 'The value '
+.       IF(exists(KEY_VALUE_!REPX) EQ 1)  GEN_STR1 = GEN_STR1 + '"' + KEY_VALUE_!REPX + '" '
+.       GEN_STR1 = GEN_STR1 + ' for ' + KEY_NAME_!REPX + ' is not valid.'
+.       ifthen (sglobal('DEBUG_MODE') EQ '.')
+.	  GEN_STR1 = GEN_STR1 + char(13) + ' VAL_VAR = ' + format(VAL_VAR)
+                    + char(13) + 'KEYTYPE: ' + format(KEY_TYPE_!REPX)
+.       endif
+.       display infobox GEN_STR1
+.       PROCEED = NO
+.       exit subprocedure | DO BOTHER USER WITH NEXT KEY UNTIL THIS ONE IS FIXED.
+.     endif
+.   endif
+. end repeat
+end subprocedure
+

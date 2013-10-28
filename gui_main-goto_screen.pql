@@ -1,0 +1,53 @@
+subprocedure GOTO_SCREEN
+<comment> write 'Sub: GOTO_SCREEN: Case: ' CASE_VALUE ', Key1: ' KEY_VALUE_1 ', Key2: ' KEY_VALUE_2 ', Key3: ' KEY_VALUE_3 ', Key4: ' KEY_VALUE_4
+<comment> write 'Include possiblity to partialy select keys.  For example select key1 and show all recs with key1 value.'
+. SCREEN_RECTYPE_CHECK  = trimlr(recname(REC_TYPE_NUM))
+. SCREEN_NAME  = gettxt(REC_FORM_SELECTED)
+<comment> write 5t 'SCREEN_RECTYPE_CHECK: ' SCREEN_RECTYPE_CHECK / 'SCREEN_NAME: ' SCREEN_NAME
+
+C CHECK RECORD TYPE EXISTS
+. ifthen (0 eq exists(SCREEN_RECTYPE_CHECK) or len(SCREEN_RECTYPE_CHECK) )
+.   display infobox "The linked TABLE was incorrect."  + char(13) + char(13) + "Please contact your D.B.A. at the D.C.C."
+.   EXIT SUBPROCEDURE
+. endif
+
+. ifthen (0 eq exists(SCREEN_NAME) or len(SCREEN_NAME ) )
+.   display infobox "The linked SCREEN was incorrect. " + char(13) + char(13) + "Please contact your D.B.A."
+.   EXIT SUBPROCEDURE
+. endif
+
+. SCREEN_MEMBER = DB_PROC_FILE + '.GUI_CUSTOM.GOTO_SCREEN:O' | CHECK FOR CUSTOM GOTO SCREEN
+. ifthen ( meminfo( SCREEN_MEMBER, 1) = MEM_O)
+<comment> write 'Going to Custom.Goto_screen'
+.   execute subroutine [SCREEN_MEMBER] (CASE_VALUE KEY_VALUE_1 KEY_VALUE_2 KEY_VALUE_3 KEY_VALUE_4 SCREEN_NAME) returning (PROCEED) DYNAMIC
+. endif
+
+. if (PROCEED = NO) EXIT SUBPROCEDURE
+
+. ifthen (dbtype(0) eq 1)
+.   ifthen (exists(CASE_VALUE) = 0 or len(trim(CASE_VALUE)) = 0)
+.     PROCEED = NO
+.     display infobox 'Please select a ' + CASE_LABEL
+.     EXIT SUBPROCEDURE
+.   endif
+. endif
+. ifthen (PROCEED = YES)
+.   SCREEN_MEMBER = DB_PROC_FILE + '.SCREENS.'  + SCREEN_NAME + ':O'| Construct the name of the FAMILY.MEMBER that you want to call...
+.   ifthen (REC_TYPE_NUM le 9)  DVP_MEMBER = DB_PROC_FILE + '.FORMS.SCRN_' + '00' + format(REC_TYPE_NUM) + ':O'
+.   elseif (REC_TYPE_NUM le 99) DVP_MEMBER = DB_PROC_FILE + '.FORMS.SCRN_' +  '0' + format(REC_TYPE_NUM) + ':O'
+.   endif
+.   ifthen (meminfo(DVP_MEMBER, 1) = MEM_O)
+.     execute subroutine [DVP_MEMBER] (1,1, CASE_VALUE, KEY_VALUE_1, KEY_VALUE_2, KEY_VALUE_3, KEY_VALUE_4, KEY_VALUE_5, KEY_VALUE_6, KEY_VALUE_7) returning (EXIT__#) DYNAMIC
+.   elseif (meminfo(SCREEN_MEMBER, 1) = MEM_O)
+.     ifthen (dbtype(0) eq 1)
+.       execute subroutine [SCREEN_MEMBER] (CASE_VALUE, KEY_VALUE_1, KEY_VALUE_2, KEY_VALUE_3, KEY_VALUE_4, KEY_VALUE_5, KEY_VALUE_6) DYNAMIC
+.     else
+.       execute subroutine [SCREEN_MEMBER] (KEY_VALUE_1, KEY_VALUE_2, KEY_VALUE_3, KEY_VALUE_4, KEY_VALUE_5, KEY_VALUE_6, CASE_VALUE) DYNAMIC
+.     endif
+.   else
+.     display infobox "Please contact Administrator.  " + SCREEN_NAME + " is not available"
+.   endif
+. endif
+<comment> write 5T 'End: GOTO_SCREEN: SCREEN_NAME  : ' SCREEN_NAME
+end subprocedure GOTO_SCREEN
+

@@ -1,0 +1,11 @@
+c Library appended at the end is a collection of stuff that should run together all the time.
+subprocedure GOTO_SCREEN_LIBRARY
+. execute subprocedure GOTO_SCREEN
+. if (PROCEED EQ NO) EXIT SUBPROCEDURE
+. execute subprocedure OLD_REC_COUNT
+. IF (REC_ROW_COUNT_INITIAL EQ REC_ROW_COUNT) EXIT SUBPROCEDURE
+. execute subprocedure OLD_KEY_PAGE_DISPLAY_LIBRARY
+. execute subprocedure ITEM_VISIBLE
+. execute subprocedure ITEM_ENABLE
+end subprocedure
+

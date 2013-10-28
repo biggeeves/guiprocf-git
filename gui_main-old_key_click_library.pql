@@ -1,0 +1,12 @@
+subprocedure OLD_KEY_CLICK_LIBRARY
+. execute subprocedure ALL_KEY_GET_VALUE
+. DO REPEAT REPX = 1 TO 4
+.   ifthen ( (KEY_COUNT EQ REPX) AND (getfocus(0) eq OLD_KEY_LIST_!REPX) )
+.     ifthen (M_ARG2 eq 1)
+.       execute subprocedure GOTO_SCREEN_LIBRARY  | double clicked last key - go to screen
+.       EXIT SUBPROCEDURE
+.     endif
+.   endif
+. END REPEAT
+end subprocedure
+

@@ -1,0 +1,32 @@
+subprocedure REC_LIST_LOAD
+<comment> write 'Sub: REC_LIST_LOAD'
+. FORM_COUNT = 0
+. for CYCLE_NUM = 1, nrecs(0)
+.   REC_INFO_NAME(CYCLE_NUM) = trimlr(recname(CYCLE_NUM))
+.   ifNOT (len(REC_INFO_NAME(CYCLE_NUM)) gt 0) NEXT FOR
+.   FORM_COUNT = FORM_COUNT +1
+.   REC_INFO_NUM (CYCLE_NUM) = CYCLE_NUM
+.   REC_INFO_FORM (CYCLE_NUM) = REC_INFO_NAME(CYCLE_NUM)
+.   REC_INFO_DISPLAY(CYCLE_NUM) = REC_INFO_NAME(CYCLE_NUM)
+
+.   ifthen(len(recdoc(CYCLE_NUM,0)) gt 0)
+.     REC_INFO_DISPLAY(CYCLE_NUM) = trimlr(recdoc(CYCLE_NUM,0))
+.   elseif(len(recdoc(CYCLE_NUM,1)) gt 0)
+.     REC_INFO_DISPLAY(CYCLE_NUM) = trimlr(recdoc(CYCLE_NUM,1))
+.   endif
+.   REC_INFO_DISPLAY(CYCLE_NUM) = replace(REC_INFO_DISPLAY(CYCLE_NUM),char(9), '', 5, 0, 0) | Get rid of tabs in the DOCUMENT line.
+.   REC_INFO_DISPLAY(CYCLE_NUM) = ' ' + REC_INFO_DISPLAY(CYCLE_NUM)
+
+.   ifthen (amod(FORM_COUNT,5) eq 0)  | ADD blank line every 5 forms
+.     append item FORM_LIST, ''
+.     append item REC_TYPE_SELECTED, ''
+.     append item REC_FORM_SELECTED, ''
+.   endif
+.   append item FORM_LIST, '  ' +  REC_INFO_DISPLAY(CYCLE_NUM)
+.   append item REC_TYPE_SELECTED, REC_INFO_NAME(CYCLE_NUM)
+.   append item REC_FORM_SELECTED, REC_INFO_NAME(CYCLE_NUM)
+
+. end for
+
+end subprocedure
+

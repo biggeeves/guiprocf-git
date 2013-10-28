@@ -1,0 +1,35 @@
+EXTERNAL VARIABLE BLOCK GUI_MAIN.EVB:V REPLACE VARMAP
+| contains are customizable variables and variable necessary for customizing a user experience.
+
+| Look and feel
+. integer *      1   BOLD NOT_BOLD
+                     ITALIC NOT_ITALIC
+                     UNDERL NOT_UNDERL      | Fonts specifications
+. integer *      1   SMALL LARGE XLARGE   | Fonts Size specifications
+. string  *     20   NP_FONT               | Font type for lists
+. string  *     20   P_FONT               | Font type for lables
+
+| Record Information and Navigation
+. integer *      2   array REC_INFO_NUM     (200)  | Rec Number
+. string  *     32   array REC_INFO_NAME    (200)  | Rec Name
+. string  *     32   array REC_INFO_FORM    (200)  | Rec Name
+. string  *    200   array REC_INFO_DISPLAY (200)  | Rec Display
+
+| Permissions
+. integer *      1   I_GUI_REC_NEW I_GUI_REC_READ I_GUI_REC_WRITE I_GUI_REC_DELETE I_GUI_REC_LOCK
+                     I_GUI_CASE_NEW I_GUI_CASE_DELETE I_GUI_CASE_LOCK
+                     I_GUI_SPECIAL I_GUI_REPORTS  I_GUI_DBA   | customizable variables for the gui.
+| management
+. INTEGER *      1   DB_LOCK_STATUS
+
+. string  *    300   HIPPA_TEXT_1 HIPPA_TEXT_2
+. string  *    300   SPLASH_TEXT_1 SPLASH_TEXT_2
+
+preset HIPPA_TEXT_1  (' The information contained in this database is confidential. All database use is logged and monitored.')
+preset HIPPA_TEXT_2  (' Unauthorized or improper use of this system, or the information it contains, is prohibited.')
+preset SPLASH_TEXT_1 ('WELCOME!')
+preset SPLASH_TEXT_2 (' The information contained in this database is confidential. All database use is logged and monitored.<BR> <BR> Unauthorized or improper use of this system, or the information it contains, is prohibited.')
+
+
+END EXTERNAL VARIABLE BLOCK
+

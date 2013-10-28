@@ -1,0 +1,25 @@
+c sample code for a go to screen.  This intercepts the usual screen and can do stuff to it.  Return 1 to continue as normal or Return 0 to NOT continue.
+
+subroutine GUI_CUSTOM.GOTO_SCREEN:O (CASE_VALUE KEY_VALUE_1 KEY_VALUE_2 KEY_VALUE_3 KEY_VALUE_4 SCREEN_NAME) returning (PROCEED) DYNAMIC REPLACE
+STRING * 32 CASE_VALUE KEY_VALUE_1 KEY_VALUE_2 KEY_VALUE_3 KEY_VALUE_4 KEY_VALUE_5 KEY_VALUE_6 SCREEN_NAME
+INTEGER * 4 PROCEED
+integer * 1 MEM_O
+SET MEM_O (4)
+SET PROCEED (0)
+SCREEN_NAME = 'SIR014.SCREENS.' + SCREEN_NAME
+
+IFTHEN (SGLOBAL ('USERA') EQ 'MFENG')
+. SCREEN_NAME = SCREEN_NAME + ':O'
+ELSE
+. SCREEN_NAME = SCREEN_NAME + '_SP:O'
+ENDIF
+
+ifthen (meminfo(SCREEN_NAME, 1) = MEM_O)   | CHECK IF SCREEN EXISTS
+. execute subroutine [SCREEN_NAME] (CASE_VALUE, KEY_VALUE_1, KEY_VALUE_2, KEY_VALUE_3, KEY_VALUE_4, KEY_VALUE_5, KEY_VALUE_6) DYNAMIC
+else
+. display infobox 'There is no ' + screen_name + ' Screen. Please contact your D.B.A.'| debug
+endif
+
+
+end subroutine
+

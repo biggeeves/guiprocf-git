@@ -1,0 +1,5 @@
+subprocedure DEBUG_INFO
+. BUFFER_LINE = format(DEBUG_LINE) + ' Focus: ' + format(getfocus(0))+ ' = ' + gettxt(GETFOCUS(0)) + ', Page: ' + format(m_page)
+. insert line into buffer 'DEBUG_INFO' numbered DEBUG_LINE from BUFFER_LINE
+end subprocedure
+

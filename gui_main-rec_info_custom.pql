@@ -1,0 +1,12 @@
+subprocedure REC_INFO_CUSTOM
+. remove all FORM_INFO
+. ifthen (meminfo(DB_PROC_FILE + ".GUI_CUSTOM.REC_INFO:O", 1) = MEM_O)
+<COMMENT> write 'executing ' DB_PROC_FILE ' .GUI_CUSTOM.REC_INFO'
+.   ifthen (meminfo(DB_PROC_FILE + ".GUI_CUSTOM.REC_INFO:O", 8) = 0)
+.     execute subroutine [DB_PROC_FILE+'.GUI_CUSTOM.REC_INFO'] (CASE_VALUE REC_TYPE_NUM FORM_INFO) RETURNING (PROCEED) DYNAMIC
+.   else
+.     display infobox 'There is custom information available but not displayed.  Contact your DBA- compile: GUI_CUSTOM.REC_INFO'
+.   endif
+. endif
+end subprocedure
+

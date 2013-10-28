@@ -1,0 +1,90 @@
+subprocedure OLD_KEY_REFRESH
+<comment> write 'Sub: OLD_KEY_REFRESH: Case:' CASE_VALUE'  Rec: ' REC_TYPE_NUM ', KEY_COUNT: ' KEY_COUNT ', KEY$T: ' KEY$T ', VIA: ' REC_VIA ' REFRESH_START_KEYNUM: ' REFRESH_START_KEYNUM
+
+c checks
+. if (exists(REFRESH_START_KEYNUM) eq 0) write 'Refresh Start KeyNUM must be defined!:'; exit subprocedure
+. if (exists(REC_TYPE_NUM) eq 0) exit subprocedure
+. if (nkeys(REC_TYPE_NUM) lt REFRESH_START_KEYNUM) exit subprocedure  | trying to refresh a key greater than the number of keys in a record type.
+. if (nkeys(REC_TYPE_NUM) eq 0)            exit subprocedure              | NO KEYS - NO REASON TO RUN
+. if (gettxt(OLD_KEY_LIST_1) eq 'No data') exit subprocedure    | No records with data
+. if (getfocus(0) eq OLD_KEY_LIST_4)   exit subprocedure        | LAST KEY, NO NEED TO GET MORE DATA
+. ifthen (dbtype(0) eq 1)
+.   if (0 eq len(CASE_VALUE) OR exists(CASE_VALUE) ) exit subprocedure
+. endif
+
+C make the via
+c special note.  Must go before most things as KEY$N and KEY$T are recycled
+. REC_VIA = ' via ( '
+. for EACH_KEY = 1, REFRESH_START_KEYNUM - 1
+.   KEY$N = trim(keyname(REC_TYPE_NUM, EACH_KEY + dbtype(0)))
+.   if (EACH_KEY EQ 1 ) KEY$V = trim(gettxt(OLD_KEY_LIST_1))
+.   if (EACH_KEY EQ 2 ) KEY$V = trim(gettxt(OLD_KEY_LIST_2))
+.   if (EACH_KEY EQ 3 ) KEY$V = trim(gettxt(OLD_KEY_LIST_3))
+.   KEY$T = vtype(REC_TYPE_NUM, KEY$N)
+.   execute subprocedure ANY_KEY_CLEAN
+.   if (KEY$T EQ 1 or 3 or 4) KEY$V = '"' + KEY$V +'"'
+.   REC_VIA = REC_VIA + KEY$V
+. end for
+. REC_VIA = REC_VIA + ' )'
+. IF (REFRESH_START_KEYNUM LE 1) REC_VIA = ''
+<comment> write 5T 'REC_VIA: ' REC_VIA
+
+. KEY$N = trim( keyname( REC_TYPE_NUM, REFRESH_START_KEYNUM + dbtype(0) ) )
+. KEY$T = vtype( REC_TYPE_NUM, KEY$N )
+
+
+. if (0 EQ LEN(KEY$N) OR exists(KEY$N) )  EXIT SUBPROCEDURE | GOOD TRICK.  KEEPS RETRIEVAL FROM FAILING IF KEYFIELD IS NOT SPECIFIED OR IS HAS CONTINUED ONTO NON-EXISTENT KEY.
+C make the via statement
+
+
+. if (REFRESH_START_KEYNUM le 1) remove all OLD_KEY_LIST_1
+. if (REFRESH_START_KEYNUM le 2) remove all OLD_KEY_LIST_2
+. if (REFRESH_START_KEYNUM le 3) remove all OLD_KEY_LIST_3
+. if (REFRESH_START_KEYNUM le 4) remove all OLD_KEY_LIST_4
+
+. ifthen (REFRESH_START_KEYNUM EQ 1) KEY_FOCUS = OLD_KEY_LIST_1
+. elseif (REFRESH_START_KEYNUM EQ 2) KEY_FOCUS = OLD_KEY_LIST_2
+. elseif (REFRESH_START_KEYNUM EQ 3) KEY_FOCUS = OLD_KEY_LIST_3
+. elseif (REFRESH_START_KEYNUM EQ 4) KEY_FOCUS = OLD_KEY_LIST_4
+. endif
+
+
+c make the retrieval in a buffer
+
+
+. BUFFER_NAME = 'OLD_KEY_REFRESH'                       ; execute subprocedure BUFFER_START
+. BUFFER_LINE = 'C RECURSIVE_COUNT= "' + FORMAT(RECURSIVE_COUNT) + '"'                           ; execute subprocedure BUFFER_WRITE
+. BUFFER_LINE = 'retrieval'                           ; execute subprocedure BUFFER_WRITE
+. BUFFER_LINE = 'string * 32 TEMP_$ SHOW_$'           ; execute subprocedure BUFFER_WRITE
+. BUFFER_LINE = 'set SHOW_$ TEMP_$ ('' '')'           ; execute subprocedure BUFFER_WRITE
+<comment> BUFFER_LINE = "write 5t 'Buffer: OLD_KEY_REFRESH:'" ; execute subprocedure BUFFER_WRITE
+. ifthen (dbtype(0) eq 1)
+. BUFFER_LINE = 'old case is '                        ; execute subprocedure BUFFER_ADD_CASE; execute subprocedure BUFFER_WRITE
+. endif
+. BUFFER_LINE = '. process rec ' + format(REC_TYPE_NUM) + ' ' + REC_VIA  ; execute subprocedure BUFFER_WRITE
+. BUFFER_LINE = '.   SHOW_$ = trimlr(varget("' + KEY$N + '"))'  ; execute subprocedure BUFFER_WRITE
+. if (KEY$T eq 3) BUFFER_LINE = '.   SHOW_$ = replace(SHOW_$," ","/",2,0,0)'; execute subprocedure BUFFER_WRITE
+. if (KEY$T eq 4) BUFFER_LINE = '.   SHOW_$ = replace(SHOW_$," ",":",3,0,0)'; execute subprocedure BUFFER_WRITE
+. BUFFER_LINE = '.   ifnotthen (trimlr(TEMP_$) EQ trimlr(SHOW_$))'      ;execute subprocedure BUFFER_WRITE
+. BUFFER_LINE = '.     TEMP_$ = SHOW_$'               ;execute subprocedure BUFFER_WRITE
+. BUFFER_LINE = '.     SHOW_$ = " " + pack(SHOW_$) '; execute subprocedure BUFFER_WRITE
+. BUFFER_LINE = '.     if( exists( vallab(' + KEY$N + ')) eq 1) SHOW_$ = SHOW_$ + CHAR(9)+ trim(vallab(' + KEY$N + '))'; execute subprocedure BUFFER_WRITE |ADD VALUE LABEL AFTER A TAB
+. BUFFER_LINE = '.     append item ' + format(KEY_FOCUS) + ', SHOW_$ '; execute subprocedure BUFFER_WRITE
+. BUFFER_LINE = '.   endif'                           ;execute subprocedure BUFFER_WRITE
+. BUFFER_LINE = '. end process rec'                   ;execute subprocedure BUFFER_WRITE
+. ifthen (dbtype(0) eq 1)
+. BUFFER_LINE = 'end case'                            ;execute subprocedure BUFFER_WRITE
+. endif
+. BUFFER_LINE = 'end retrieval'                       ;execute subprocedure BUFFER_WRITE
+. execute dbms ['INCLUDE BUFFER ' + BUFFER_NAME]  | DEBUG
+. if (gettxt(OLD_KEY_LIST_1) = '' or exists(gettxt(OLD_KEY_LIST_1)) = 0) append item OLD_KEY_LIST_1, "No data"
+<comment> write 5t 'OLD_KEY_REFRESH: Case:' CASE_VALUE'  Rec: ' REC_TYPE_NUM ', KEY_COUNT: ' KEY_COUNT ', KEY$T: ' KEY$T ', VIA: ' REC_VIA
+
+. ifthen (REFRESH_START_KEYNUM lt nkeys(REC_TYPE_NUM) )
+<comment> write 'RECURSIVE CALL: OLD_KEY_REFRESH:'
+.   REFRESH_START_KEYNUM = REFRESH_START_KEYNUM + 1
+.   execute subprocedure OLD_KEY_REFRESH
+. endif
+end subprocedure
+|
+

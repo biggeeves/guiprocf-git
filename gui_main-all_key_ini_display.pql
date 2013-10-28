@@ -1,0 +1,71 @@
+subprocedure ALL_KEY_INI_DISPLAY
+<comment> write 'sub: ALL_KEY_INI_DISPLAY: Nkeys: ' KEY_COUNT
+c old keys, GET AND DISPLAY STATIC  KEY INFORMATION
+. do repeat REPX = 1 TO 4
+|   old keys page
+.   set item OLD_KEY_LABEL_!REPX, KEY_LABEL_!REPX
+.   remove all OLD_KEY_LIST_!REPX
+|   new keys page
+.   set item   NEW_KEY_VAR_MAP_!REPX, ''
+.   set item   NEW_KEY_LABEL_!REPX, KEY_LABEL_!REPX
+.   remove all NEW_KEY_CHOICE_!REPX
+.   append item NEW_KEY_CHOICE_!REPX, ''
+.   remove all NEW_KEY_VALUE_!REPX
+|   table keys page
+.   set item   TABLE_KEY_LABEL_!REPX, KEY_LABEL_!REPX
+. end repeat
+. if (exists(REC_TYPE_NUM) eq 0) exit subprocedure
+. if (KEY_COUNT eq 0) exit subprocedure
+
+| THIS IS FOR NEW KEY AREA ONLY.  It is broken out to keep things simpler to work on in the future
+. do repeat REPX = 1 TO 4
+.   KEY$N   = KEY_NAME_!REPX
+.   KEY_LABEL_COUNT = nvallab(REC_TYPE_NUM, KEY$N)
+.   KEY_MIN  = nmin   (REC_TYPE_NUM, KEY$N)          | The minimum range of the key, if there is one
+.   KEY_MAX  = nmax   (REC_TYPE_NUM, KEY$N)          | The maximum range of the key, if there is one
+.   KEY$T   = vtype  (REC_TYPE_NUM, KEY$N)
+|   set VTYPE_MAP to what you want help to say.
+.   VTYPE_MAP = ''
+.   ifthen (KEY$T eq 1)
+.     VTYPE_MAP = 'Max Chars: ' + substr( vformat(REC_TYPE_NUM, KEY$N), 2, len(vformat(REC_TYPE_NUM, KEY$N)))
+.   elseif (KEY$T eq 3)
+.     VTYPE_MAP = datemap(REC_TYPE_NUM, KEY$N)
+.     VTYPE_MAP = replace(VTYPE_MAP,'E','',1,1,0)
+.     VTYPE_MAP = VTYPE_MAP + '    ' + dateC(KEY_MIN, VTYPE_MAP)  + ' - ' + dateC(KEY_MAX, VTYPE_MAP)
+.   elseif (KEY$T eq 4)
+.     VTYPE_MAP = timemap(REC_TYPE_NUM, KEY$N)
+.     VTYPE_MAP = replace(VTYPE_MAP,'E','',1,1,0)
+.     VTYPE_MAP = VTYPE_MAP + '    ' + timeC(KEY_MIN, VTYPE_MAP)  + ' - ' + timeC(KEY_MAX, VTYPE_MAP)
+.   elseif (KEY$T ge 5)
+.     if(exists(KEY_MIN) eq 1) VTYPE_MAP = 'Min: ' + format(KEY_MIN)
+.     if(exists(KEY_MAX) eq 1) VTYPE_MAP = VTYPE_MAP + '    Max: ' + format(KEY_MAX)
+.   endif
+.   set item NEW_KEY_VAR_MAP_!REPX, VTYPE_MAP
+|   check for value labels
+.   ifthen (nvalid(REC_TYPE_NUM, KEY$N) ne 0 and KEY_LABEL_COUNT = 0) | Valid values without labels
+.     for VALID_COUNT = 1, nvalid(REC_TYPE_NUM, KEY$N)
+.       append item NEW_KEY_CHOICE_!REPX, pad(format(nvval(REC_TYPE_NUM, KEY$N, VALID_COUNT)), ' ', 5, 5)
+.     end for
+.   elseif (vtype(REC_TYPE_NUM, KEY$N) eq 2)                  | Categorical
+.     VALID_COUNT = 0
+.     while (VALID_COUNT lt KEY_LABEL_COUNT)                       | Use the categorical value after appending its numeric value in front...
+.       VALID_COUNT = VALID_COUNT + 1
+.       GEN_STR1 = pad(format(VALID_COUNT), ' ', 5, 5) + pad(pack(vallabsv(REC_TYPE_NUM, KEY$N, VALID_COUNT)), ' ', 5, 5)
+                   + char(9) + pack(vallabsn(REC_TYPE_NUM, KEY$N, VALID_COUNT))  | char(9) is a tab.  This aligns value labels pretty well
+.       append item NEW_KEY_CHOICE_!REPX, GEN_STR1
+.     end while
+.   elseif (KEY_LABEL_COUNT gt 0)                              | Value labels. If there are labels, use them...
+.     for EACH_LABEL = 1, KEY_LABEL_COUNT
+.       append item NEW_KEY_CHOICE_!REPX, pad(pack(vallabsv(REC_TYPE_NUM, KEY$N, EACH_LABEL )),' ',5,5) +
+                                          char(9) + pack(vallabsn(REC_TYPE_NUM, KEY$N, EACH_LABEL ))
+.     end for
+.   elseif ((KEY_MAX - KEY_MIN) le 1000)                 | If there aren't labels but there is a reasonable range, use that...
+.     for MINTOMAX = KEY_MIN, KEY_MAX
+.       append item NEW_KEY_CHOICE_!REPX, MINTOMAX
+.     end for
+.   endif
+. end repeat
+
+
+end subprocedure
+

@@ -1,0 +1,15 @@
+. REC_VIA = ' via ( '
+. for EACH_KEY = 1, REFRESH_START_KEYNUM - 1
+.   KEY$N = trim(keyname(REC_TYPE_NUM, EACH_KEY + dbtype(0)))
+.   if (EACH_KEY EQ 1 ) KEY$V = trim(gettxt(OLD_KEY_LIST_1))
+.   if (EACH_KEY EQ 2 ) KEY$V = trim(gettxt(OLD_KEY_LIST_2))
+.   if (EACH_KEY EQ 3 ) KEY$V = trim(gettxt(OLD_KEY_LIST_3))
+.   KEY$T = vtype(REC_TYPE_NUM, KEY$N)
+.   execute subprocedure ANY_KEY_CLEAN
+.   if (KEY$T EQ 1 or 3 or 4) KEY$V = '"' + KEY$V +'"'
+.   REC_VIA = REC_VIA + KEY$V
+. end for
+. REC_VIA = REC_VIA + ' )'
+. IF (REFRESH_START_KEYNUM LE 1) REC_VIA = ''
+<comment> write 5T 'REC_VIA: ' REC_VIA
+

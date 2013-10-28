@@ -1,0 +1,15 @@
+subprocedure FORM_LIST_LIBRARY
+<COMMENT> WRITE 'START FORM_LIST_LIBRARY'
+.   FORM_LIST_LAST_LINE = getpos(FORM_LIST)
+.   execute subprocedure REC_DISPLAY
+.   execute subprocedure REC_TYPE_INFO
+.   execute subprocedure ALL_KEY_INI_DISPLAY
+.   execute subprocedure OLD_KEY_VISIBLE
+.   REFRESH_START_KEYNUM = 1
+.   execute subprocedure OLD_KEY_REFRESH
+.   execute subprocedure OLD_REC_COUNT
+.   execute subprocedure ITEM_ENABLE
+.   execute subprocedure REC_INFO_CUSTOM
+<COMMENT> WRITE 'END FORM_LIST_LIBRARY'
+end subprocedure
+

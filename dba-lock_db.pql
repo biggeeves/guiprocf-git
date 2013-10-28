@@ -1,0 +1,38 @@
+PROGRAM
+STRING * 600 STR$1
+INTEGER * 2 DUMB_NUM#
+INTEGER * 2 FILE_IOSTAT
+| check master for users, lock database so no more users can get in.
+. ifthen ( system(69) gt 0) | DBs attached to Master
+.   STR$1 = 'Master ' + dsn('master') + ' is attached to ' + format(system(69)) + ' DBs: ' + char(13)
+.   write STR$1
+.   for DUMB_NUM# = 1, system(69)
+.     STR$1 = STR$1 + char(13)+ getmdbn(DUMB_NUM#)
+.     write [getmdbn(DUMB_NUM#)]
+.   end for
+.   display infobox STR$1
+. endif
+. ifthen (system(68) gt 1) |Clients attache to Master
+.   STR$1 = 'Master ' + dsn('master') +  ' has ' + format(system(68)) + ' Clients' + char(13)
+.   write STR$1
+.   for DUMB_NUM# = 1, system(68)
+.     STR$1 = STR$1 + char(13) + getmcadd(getmclid(DUMB_NUM#))
+.     write [getmcadd(getmclid(DUMB_NUM#))]
+.     if (getmclst(DUMB_NUM#) ne 0) STR$1 = STR$1 +  '  at  ' + timec(getmclst(DUMB_NUM#), 'hh:mm:ss')
+.   end for
+.   display infobox STR$1
+. endif
+
+. execute dbms "CALL DCCPROCF.BASE.MSTCLEAR"
+
+. STR$1= pad(dbname(0),' ',34,34) + 'LOCKED   ' + datec(today(0),'mm/dd/yyyy')  +'  ' + timec(now(0),'hh:mm ') + '<USERA>'
+. WRITE STR$1
+. open  (LOCK_DBS) append iostat= FILE_IOSTAT lrecl=200
+.   ifthen (FILE_IOSTAT eq 0)
+.     write (LOCK_DBS) STR$1
+.   else
+.     display infobox 'Error locking database.  DB IS NOT LOCKED.'
+.   endif
+. close (LOCK_DBS)
+END PROGRAM
+

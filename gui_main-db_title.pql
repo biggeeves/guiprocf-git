@@ -1,0 +1,36 @@
+subprocedure DB_TITLE
+. GEN_STR1 = ''
+. HTML_COLOR = HTML_YELLOW  | DEFAULTS TO ASSUME LIVE
+. ifthen ( pattern( upper( DB_SR1_FILE), '@DEVELOPMENT@') eq 1 )
+.   HTML_COLOR = HTML_GREY
+.   GEN_STR1 = 'DEVELOPMENT DB'
+. elseif ( pattern( upper( DB_SR1_FILE), '@\CLONE\@') eq 1 )
+.   HTML_COLOR = HTML_RED
+.   GEN_STR1 = 'CLONE DB'
+. elseif ( pattern( upper( DB_SR1_FILE), '@SIRXS\@') eq 1 )
+.   HTML_COLOR = HTML_ORANGE
+.   GEN_STR1 = 'Backup: ' + datec(cdate(SUBSTR(DB_SR1_FILE,26,16),'YYYYIMMIDD'),'Mmm/DD/YYYY')
+. endif
+
+. GEN_STR1 = '<body bgcolor="' + HTML_COLOR + '" readonly="true"><font color="#11399E" size="+3">' + GEN_STR1
+
+
+. ifthen (system(40) lt 1)
+.   write "NOTE: A Database should be attached"
+.   set dialog title "NO DATABASE"
+.   GEN_STR1 = GEN_STR1 + "  No Database"
+. elseif (system(40) EQ 1)
+.   set dialog title dbname(0) + " Created by the DCC"
+.   ifthen (len(recdoc( 0, 0 )) gt 0)
+.     GEN_STR1 = GEN_STR1 + ' ' + recdoc( 0, 0 )
+.   else
+.     GEN_STR1 = GEN_STR1 + ' ' + dbname( 0 )
+.   endif
+. elseif (system(40) GT 1)
+.   write "TWO DATABASES ATTACHED.  DEFAULT DATABASE IS:" [DBNAME(0)]
+. endif
+
+. append line DB_TITLE, GEN_STR1 html
+
+end subprocedure
+

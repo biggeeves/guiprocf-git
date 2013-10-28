@@ -1,0 +1,14 @@
+program
+string * 600  GEN_STR1
+INTEGER * 2   FILE_IOSTAT
+. compute GEN_STR1 = pad(dbname(0),' ',34,34) + 'UNLOCKED ' + datec(today(0),'mm/dd/yyyy')  +'  ' + timec(now(0),'hh:mm ') + '<USERA>'
+. open  (LOCK_DBS) append  iostat= FILE_IOSTAT lrecl=200
+.   ifthen (FILE_IOSTAT eq 0)
+.     write (LOCK_DBS) GEN_STR1
+.     write / 'Users can sign in: ' GEN_STR1
+.   else
+.     display infobox 'Unable to remove lock.  DB IS STILL LOCKED'
+.   endif
+. close (LOCK_DBS)
+end program
+

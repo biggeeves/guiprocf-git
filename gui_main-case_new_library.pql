@@ -1,0 +1,29 @@
+subprocedure CASE_NEW_LIBRARY
+<comment> write 'Sub: CASE_NEW_Library'
+. CASE_TEMP_VALUE = trimlr(gettxt(CASE_NEW))
+. execute subprocedure CASE_VALIDATE  | pass var CASE_TEMP_VALUE
+. if (PROCEED EQ NO) EXIT SUBPROCEDURE
+
+. execute subprocedure CASE_LIST_SEARCH
+. ifthen (CASE_FOUND EQ 0)  | case already exists
+.   CASE_VALUE = CASE_TEMP_VALUE
+.   ifthen (meminfo(DB_PROC_FILE+'.GUI_CUSTOM.CASE_NEW:O',1) = MEM_O)
+<COMMENT> WRITE 'CALLING ' DB_PROC_FILE '.GUI_CUSTOM.CASE_NEW:O'
+.     execute subroutine [DB_PROC_FILE+'.GUI_CUSTOM.CASE_NEW'] (CASE_TEMP_VALUE) RETURNING (PROCEED) DYNAMIC
+<COMMENT> IF(PROCEED EQ NO) WRITE 'PROCEED EQ 0 EXIT SUBPROCEDURE'
+.     if (PROCEED eq NO) EXIT SUBPROCEDURE
+.   else
+.     execute subprocedure CASE_NEW
+.   endif
+.   remove all CASE_LIST
+.   execute subprocedure CASE_LIST_LOAD
+.   execute subprocedure CASE_LIST_SEARCH    | pass var CASE_TEMP_VALUE
+. endif
+. ifthen (CASE_FOUND EQ 0)
+.   display infobox "Please double check that he new case ID was created"
+.   EXIT SUBPROCEDURE
+. else
+.   execute subprocedure OLD_KEY_PAGE_DISPLAY_LIBRARY
+. endif
+end subprocedure
+

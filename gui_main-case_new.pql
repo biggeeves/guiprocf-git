@@ -1,0 +1,14 @@
+subprocedure CASE_NEW  | PASS IN CASE_VALUE
+<comment> write 'Sub: CASE_NEW: ' CASE_VALUE
+c IT PASSED THE TEST NOW CREATE IT create buffer to insert new case
+. if (CASE_VALUE eq '') display infobox 'Can not create a blank case'; exit subprocedure
+. if (exists(CASE_VALUE) eq 0) display infobox 'Can not create a system missing case'; exit subprocedure
+. if (validate(0,CASE_NAME,CASE_VALUE) NE 0) display infobox 'That value is invalid'; exit subprocedure
+. BUFFER_NAME = 'CASE_NEWID'        ; execute subprocedure BUFFER_START
+. BUFFER_LINE = 'retrieval UPDATE' ; execute subprocedure BUFFER_WRITE
+. BUFFER_LINE = '. new case is ' ; execute subprocedure BUFFER_ADD_CASE; execute subprocedure BUFFER_WRITE
+. BUFFER_LINE = 'end case is'  ; execute subprocedure BUFFER_WRITE
+. BUFFER_LINE = 'end retrieval'; execute subprocedure BUFFER_WRITE
+. execute dbms ['INCLUDE BUFFER ' + BUFFER_NAME]
+end subprocedure
+

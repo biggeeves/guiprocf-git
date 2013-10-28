@@ -1,0 +1,13 @@
+C SAMPLE CODE.  COPY TO THE DB PROCFILE, FAMILY NAME: GUI_CUSTOM.  MEMBER: REC_LIST_LOAD
+
+subroutine GUI_CUSTOM.REC_LIST_LOAD (GUI_FORM_LABEL  GUI_FORM_NAME  GUI_FORM_REC_TYPE ) returning (PROCEED) replace
+integer * 2 GUI_FORM_LABEL  GUI_FORM_NAME  GUI_FORM_REC_TYPE
+integer * 1 PROCEED
+PROCEED = 1
+if(sglobal('comment') eq '.') write 'in SAMPLE.DBPROC.GUI_CUSTOM.REC_LIST_LOAD'
+. append item GUI_FORM_LABEL, 'PTRACK  (PTRACK) Patient Tracking'   ; append item GUI_FORM_NAME, 'PTRACK' ;    append item GUI_FORM_REC_TYPE, 'PTRACK' ;
+. append item GUI_FORM_LABEL, 'AAFORM  (AA) APO-E Form'             ; append item GUI_FORM_NAME, 'AAFORM' ;    append item GUI_FORM_REC_TYPE, 'AAFORM' ;
+. append item GUI_FORM_LABEL, 'BFORM   (B)  Demographics'           ; append item GUI_FORM_NAME, 'BFORM' ;     append item GUI_FORM_REC_TYPE, 'BFORM'
+. append item GUI_FORM_LABEL, 'BFORM   (B)  Demographics - SPANISH' ; append item GUI_FORM_NAME, 'BFORM_SP' ;  append item GUI_FORM_REC_TYPE, 'BFORM'
+end subroutine
+

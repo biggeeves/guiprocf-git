@@ -1,0 +1,169 @@
+SUBROUTINE UTIL.LIST_IT (CASE$V) NODATABASE REPLACE
+| File name: XXXX
+| Path:      XXXX
+| Creator:   Greg Neils
+| Created:   11/2007
+| Retired:
+| Called by: XXXX
+| Calls:
+| Reason:    List of Forms
+| Output:    HTML file
+| Modified:  XXXX
+
+string  * 450  STR$1           | for records with keys
+string  * 250  ALL_KEY_INFO | Big string to hold all of the key names
+string  *  32  CASE_STR        | CASE VARIABLE AS STRING
+string  *  32  CASE$V          | STRING VALUE PASSED IN
+integer *   1  DUMB_N#         | helps open the file
+integer *   1  CASE_TYPE       | VARTYPE 0=String 1=numeric
+string  *   1  NEED_QOUTE      | for CASEID---- WILL BE EITHER A QOUTE OR NOTHING
+string  *  32  KEYINFO         | KEY VARIABLE NAME
+string  *  32  VAR_DATE_MAP    | What is the schema date format
+string  *  40  VAR_TIME_MAP    | Time map of the key variable'
+string  *  32  A_REC_NAME      | What is the record name
+string  * 400  FILELOC1        | File location for monkey 91
+string  * 400  FILELOC5        | File location for monkey 95
+string  * 400  FILELOC9        | File location for monkey 99
+
+NEED_QOUTE = ''
+
+DUMB_N# = delfile(dsn('monkey91'))
+DUMB_N# = delfile(dsn('monkey95'))
+DUMB_N# = delfile(dsn('monkey99'))
+FILELOC1 = dsn('monkey91')
+FILELOC5 = dsn('monkey95')
+
+
+CASE_TYPE = VTYPE(0,VARNAMEC(0,1))
+if (CASE_TYPE = 1) NEED_QOUTE = '"'
+
+c execute dbms 'call SYSPROC.TOOLS.HTMLCODE'
+
+open monkey91   /write / dsnvar = FILELOC1 lrecl=600 iostat  = DUMB_N#
+write dumb_n# 'monkey91' [dsn('monkey91')]
+
+. write (monkey91) 'retrieval crwarn'
+. write (monkey91) 'string  * 450  STR$2           | for records with keys'
+. write (monkey91) 'integer *   2  IND_REC_#       | How many Inidividual records does the case have?'
+. write (monkey91) 'integer *   2  TOTAL_REC_#     | How many TOTAL records does the case have?'
+. write (monkey91) 'string  *  32  STR_KEYINFO     | STRING VARIABLE THAT STORES THE KEY VARIABLE NAME'
+. write (monkey91) 'string  *  20  STR_WIDTH       | for table width'
+. write (monkey91) 'string  *  20  STR_CELL_PAD    | for cell padding'
+. write (monkey91) 'string  *  20  STR_CELL_SP     | for cell spacing'
+. write (monkey91) 'integer *   1  DUMB_X#         | Anytime var'
+. write (monkey91) 'string  * 400  FILELOC5        | File location for monkey 95'
+. write (monkey91) 'string  * 400  FILELOC9        | File location for monkey 99'
+. write (monkey91) 'set TOTAL_REC_# (0)'
+. write (monkey91) 'FILELOC5 = dsn("monkey95")'
+. write (monkey91) 'FILELOC9 = dsn("monkey99")'
+. write (monkey91) 'open monkey99   /WRITE DSNVAR = FILELOC9 lrecl=600 IOSTAT = DUMB_X#'
+. write (monkey91) 'WRITE DUMB_X#  | FOR DEBUGING '
+. write (monkey91) 'open monkey95   /WRITE DSNVAR=FILELOC5 lrecl=600 IOSTAT = DUMB_X#'
+. write (monkey91) 'WRITE DUMB_X#  | FOR DEBUGING '
+. write (monkey91) 'write (monkey95)   "Waiting for program to run"'
+. write (monkey91) 'close monkey95'
+. write (monkey91) 'WRITE "in 2nd retrieval"'
+
+
+. STR$1 ='<' + CHAR(33) + 'DOCTYPE HTML PUBLIC '
+. write (monkey91) 'write (monkey99) "' STR$1 '"'     "   '" '"-//W3C//DTD HTML 4.0 Transitional//EN">' "'"
+. write (monkey91) 'write (monkey99) "<HTML>"'
+. write (monkey91) 'write (monkey99) "<HEAD>"'
+. write (monkey91) 'write (monkey99) "<TITLE>"'
+. write (monkey91) 'write (monkey99) "Case Report"'
+. write (monkey91) 'write (monkey99) "</TITLE>"'
+. write (monkey91) 'write (monkey99) "</HEAD>"'
+. write (monkey91) 'write (monkey99) "<BODY>"'
+. write (monkey91) 'write (monkey99) "Generated on ' [datec(today(0),'mm/dd/yy')]  ' at ' [timec(now(0),'hh:mm')] 'by ' [sglobal('USERA')]  ' and the D.C.C."'
+. write (monkey91) 'write (monkey99) "  <b>Database Snapshot</b>"'
+. write (monkey91) 'write (monkey99) ' "'" '<B>' [pack(VARNAMEC(0,1))]  CASE$V '</B>' "'"
+
+. STR$1 = 'old case is ' +NEED_QOUTE + trimlr(CASE$V) + NEED_QOUTE + ' LOCK = 2'
+. write (monkey91) STR$1
+
+. for W = 1, nrecs(0)
+.   if (exists(recname(W)) eq 0) NEXT FOR
+.   A_REC_NAME = RECNAME(W)
+.   write (monkey91) /
+.   write (monkey91) '. write (monkey99) "<HR>"'
+.   STR$1 = '    <B>' + pack(recname(W))+ ': ' + pack(recdoc(W,1)) + '</B>'
+c .   STR$1 = pack(recname(W))+ ': ' + pack(recdoc(W,1))
+.   STR$1 = replace(STR$1,'"','',9,1,0)
+.   write (monkey91) '. write (monkey99) "'  STR$1 '"'
+
+|   KEY VAR NAMES AND LABLES
+
+c .   ifthen (nkeys(w) gt 0)
+c .     for N = 2,NKEYS(W)+1
+c .      KEEP_EM_SEP = ', '
+c .      if (N = NKEYS(W)+1)  KEEP_EM_SEP = ''
+c .      ALL_KEY_INFO = pack(keyname(W,N))+ ': ' + varlabsc(W,keyname(W,N))
+c .      write (monkey91) 'write (monkey99) "    Key ' [N-1] ': ' ALL_KEY_INFO '"'
+c .     end for
+c .   else
+c .     write (monkey91) 'write (monkey99) "    No Keys"'
+c .   endif
+
+
+.   write (monkey91) '. IND_REC_# = count(' W ')'
+.   write (monkey91) '. TOTAL_REC_# = TOTAL_REC_# +count(' W ')'
+.   write (monkey91) '. STR$2 = ""'
+.   ifthen (nkeys(W) eq 0)  | No keys'
+.     write (monkey91) '. write (monkey99) "        <UL><LI><B>Total: " IND_REC_#  "</B></LI></UL>"'
+.   else
+.     write (monkey91) '. write (monkey99) "<UL>"'
+.     write (monkey91) '. write (monkey99) "        <LI><B>Total: " IND_REC_#  "</B></LI>"'
+.     write (monkey91) '. process rec ' W ' LOCK = 2 | ' A_REC_NAME
+.     write (monkey91) '.   write (monkey99) "        <LI>"'
+.     for N = 2,nkeys(W)+1
+.       KEYINFO = pack(keyname(W,N))
+.         STR$1 = '.     STR_KEYINFO ="' + KEYINFO +'"'
+.         write (monkey91)  STR$1
+.       ifthen (vtype(W,KEYINFO) eq 3)
+.         VAR_DATE_MAP = datemap(W,KEYINFO)
+.         write (monkey91) '.       STR$2 = datec(cdate(varget(STR_KEYINFO),"' VAR_DATE_MAP '"),"' VAR_DATE_MAP'")'
+.         write (monkey91) '.       STR$2 = replace(STR$2," ","/",2,1,0)'
+.       elseif (vtype(W,KEYINFO) eq 4)
+          VAR_TIME_MAP = timemap(W,KEYINFO)
+.         write (monkey91) '.       STR$2 = timec(ctime(varget(STR_KEYINFO),"' VAR_TIME_MAP '" ),"' VAR_TIME_MAP '")'
+.       else
+.         write (monkey91) '.       STR$2 = pack(varget(STR_KEYINFO))'
+.       endif
+.       write (monkey91) '.   write (monkey99) "        <B>" STR_KEYINFO "</B>: " STR$2 '
+.     end for
+.     write (monkey91) '.   write (monkey99) "        </LI>" '
+.     write (monkey91) '. end rec'
+.     write (monkey91) '. write (monkey99) "        </UL>"'
+.   endif
+. end for
+. write (monkey91) 'end case is'
+. write (monkey91) 'write (monkey99) "  <B> Total Records " TOTAL_REC_# "</B>"'
+. write (monkey91) 'write (monkey99) "</BODY>"'
+. write (monkey91) 'write (monkey99) "</HTML>"'
+. write (monkey91) 'close (monkey99)'
+write 'closed file'
+. write (monkey91) 'DUMB_X# = delfile(dsn("monkey95"))'
+. write (monkey91) 'end retrieval'
+close (monkey91)
+
+c
+execute dbms ['include file "' + dsn('monkey91') +'"']
+| The last thing the above program does is delete the monkey95 file.  If it is still there... the program is still running.
+DUMB_N# = 0
+while (fileis(dsn('monkey95')) eq 1)
+. DUMB_N# = DUMB_N# + 1
+. wait 10
+. ifthen (DUMB_N# gt 20)
+.   display infobox "Taking too long.. stopping"
+.   exit while
+. endif
+end while
+
+
+ifthen (fileis(dsn('monkey99')) eq 1)
+. DUMB_N# = help('file: "'+dsn('monkey99')+'"')
+else
+. display infobox "Sorry, could not create report"
+endif
+END SUBROUTINE
+

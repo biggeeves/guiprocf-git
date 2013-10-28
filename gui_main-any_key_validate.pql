@@ -1,0 +1,22 @@
+subprocedure ANY_KEY_VALIDATE
+<comment> write 'Sub: KeyValidate: KeyName: ' KEY$N ', Value: ' KEY$V  ', Type: ' KEY$T
+. PROCEED = 1
+C   at this point the passed in value should have been cleaned.  Dates and times might have become numbers
+.   VAL_VAR = validate (REC_TYPE_NUM, KEY$N, KEY$V)
+cif eq 1,2 | correcting date and time
+.   ifthen(KEY$T eq 3 OR 4)  | vlidate the number for dates and times.
+.     VAL_VAR = validate (REC_TYPE_NUM, KEY$N, numbr(KEY$V) )
+.   else
+.     VAL_VAR = validate (REC_TYPE_NUM, KEY$N, KEY$V)
+.   endif
+cif end
+.   if (pack(KEY$V) EQ '') VAL_VAR = 3 ; WRITE 'CAUGHT A BLANK'
+.   if (exists(KEY$V) EQ 0) VAL_VAR = 3 ; WRITE 'YEP BLANK'
+.   ifthen ( VAL_VAR NE 0)
+.     PROCEED = 0
+<comment> write 'sub: KeyValidate: FAILED VALIDATION TEST'
+.     exit subprocedure | avoid multiple messages
+.   endif
+<comment> write 'Sub: KeyValidate: VAL_VAR: ' VAL_VAR ', PROCEED: ' PROCEED  ', VTYPE_MAP: ' VTYPE_MAP
+end subprocedure
+

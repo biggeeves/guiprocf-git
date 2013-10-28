@@ -1,0 +1,14 @@
+| File name: structure
+| Path:      GUIPROCF
+| Creator:   Greg Neils
+| Created:   5/21/2013
+| Brief:     Set up parts of the users environment
+| Full Description:    Create globals for record types, create html globals, create user folder for outputs.
+
+
+call DCCPROCF.SYSTEM.ALLRECS
+
+call SYSPROC.TOOLS.HTMLCODE  |sets html globals
+
+call GUIPROCF.STRUCTURE.USER_FOLDER
+

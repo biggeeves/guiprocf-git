@@ -1,0 +1,13 @@
+subprocedure CASE_LIST_SEARCH
+c this searches the list, not the database
+<comment> write 'Sub: CASE_SEARCH: ' CASE_TEMP_VALUE
+. CASE_FOUND = 0
+. for CYCLE_NUM = 1, getnitem(CASE_LIST)
+.   ifthen ( trimlr(getitxt(CASE_LIST, CYCLE_NUM)) eq CASE_TEMP_VALUE ) select item CASE_LIST, CYCLE_NUM
+.     CASE_VALUE = trimlr(getitxt(CASE_LIST, CYCLE_NUM))  | Spaces for string cases ARE ALWAYS ADDED TO THE RIGHT TO PAD TO CASE ID LENGTH IN DB! Spaces may be added to the left for aesthetics
+.     CASE_FOUND = 1
+.     exit for
+.   endif
+. end for
+end subprocedure
+

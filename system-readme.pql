@@ -1,0 +1,16 @@
+cif eq 1,2
+This new procfile was create on January 7th, 2013 to handle all of GUI Homepage needs.
+Documentation will be added to this file as it is created.
+
+SIR uses the following for timing Dialog events.
+Header
+Document
+Prologue
+Initial
+Message
+Timer
+Exit
+Footer
+
+cif end
+

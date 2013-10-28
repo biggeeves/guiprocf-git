@@ -1,0 +1,57 @@
+c
+c Subroutine to Prompt User to Acknowledge presence for TimeOut feature
+c
+subroutine dccprocf.TIMEOUT.timerok (t_type,touttime) returning (t_stat#)
+           /nodatabase
+           /replace
+C program
+integer * 1 t_stat# tid,tpos,tdc
+            t_type               | t_type=1=idle time out; any other value means time of day auto LOG_OUT
+time touttime ("HHiMM")
+
+. execute subprocedure timer
+
+subprocedure timer
+dialog "Auto Time Out Notification"
+postype 1
+
+ifthen(t_type=1)
+. button 1 40,50,50,1,"OK"
+. label  2  5,10,130, "   Auto-TimeOut to Occur Shortly."
+. label  3 15,10,130, "Press OK to Cancel Auto-TimeOut."
+. label  4 25,10,130, ""
+else
+. button 1 40,85,50,1,"OK"
+. label  2  5, 10,210, "You will be automatically logged out at "+timec(touttime,'HH:MM pp')
+. label  3 15, 10,210, "The time is now "+timec(now(0),'HH:MM pp')
+. label  4 25, 10,210, "Please save your work and exit in the next few minutes."
+endif
+c     display infobox [
+                       "You will be automatically logged out at "+timec(touttm_#,'HH:MM pp')+char(13)+
+                       "The time is now "+timec(now(0),'HH:MM pp')+char(13)+char(13)+
+                       "Please save your work and exit in the next few minutes."
+                      ]
+
+initial
+. enable timer 600 | give the user one minute to respond
+. set item font 2 1,0,0,0,"Arial"
+. set item font 3 1,0,0,0,"Arial"
+. set item font 4 1,0,0,0,"Arial"
+end initial
+
+message timer
+. t_stat#=0   | no response from user in 1 minute
+. exit message
+end message
+c
+messages all tid,tpos,tdc
+. ifthen(tid=0 or 1)
+.   tmp__#1=globaln("LastAct",now(0)) | set time of most recent (last) user action
+.   t_stat#=1
+.   exit message
+. endif
+end messages
+end dialog
+end subprocedure
+end subroutine
+

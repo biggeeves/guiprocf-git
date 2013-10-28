@@ -1,0 +1,8 @@
+subprocedure VIEW_CODEBOOK
+. if(SYSTEM(39) eq 0) display infobox "First Connect a DB" ; exit subprocedure
+. GEN_STR1 = replace(dsn('prefix'),'\database\','\',1,0,0) + 'Codebook.htm'
+. ifthen (fileis(GEN_STR1) eq 1) DUMMY = help('file: "'+ GEN_STR1 +'"')
+. else display infobox 'Codebook not found at ' + GEN_STR1
+. endif
+end subprocedure
+

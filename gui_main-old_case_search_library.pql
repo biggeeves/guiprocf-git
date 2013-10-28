@@ -1,0 +1,15 @@
+subprocedure OLD_CASE_SEARCH_LIBRARY
+<comment> write 'OLD_CASE_SEARCH_Library: '
+. CASE_TEMP_VALUE = trimlr(upper(gettxt(CASE_SEARCH)))
+<comment> write '- Entered: ' CASE_TEMP_VALUE
+. select item CASE_LIST , 0
+. execute subprocedure CASE_VALIDATE       | pass var CASE_TEMP_VALUE
+. if (PROCEED EQ NO) exit SUBPROCEDURE
+. execute subprocedure CASE_LIST_SEARCH     | pass var CASE_TEMP_VALUE
+. ifthen (CASE_FOUND EQ NO)
+.   display infobox CASE_TEMP_VALUE + ' was not found'
+.   exit SUBPROCEDURE
+. endif
+. execute subprocedure OLD_KEY_PAGE_DISPLAY_LIBRARY
+end subprocedure
+

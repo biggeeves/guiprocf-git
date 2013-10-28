@@ -1,0 +1,13 @@
+subprocedure OLD_KEY_VISIBLE
+<comment> write 'sub: OLD_KEY_VISIBLE: Nkeys: ' KEY_COUNT
+. DO REPEAT REPX= 1 TO 4
+.   ifthen (KEY_COUNT ge REPX )
+.     show item OLD_KEY_LABEL_!REPX
+.     show item OLD_KEY_LIST_!REPX
+.   else
+.     hide item OLD_KEY_LABEL_!REPX
+.     hide item OLD_KEY_LIST_!REPX
+.   endif
+. END REPEAT
+end subprocedure
+

@@ -1,0 +1,17 @@
+c
+c CALL this in the SIR MainMenu MESSAGE COMMAND block; just before the "BEGIN" is a good place
+c
+
+. ifthen(id = -999)
+.   execute subroutine pfrmprc.pform.timerok   (1,0)              | prompts user for acknowledgement
+                                     returning (t_stat#) dynamic  | t_stat#=0=no response; 1=responded
+.       ifthen(t_stat#=0)                                         | user didn't respond; get out of SIR
+.         execute  DBMS "COPY DIFFERENCE FILE"
+.         PQL EXIT DBMS
+.       else
+.       endif
+. endif
+c
+. disable timer
+. enable  timer timer__#
+

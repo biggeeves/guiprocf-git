@@ -1,0 +1,17 @@
+subprocedure DB_LOCK_STATUS
+. open (LOCK_DBS) read lrecl=300 iostat =  FILE_IOSTAT
+.   ifthen (FILE_IOSTAT eq 0)
+.     loop
+.       read (LOCK_DBS,end = done) FILE_LINE$ (A300)              | 1. Cycle through locked databases
+.       if ( upper(trim(DBNAME(0))) EQ upper(trimlr(substr(FILE_LINE$, 1, 32))) ) GEN_STR1 = trimlr(substr(FILE_LINE$, 35, 8))
+.     end loop
+.     done:
+.     ifthen (GEN_STR1 eq 'LOCKED') DB_LOCK_STATUS = 1
+.     else DB_LOCK_STATUS = 0
+.     endif
+.   else
+.     DB_LOCK_STATUS = -1
+.   end if
+. close (LOCK_DBS)
+end subprocedure
+

@@ -1,0 +1,51 @@
+subprocedure CASE_DELETE  | PASS IN CASE_VALUE
+<comment> write 'Sub: CASE_DELETE: ' CASE_VALUE
+. if (CASE_VALUE eq '') display infobox 'CAN NOT DELETE A SYSTEM BLANK VALUE FOR A CASEID. '; exit subprocedure
+. if (exists(CASE_VALUE) eq 0) display infobox 'Missing CASEID VALUE'; exit subprocedure
+. if (validate(0,CASE_NAME,CASE_VALUE) NE 0) display infobox 'That CASEID value is invalid'; exit subprocedure
+. BUFFER_NAME = 'CASE_DELETE'        ; execute subprocedure BUFFER_START
+. BUFFER_LINE = 'retrieval UPDATE UPSTAT' ; execute subprocedure BUFFER_WRITE
+. BUFFER_LINE = 'OPEN (DB_DEL_FILE) APPEND'             ; execute subprocedure BUFFER_WRITE
+. BUFFER_LINE = 'string * 32 SHOW_$'                  ; execute subprocedure BUFFER_WRITE
+. BUFFER_LINE = 'string * 600 SHOW_LINE_$'             ; execute subprocedure BUFFER_WRITE
+. BUFFER_LINE = 'integer * 4 TOTAL_COUNT'              ; execute subprocedure BUFFER_WRITE
+. BUFFER_LINE = 'integer * 4 REC_TYPE_COUNT'            ; execute subprocedure BUFFER_WRITE
+. BUFFER_LINE = 'integer * 4 TOTAL_REC_TYPE_COUNT'       ; execute subprocedure BUFFER_WRITE
+. BUFFER_LINE = 'integer * 4 GUI_ITEM_LIST'             ; execute subprocedure BUFFER_WRITE
+. BUFFER_LINE = 'integer * 4 T'                       ; execute subprocedure BUFFER_WRITE
+. BUFFER_LINE = 'set SHOW_$ SHOW_LINE_$ ("")'          ; execute subprocedure BUFFER_WRITE
+. BUFFER_LINE = 'SET TOTAL_COUNT TOTAL_REC_TYPE_COUNT(0)' ; execute subprocedure BUFFER_WRITE
+. BUFFER_LINE = 'write (DB_DEL_FILE)  "<USERA> DELETED CASEID: ' + CASE_VALUE +'"'       ; execute subprocedure BUFFER_WRITE
+. BUFFER_LINE = 'write (DB_DEL_FILE)  5T "' + gettxt(CASE_DELETE_REASON) +'"'           ; execute subprocedure BUFFER_WRITE
+
+. BUFFER_LINE = 'old case is '                        ; execute subprocedure BUFFER_ADD_CASE; execute subprocedure BUFFER_WRITE
+. FOR FORX = 1, NRECS(0)
+.   IF (NVARSC(FORX) EQ 0) NEXT FOR
+.   GEN_STR1 = trim(recname(FORX )) + ', '
+.   ifthen(len(recdoc(FORX ,0)) gt 0)
+.     GEN_STR1 = GEN_STR1 + trim(recdoc(FORX ,0))
+.   elseif(len(recdoc(FORX ,1)) gt 0)
+.     GEN_STR1 = GEN_STR1 + trim(recdoc(FORX ,1))
+.   endif
+.   BUFFER_LINE = '. REC_TYPE_COUNT = count(' + format(FORX) +')'                            ; execute subprocedure BUFFER_WRITE
+.   BUFFER_LINE = '. if( REC_TYPE_COUNT gt 0) TOTAL_REC_TYPE_COUNT = TOTAL_REC_TYPE_COUNT + 1'     ; execute subprocedure BUFFER_WRITE
+.   BUFFER_LINE = '. TOTAL_COUNT = TOTAL_COUNT + REC_TYPE_COUNT'                               ; execute subprocedure BUFFER_WRITE
+.   BUFFER_LINE = '. IFTHEN (REC_TYPE_COUNT GT 0)'                                           ; execute subprocedure BUFFER_WRITE
+.   BUFFER_LINE = '.   SHOW_LINE_$ = format(REC_TYPE_COUNT) + "  :   ' + GEN_STR1 + '"'        ; execute subprocedure BUFFER_WRITE
+.   BUFFER_LINE = '.   SHOW_LINE_$ = trimr(SHOW_LINE_$)         '                            ; execute subprocedure BUFFER_WRITE
+.   BUFFER_LINE = '.   WRITE (DB_DEL_FILE)  5T SHOW_LINE_$'                                   ; execute subprocedure BUFFER_WRITE
+.   BUFFER_LINE = '. ENDIF'        ;execute subprocedure BUFFER_WRITE  | BLANK LINE FOR EASIER READING
+. END FOR
+. BUFFER_LINE = '. DELETE CASE'  ; execute subprocedure BUFFER_WRITE
+. BUFFER_LINE = '. display infobox "' + CASE_VALUE + ' was deleted."'  ; execute subprocedure BUFFER_WRITE
+. BUFFER_LINE = 'end case is'                     ;execute subprocedure BUFFER_WRITE
+
+. BUFFER_LINE = 'write (DB_DEL_FILE) 5T "Total Records: " TOTAL_COUNT'  ;execute subprocedure BUFFER_WRITE
+
+. BUFFER_LINE = 'WRITE (DB_DEL_FILE) 5T "Deleted " TOTAL_COUNT " records in " TOTAL_REC_TYPE_COUNT  " different forms."'  ;execute subprocedure BUFFER_WRITE
+. BUFFER_LINE = 'WRITE (DB_DEL_FILE) "END CASE ' + CASE_VALUE + ' DELETION INFO"'  ;execute subprocedure BUFFER_WRITE
+. BUFFER_LINE = 'CLOSE (DB_DEL_FILE)'  ;execute subprocedure BUFFER_WRITE
+. BUFFER_LINE = 'end retrieval'  ; execute subprocedure BUFFER_WRITE
+. execute dbms ['INCLUDE BUFFER ' + BUFFER_NAME]
+end subprocedure
+

@@ -1,0 +1,11 @@
+subprocedure ANY_KEY_CLEAN
+<comment> write 'Sub: ANY_KEY_CLEAN: (KEY$N,KEY$V)  (' KEY$N ',' KEY$V ') Passes back cleaned KEY$V.'
+. KEY$V = trimlr(KEY$V)
+. KEY$T = vtype(REC_TYPE_NUM, KEY$N)
+. POS = abs(srst(KEY$V, char(9)))  | check for a tab and then value labels
+. if (POS GT 0) KEY$V = sbst(KEY$V, 1, POS - 1)
+. POS = abs(srst(KEY$V, ' '))  | check for a space and then value lables
+. if (POS GT 0) KEY$V = sbst(KEY$V, 1, POS - 1)
+<comment> write 'Sub: ANY_KEY_CLEAN Returning:  ' KEY$V
+end subprocedure ANY_KEY_CLEAN
+

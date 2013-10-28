@@ -1,0 +1,51 @@
+C STRING CASEID - LIST STATS FOR INDIVIDUAL CASE
+
+subroutine GUI_CUSTOM.CASE_INFO (THIS_CASEID ITEM_NUMBER) returning (PROCEED) replace
+
+integer *   2   ITEM_NUMBER
+integer *   1   PROCEED
+string  *  32   GUI_CASEID
+integer *   4   REC_TYPE_COUNT
+string  * 300   GEN_STR1
+string  *  32   THIS_CASEID
+
+REC_TYPE_COUNT = 0
+
+GUI_CASEID = THIS_CASEID
+
+PROCEED = 1
+
+if(exists (GUI_CASEID) EQ 0 ) RETURN
+
+if(sglobal('comment') eq '.')  write 'IN GUICUSTOM.CASE_NEW: ' GUI_CASEID  | in the subroutine, the global comment might not be set during the backup routine and will throw an error if the line starts with <comment>
+
+if(validate(0,VARNAMEC(0,1),GUI_CASEID) <> 0) DISPLAY INFOBOX 'NOT A VALID ID'; RETURN
+
+PROCEED = 0
+
+. OLD CASE IS GUI_CASEID lock (2)
+
+.   append line  ITEM_NUMBER, '<font color="#FFFFFF" size="+3"><B>' + GUI_CASEID + '</B>'  html
+.   append line  ITEM_NUMBER, 'Data Summary'
+.   PROCEED = 1
+.   for FORX = 1, NRECS(0)
+.     IF (NVARSC(FORX) EQ 0) NEXT FOR
+.     GEN_STR1 = ''
+.     ifthen(len(recdoc(FORX ,0)) gt 0)
+.       GEN_STR1 = GEN_STR1 + trim(recdoc(FORX ,0))
+.     elseif(len(recdoc(FORX ,1)) gt 0)
+.       GEN_STR1 = GEN_STR1 + trim(recdoc(FORX ,1))
+.     endif
+.     GEN_STR1 = trimlr(replace(GEN_STR1,char(9),'',5,0,0)) | remove tabs
+.     GEN_STR1 = '('+ format(count(FORX)) + ') ' + GEN_STR1
+.     append line  ITEM_NUMBER, '<BR><font color="#FFFFFF">' + GEN_STR1 HTML
+.     REC_TYPE_COUNT = SUM(REC_TYPE_COUNT, count(FORX))
+.   end for
+
+. END CASE IS
+. append line  ITEM_NUMBER, '<br>--------------<br><font color="#FFFFFF">' + format(REC_TYPE_COUNT) + ' RECORDS IN DB.' HTML
+
+. x = scrollto (ITEM_NUMBER,1)
+
+end subroutine
+

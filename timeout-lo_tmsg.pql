@@ -1,0 +1,35 @@
+c
+c Message Timer block for Apps needing Auto Log-Off
+c
+message timer
+ifthen(touttm_# gt 0 or tout__# gt 0)                  | if using either auto log-out function
+. ifthen(tout__# gt 0)                                 | if idle LOG_OUT option enabled
+.   mintoto# =tout__#-((now(0)-nglobal("LastAct"))/60) | global LASTACT must be set with every dialog message
+.   ifthen(MINTOTO# lt 1)pql exit dbms                 | we're in the last minute of range; get out of SIR
+.   else
+.     ifthen(mintoto# lt 2)                            | two minutes to go; see if user is paying attention
+.       execute subroutine dccprocf.TIMEOUT.timerok (1,0)              | prompts user for acknowledgement
+                                       returning (t_stat#) dynamic  | t_stat#=0=no response; 1=responded
+.       if(t_stat#=0)PQL EXIT DBMS                                  | user didn't respond; get out of SIR
+.     endif
+.   endif
+. endif
+. ifthen(exists(TOUTTM_#)=1)                           | if timed LOG_OUT option enabled
+.   ifthen( (touttm_#-now(0)) le 900 and gt     0)     | if within 15 minutes of LOG_OUT time - warning, no log-out
+
+.     execute subroutine dccprocf.TIMEOUT.timerok (2,touttm_#)        | prompts user for acknowledgement
+                                     returning (t_stat#) dynamic   | t_stat#=0=no response; 1=responded
+
+.   elseif( ((touttm_#-now(0)) lt   0 and gt -2700) or
+            (touttm_#=86400 and now(0) lt 2700    )   )| if within  1 hour after LOG_OUT time
+.     PQL EXIT DBMS                                    | get out of SIR
+
+.   else                                               | otherwise continue -- not near log out time
+.   endif
+. endif
+
+enable timer 600 | a message once a minute
+end if | if using auto log-out
+
+end message
+

@@ -1,0 +1,15 @@
+c
+c The Auto Log-Out System calls a subroutine in PFrmPrc; Attribute must be set; CALL before Main Routine
+c
+print back save
+print back noremarks
+program
+. execute dbms ["attribute pfrmprc  filename='"+appdir(0)+"dv\dvpaint\pfrmprc.sr4'"]
+. execute dbms ["attribute dvprocf  filename='"+appdir(0)+"dv\dvprocf.srp'"]
+c execute dbms ["attribute dccprocf filename='"+appdir(0)+"dcc\dccprocf.srp'"]        | for DCC
+c execute dbms ["attribute hbprocf  filename='"+appdir(0)+"hb\procs\hbprocf.srp'"]    | for HeartBase
+. tmp__#1=globaln("LastAct",now(0)) | set time of most recent (last) user action
+end program
+c
+print back restore
+

@@ -1,0 +1,9 @@
+subprocedure SYSTEM_ERR_CHECK
+ifNOT (sglobal('DEBUG_MODE') EQ '.') EXIT SUBPROCEDURE
+. ifthen (0 lt nglobal('GERROR') or  nglobal('TERROR') or nglobal('GWARNING') )
+.   BUFFER_LINE = 'Total command errors: <GERROR>, Warnings: <GWARNING>, Total task errors: <TERROR>, '
+.   insert line into buffer 'DEBUG_INFO' numbered DEBUG_LINE from BUFFER_LINE
+.   DEBUG_LINE = DEBUG_LINE +1
+. endif
+end subprocedure
+

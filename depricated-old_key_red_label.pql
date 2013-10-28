@@ -1,0 +1,13 @@
+subprocedure OLD_KEY_RED_LABEL | DEPRICATED 10/17/2013 BY GREG NEILS
+<comment> write 'Sub: OLD_KEY_RED_LABEL: ' [GETPOS(OLD_KEY_LIST_1)] [GETPOS(OLD_KEY_LIST_2)]  [GETPOS(OLD_KEY_LIST_3)] [GETPOS(OLD_KEY_LIST_4)]
+. DO REPEAT REPX = 1 to 4
+.   ifthen ( getpos(OLD_KEY_LIST_!REPX) eq 0)
+.     set item font OLD_KEY_LABEL_!REPX , 1 , 0 , 0, 0 ,"#C00000"
+.   else
+.     set item FONT OLD_KEY_LABEL_!REPX , 1 , 0 , 0, 0 ,"#000000"
+.   endif
+. end repeat
+c exception for no data in key one
+. if(gettxt(OLD_KEY_LIST_1) eq 'No data') set item font OLD_KEY_LABEL_1 , 1 , 0 , 0, 0 ,"#C00000"
+end subprocedure
+
