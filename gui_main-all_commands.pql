@@ -1036,7 +1036,7 @@ endif
 ifthen (m_id eq OLD_KEY_LIST_2 )
 |< OLD_KEY_LIST_2
 . PROCEED = 1
-. KEY$N = KEY_NAME_3; KEY$T = KEY_TYPE_2; KEY$V = gettxt(OLD_KEY_LIST_2)
+. KEY$N = KEY_NAME_2; KEY$T = KEY_TYPE_2; KEY$V = gettxt(OLD_KEY_LIST_2)
 . execute subprocedure ANY_KEY_CLEAN
 . execute subprocedure ANY_KEY_VALIDATE
 . ifthen (PROCEED eq 0)
@@ -1206,8 +1206,7 @@ ifthen (m_id eq NEW_REC_BUTTON )
 .   if (KEY_COUNT ge REPX) execute subprocedure ANY_KEY_VALIDATE  | ONLY DO IF KEYS REALLY EXIST FOR RECORD TYPE.
 .   ifthen (PROCEED eq 0)
 .     GEN_STR1 = gettxt(NEW_KEY_LABEL_!REPX)
-                 + char(13) + char(13) + 'Cannot be "' + KEY$V +'"'
-                 + char(13) + 'Problem: ' + vallab(VAL_VAR)
+                 + char(13) + char(13) + 'Cannot be "' + KEY$V + '"'
 .     display infobox GEN_STR1
 .     focus item NEW_KEY_VALUE_!REPX
 .     set item NEW_KEY_VALUE_!REPX, gettxt(NEW_KEY_VALUE_!REPX)
@@ -1875,4 +1874,3 @@ CALL GUIPROCF.GUI_MAIN.ALL_SUBS_LIBRARY
 |
 END RETRIEVAL |program
 |}
-
