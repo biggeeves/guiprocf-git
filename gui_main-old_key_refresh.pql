@@ -22,7 +22,7 @@ c special note.  Must go before most things as KEY$N and KEY$T are recycled
 .   if (EACH_KEY EQ 3 ) KEY$V = trim(gettxt(OLD_KEY_LIST_3))
 .   KEY$T = vtype(REC_TYPE_NUM, KEY$N)
 .   execute subprocedure ANY_KEY_CLEAN
-.   if (KEY$T EQ 1 or 3 or 4) KEY$V = '"' + KEY$V +'"'
+.   if (KEY$T EQ 1 or 3 or 4) KEY$V = '"' + KEY$V +'" '  | make sure to add a space afterwards, gives room for next key value
 .   REC_VIA = REC_VIA + KEY$V
 . end for
 . REC_VIA = REC_VIA + ' )'
@@ -87,4 +87,3 @@ c make the retrieval in a buffer
 . endif
 end subprocedure
 |
-
