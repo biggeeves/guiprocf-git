@@ -6,7 +6,7 @@
 | Created:   04/12/2012
 | Pops up a messaage to a specific user or all users.  Called by timer in Navigate2.main (which looks for a file named for user or "ALLUSERS".
 | May be called by other things as well as this is generic.  Closes by timer after 1 minute.
-subroutine ADDON.INSTANT_CHAT (SEND_USER FROM_USER) REPLACE NODATABASE
+subroutine MODULES.INSTANT_CHAT (SEND_USER FROM_USER) REPLACE NODATABASE
 |}
 
 integer*2 m_id, m_arg1, m_arg2

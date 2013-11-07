@@ -1,0 +1,35 @@
+subroutine CONNECT_DB ( DB_NAME, DB_PATH ) RETURNING ( CONNECTION_STATUS )
+. STRING  *     32   DB_NAME               | database name to verify
+. STRING  *    600   DB_PATH               | database file path
+. integer *      1   CONNECTION_STATUS     | VERIFY 1=YES  |  0=NO | -1=UNK
+. string  *    600   GEN_STR1              | Generic String
+. string  *    300   VERIFY_FILE           | OUTPUT GOES TO THIS FILE
+. integer *      1   NO YES UNK
+. set UNK (-1) NO (0) YES (1)
+. GEN_STR1 = 'Connecting: ' + DB_NAME + '  PATH: ' + DB_PATH
+. write GEN_STR1
+
+. while (system(40) GT 0)
+.   compute DB_NAME$ = pack(dbname(0))
+.   ifthen (DB_NAME$ eq DB$N(DB#))
+.     display infobox 'You are already connected to the ' + DB$N(DB#) + char(13) + 'in:  ' + DIR$(DB#)
+.     compute CONNSTAT = 1
+.     EXIT SUBPROCEDURE
+.   endif
+.   display yesnobox ['Do you want to disconnect from '  + DB_NAME$  + ' first'] response YESNOVAR
+.   ifthen (YESNOVAR eq 1)
+.     pql disconnect database DB_NAME$
+.     set item ATC_FEEDBACK, 'Disconnected: ' + DB_NAME$
+.   else
+.     EXIT WHILE
+.   endif
+. end while
+|
+. pql connect database DB$N(DB#)
+              security "RIPTIDE","",""
+              prefix   DIR$(DB#)
+              iostat   CONNSTAT
+. DUMB_NUM# = globals('GDBNAME',DB$N(DB#))
+end subroutine
+
+

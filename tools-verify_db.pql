@@ -1,0 +1,47 @@
+subroutine VERIFY_DB ( DB_NAME, DB_PATH ) RETURNING ( VERIFY_STATUS )
+. STRING  *     32   DB_NAME               | database name to verify
+. STRING  *    600   DB_PATH               | database file path
+. integer *      1   VERIFY_STATUS         | VERIFY 1=YES  |  0=NO | -1=UNK
+. string  *    600   GEN_STR1              | Generic String
+. string  *    300   VERIFY_FILE           | OUTPUT GOES TO THIS FILE
+. integer *      1   NO YES UNK
+. set UNK (-1) NO (0) YES (1)
+. GEN_STR1 = 'Verifying ' + DB_NAME + '  PATH: ' + DB_PATH
+. write GEN_STR1
+. VERIFY_STATUS = UNK   | DEFAULT IS UNKNOWN
+. VERIFY_FILE = DB_PATH + '\VERIFY' + DB_NAME + '.txt'
+. execute dbms "SET OUTPUT '" + VERIFY_FILE + "'"
+. execute dbms 'VERIFY'
+. execute dbms 'CLEAR OUTPUT'
+. open (VERF) read dsnvar = VERIFY_FILE
+.   STAT = 0
+.   while (STAT = 0)
+.     read (VERF, iostat = STAT) VER$L(a80)
+.     VER$L = upper(trim(VER$L))
+.     ifthen (pattern(VER$L, '@ERROR@') or pattern(VER$L, '@WARNING@'))
+.       VERIFY_STATUS = YES
+.       exit while
+.     else
+.       VERIFY_STATUS = NO
+.     endif
+.   end while
+. close (VERF) delete
+. ifthen ( ( VERIFY_STATUS eq NO ) OR ( VERIFY_STATUS eq UNK ))
+.   GEN_STR1 =  DB_NAME + ' DID NOT VERIFY!'
+.   write '!!!!!!!!!!  ATTENTION  !!!!!!!!!' / / / GEN_STR1 /
+. else
+.   GEN_STR1 =  DB_NAME + ' IS O.K. (verified)'
+.   write GEN_STR1
+. endif
+end subroutine
+
+
+cif eq 1,2
+sample:
+program
+integer * 1 VERIFY_STATUS
+execute subroutine GUIPROCF.TOOLS.VERIFY_DB ('DEMO3' '\\dccmaincsfs\data1\demo3\database\') returning (VERIFY_STATUS)
+WRITE VERIFY_STATUS
+end program
+CIF END
+

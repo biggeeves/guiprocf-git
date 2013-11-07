@@ -1,0 +1,28 @@
+c DISCONNECT a database using db name and path.  Returns DISCONNECTION status.
+
+C DISCONNECTION_STATUS A numeric variable that returns a negative number (in the range -2001 to -2058) if there is a problem with the connection. See error messages.
+
+
+subroutine DISCONNECT_DB ( DB_NAME, DB_PATH ) RETURNING ( DISCONNECTION_STATUS ) replace nodatabase
+. STRING  *     32   DB_NAME                  | database name to verify
+. STRING  *    600   DB_PATH                  | database file path
+. integer *      2   DISCONNECTION_STATUS     | return negative number if there is an issue
+. string  *    600   GEN_STR1              | Generic String
+. GEN_STR1 = 'Disconnecting: ' + DB_NAME + '  PATH: ' + DB_PATH
+. write GEN_STR1
+
+. pql connect database DB_NAME
+              iostat   DISCONNECTION_STATUS
+. DUMB_NUM# = globals('GDBNAME', 'NA' )
+
+end subroutine
+
+cif eq 1,2
+c sample
+program
+integer * 2 DISCONNECTION_STATUS
+execute subroutine GUIPROCF.TOOLS.DISCONNECT_DB ('DEMO3' '\\dccmaincsfs\data1\demo3\database\') returning (DISCONNECTION_STATUS)
+WRITE DISCONNECTION_STATUS
+end program
+cif end
+

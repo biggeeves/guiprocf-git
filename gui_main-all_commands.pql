@@ -937,7 +937,7 @@ endif
 
 ifthen (m_id eq OPTIONS )
 |< OPTIONS
-execute dbms "call GUIPROCF.GUI_MAIN.OPTIONS"
+execute dbms "call GUIPROCF.MODULES.SCREEN_OPTIONS"
 |>
 next message
 endif
@@ -1874,3 +1874,4 @@ CALL GUIPROCF.GUI_MAIN.ALL_SUBS_LIBRARY
 |
 END RETRIEVAL |program
 |}
+

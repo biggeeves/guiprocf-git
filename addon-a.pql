@@ -1,9 +1,0 @@
-subroutine a (PASS) returning ( RETVAR ) replace
-INCLUDE EXTERNAL VARIABLE BLOCK GUI_MAIN.EVB:V
-INTEGER * 4 PASS
-integer * 2 RETVAR
-PASS = 0
-X = X +1
-RETVAR = X
-end subroutine
-
