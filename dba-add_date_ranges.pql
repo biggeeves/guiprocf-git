@@ -1,10 +1,7 @@
 | File name: Add_Date_Ranges.pql
-| Path:      various
 | Creator:   Greg Neils and David Merle
 | Created:   11/11/2007
-| Called by: anything you want
-| Reason:    it checks data for wildly incorrect dates and then will write a modify schema to correct records that dont have bad dates.
-| Output:    to a schema file and a detailed report
+| Deleted some comment code.
 
 call SYSPROC.TOOLS.HTMLCODE
 
