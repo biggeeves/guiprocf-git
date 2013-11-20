@@ -1,3 +1,4 @@
+PROCEDURE      DBA.ADD_DCC_VARS:T  (157262,64194)  |Last amended May 09, 2013,17:49:54
 | Creator:   Greg Neils
 | Created:   10/20/2008
 | Reason:    Adds DSTAMP variables to the record types that need it
@@ -80,4 +81,4 @@ end program
 
 
 
-
+END PROCEDURE

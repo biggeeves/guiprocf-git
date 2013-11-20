@@ -1,3 +1,4 @@
+PROCEDURE      GUI_CUSTOM.REC_LIST_LOAD:T  (157403,49513)  |Last amended Sep 27, 2013,13:45:13
 C SAMPLE CODE.  COPY TO THE DB PROCFILE, FAMILY NAME: GUI_CUSTOM.  MEMBER: REC_LIST_LOAD
 
 subroutine GUI_CUSTOM.REC_LIST_LOAD (GUI_FORM_LABEL  GUI_FORM_NAME  GUI_FORM_REC_TYPE ) returning (PROCEED) replace
@@ -10,4 +11,4 @@ if(sglobal('comment') eq '.') write 'in SAMPLE.DBPROC.GUI_CUSTOM.REC_LIST_LOAD'
 . append item GUI_FORM_LABEL, 'BFORM   (B)  Demographics'           ; append item GUI_FORM_NAME, 'BFORM' ;     append item GUI_FORM_REC_TYPE, 'BFORM'
 . append item GUI_FORM_LABEL, 'BFORM   (B)  Demographics - SPANISH' ; append item GUI_FORM_NAME, 'BFORM_SP' ;  append item GUI_FORM_REC_TYPE, 'BFORM'
 end subroutine
-
+END PROCEDURE

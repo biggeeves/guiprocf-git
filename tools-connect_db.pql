@@ -1,3 +1,4 @@
+PROCEDURE      TOOLS.CONNECT_DB:T  (157437,48907)  |Last amended Oct 31, 2013,13:35:07
 subroutine CONNECT_DB ( DB_NAME, DB_PATH ) RETURNING ( CONNECTION_STATUS )
 . STRING  *     32   DB_NAME               | database name to verify
 . STRING  *    600   DB_PATH               | database file path
@@ -32,4 +33,4 @@ subroutine CONNECT_DB ( DB_NAME, DB_PATH ) RETURNING ( CONNECTION_STATUS )
 . DUMB_NUM# = globals('GDBNAME',DB$N(DB#))
 end subroutine
 
-
+END PROCEDURE

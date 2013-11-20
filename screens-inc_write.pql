@@ -1,3 +1,4 @@
+PROCEDURE      SCREENS.INC_WRITE:T  (157414,52022)  |Last amended Oct 08, 2013,14:27:02
 ifthen(IWRITE =0)
 . failscr = -1
 . failmess = "Sorry, You cannot save this! " + char(13) + char(13) + "Please contact your DBA if you need to save this."
@@ -13,4 +14,4 @@ else
 .   DCCEDITS = DCCEDITS + 1
 . endif
 endif
-
+END PROCEDURE

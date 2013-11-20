@@ -1,3 +1,4 @@
+PROCEDURE      GUI_MAIN.ALL_KEY_INI_DISPLAY:T  (157425,5604)  |Last amended Oct 19, 2013,01:33:24
 subprocedure ALL_KEY_INI_DISPLAY
 <comment> write 'sub: ALL_KEY_INI_DISPLAY: Nkeys: ' KEY_COUNT
 c old keys, GET AND DISPLAY STATIC  KEY INFORMATION
@@ -68,4 +69,4 @@ c old keys, GET AND DISPLAY STATIC  KEY INFORMATION
 
 
 end subprocedure
-
+END PROCEDURE

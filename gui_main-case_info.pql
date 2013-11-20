@@ -1,22 +1,23 @@
+PROCEDURE      GUI_MAIN.CASE_INFO:T  (157457,43964)  |Last amended Nov 20, 2013,12:12:44
 c display case specific info
 
 subprocedure CASE_INFO
 . remove all CASE_BREAD_CRUMB
-. GEN_STR1 = '<body bgcolor="#336AF3" readonly="true"><p align="center"><font color="#FFFFFF" size="+3"><B>' + CASE_VALUE
+. GEN_STR1 = '<body bgcolor="#FFFF99" readonly="true"><p align="center"><font size="+3"><B>' + CASE_VALUE
 . append line CASE_BREAD_CRUMB,  GEN_STR1  HTML
 
 . set item DELETE_CASE_LABEL, '  Delete ' + CASE_LABEL + ':   ' + CASE_VALUE + '?'
 
 . remove all CASE_INFO
-. GEN_STR1 = '<body bgcolor="#336AF3" readonly="true">'
+. GEN_STR1 = '<body bgcolor="#FFFF99" readonly="true">'
 . append line CASE_INFO,  GEN_STR1  HTML
 
 . ifthen (meminfo(DB_PROC_FILE+'.GUI_CUSTOM.CASE_INFO:O',1) = MEM_O)
 <COMMENT> WRITE 'CALLING ' DB_PROC_FILE '.GUI_CUSTOM.CASE_INFO:O'
 .   execute subroutine [DB_PROC_FILE+'.GUI_CUSTOM.CASE_INFO'] (CASE_VALUE CASE_INFO) RETURNING (PROCEED) DYNAMIC
 . else
-.   GEN_STR1 = '<p align="center"><font color="#FFFFFF" size="+3"><B>Selected: ' + CASE_VALUE
+.   GEN_STR1 = '<p align="center"><font size="+3"><B>Selected: ' + CASE_VALUE
 .   append line CASE_INFO, GEN_STR1 HTML
 . endif
 end subprocedure
-
+END PROCEDURE

@@ -1,3 +1,4 @@
+PROCEDURE      GUI_MAIN.DB_TITLE:T  (157416,59589)  |Last amended Oct 10, 2013,16:33:09
 subprocedure DB_TITLE
 . GEN_STR1 = ''
 . HTML_COLOR = HTML_YELLOW  | DEFAULTS TO ASSUME LIVE
@@ -33,4 +34,4 @@ subprocedure DB_TITLE
 . append line DB_TITLE, GEN_STR1 html
 
 end subprocedure
-
+END PROCEDURE

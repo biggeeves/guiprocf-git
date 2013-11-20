@@ -1,3 +1,4 @@
+PROCEDURE      TIMEOUT.LO_SETPF:T  (156465,65979)  |Last amended Mar 04, 2011,18:19:39
 c
 c The Auto Log-Out System calls a subroutine in PFrmPrc; Attribute must be set; CALL before Main Routine
 c
@@ -12,4 +13,4 @@ c execute dbms ["attribute hbprocf  filename='"+appdir(0)+"hb\procs\hbprocf.srp'
 end program
 c
 print back restore
-
+END PROCEDURE

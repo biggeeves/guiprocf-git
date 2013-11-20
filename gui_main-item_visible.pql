@@ -1,3 +1,4 @@
+PROCEDURE      GUI_MAIN.ITEM_VISIBLE:T  (157417,45639)  |Last amended Oct 11, 2013,12:40:39
 subprocedure ITEM_VISIBLE
 | first section is the show/hide portion.
 | defaults for every page
@@ -106,4 +107,4 @@ C   REC TABLE BUTTON
 . endif
 
 end subprocedure
-
+END PROCEDURE

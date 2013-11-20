@@ -1,3 +1,4 @@
+PROCEDURE      TOOLS.DISCONNECT_DB:T  (157437,51589)  |Last amended Oct 31, 2013,14:19:49
 c DISCONNECT a database using db name and path.  Returns DISCONNECTION status.
 
 C DISCONNECTION_STATUS A numeric variable that returns a negative number (in the range -2001 to -2058) if there is a problem with the connection. See error messages.
@@ -25,4 +26,4 @@ execute subroutine GUIPROCF.TOOLS.DISCONNECT_DB ('DEMO3' '\\dccmaincsfs\data1\de
 WRITE DISCONNECTION_STATUS
 end program
 cif end
-
+END PROCEDURE

@@ -1,3 +1,4 @@
+PROCEDURE      DBA.CHECKSCHEMA:T  (157262,49527)  |Last amended May 09, 2013,13:45:27
 | File name: DCCPROCF.BACKUPS.CXSCHEMAS
 | Creator:   David P. Merle
 | Created:   01/01/2007
@@ -128,4 +129,4 @@ program crwarn
 .  write (SUMMARY) 'Total with No Ranges: ' NORANGE#
 . close (SUMMARY)
 end program
-
+END PROCEDURE

@@ -1,3 +1,4 @@
+PROCEDURE      GUI_MAIN.EASY_DEBUG:T  (157425,3395)  |Last amended Oct 19, 2013,00:56:35
 subprocedure EASY_DEBUG
 . if ( Nglobal('GSECLEV') <> 1) EXIT SUBPROCEDURE | ONLY DBAS
 . if ( exists( EASY_DEBUG_AUTONUM ) EQ 0 ) . EASY_DEBUG_AUTONUM = 0
@@ -7,4 +8,4 @@ subprocedure EASY_DEBUG
 . EASY_DEBUG_AUTONUM = EASY_DEBUG_AUTONUM + 1
 c . WAIT 10 | if you want to slow things down to visually see output, uncomment this line.
 end subprocedure
-
+END PROCEDURE

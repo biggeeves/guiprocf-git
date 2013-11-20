@@ -1,3 +1,4 @@
+PROCEDURE      TIMEOUT.LO_TMSG:T  (156465,65980)  |Last amended Mar 04, 2011,18:19:40
 c
 c Message Timer block for Apps needing Auto Log-Off
 c
@@ -32,4 +33,4 @@ enable timer 600 | a message once a minute
 end if | if using auto log-out
 
 end message
-
+END PROCEDURE

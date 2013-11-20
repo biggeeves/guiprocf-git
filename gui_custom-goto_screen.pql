@@ -1,3 +1,4 @@
+PROCEDURE      GUI_CUSTOM.GOTO_SCREEN:T  (157379,65095)  |Last amended Sep 03, 2013,18:04:55
 c sample code for a go to screen.  This intercepts the usual screen and can do stuff to it.  Return 1 to continue as normal or Return 0 to NOT continue.
 
 subroutine GUI_CUSTOM.GOTO_SCREEN:O (CASE_VALUE KEY_VALUE_1 KEY_VALUE_2 KEY_VALUE_3 KEY_VALUE_4 SCREEN_NAME) returning (PROCEED) DYNAMIC REPLACE
@@ -22,4 +23,4 @@ endif
 
 
 end subroutine
-
+END PROCEDURE

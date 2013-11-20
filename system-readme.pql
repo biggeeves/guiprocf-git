@@ -1,3 +1,4 @@
+PROCEDURE      SYSTEM.README:T  (157140,48658)  |Last amended Jan 07, 2013,13:30:58
 cif eq 1,2
 This new procfile was create on January 7th, 2013 to handle all of GUI Homepage needs.
 Documentation will be added to this file as it is created.
@@ -13,4 +14,4 @@ Exit
 Footer
 
 cif end
-
+END PROCEDURE

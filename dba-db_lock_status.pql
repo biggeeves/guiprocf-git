@@ -1,3 +1,4 @@
+PROCEDURE      DBA.DB_LOCK_STATUS:T  (157200,40897)  |Last amended Mar 08, 2013,11:21:37
 subprocedure DB_LOCK_STATUS
 . open (LOCK_DBS) read lrecl=300 iostat =  FILE_IOSTAT
 .   ifthen (FILE_IOSTAT eq 0)
@@ -14,4 +15,4 @@ subprocedure DB_LOCK_STATUS
 .   end if
 . close (LOCK_DBS)
 end subprocedure
-
+END PROCEDURE

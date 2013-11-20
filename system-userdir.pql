@@ -1,3 +1,4 @@
+PROCEDURE      SYSTEM.USERDIR:T  (157140,46112)  |Last amended Jan 07, 2013,12:48:32
 c
 c Set Default Directory to DBFolder+"\users\"+USER_NAME;
 c CALL this member with USER_NAME as first parameter, e.g.: CALL DVPROCF.SYSTEM.USERDIR ($<USER_NAME>$)
@@ -15,4 +16,4 @@ dir$ = dir$ + user$ + "\"             | construct folder for this user
 x = makedir(dir$)                                | create user folder if it doesn't already exist
 x = setdir(dir$)                                | set user folder as the default folder for this user
 end program
-
+END PROCEDURE

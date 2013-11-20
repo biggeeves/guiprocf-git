@@ -1,3 +1,4 @@
+PROCEDURE      STRUCTURE.ALLCALL:T  (157274,43949)  |Last amended May 21, 2013,12:12:29
 | File name: structure
 | Path:      GUIPROCF
 | Creator:   Greg Neils
@@ -11,4 +12,4 @@ call DCCPROCF.SYSTEM.ALLRECS
 call SYSPROC.TOOLS.HTMLCODE  |sets html globals
 
 call GUIPROCF.STRUCTURE.USER_FOLDER
-
+END PROCEDURE

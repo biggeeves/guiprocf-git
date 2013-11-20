@@ -1,3 +1,4 @@
+PROCEDURE      MODULES.CASE_SUMMARY:T  (157252,62507)  |Last amended Apr 29, 2013,17:21:47
 SUBROUTINE UTIL.LIST_IT (CASE$V) NODATABASE REPLACE
 | File name: XXXX
 | Path:      XXXX
@@ -166,4 +167,4 @@ else
 . display infobox "Sorry, could not create report"
 endif
 END SUBROUTINE
-
+END PROCEDURE

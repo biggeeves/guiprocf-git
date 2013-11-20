@@ -1,3 +1,4 @@
+PROCEDURE      DBA.UNLOCK_DB:T  (157198,52554)  |Last amended Mar 06, 2013,14:35:54
 program
 string * 600  GEN_STR1
 INTEGER * 2   FILE_IOSTAT
@@ -11,4 +12,4 @@ INTEGER * 2   FILE_IOSTAT
 .   endif
 . close (LOCK_DBS)
 end program
-
+END PROCEDURE

@@ -1,3 +1,4 @@
+PROCEDURE      GUI_MAIN.REC_TYPE_INFO:T  (157425,1472)  |Last amended Oct 19, 2013,00:24:32
 subprocedure REC_TYPE_INFO
 <comment> write 'Sub: REC_TYPE_INFO: Important.  Sets REC_TYPE_NUM, KEY_COUNT, KEY_NAME(S), KEY_TYPE(S), KEY_LABEL(S)'
 . REC_TYPE_NUM  = recnum(gettxt(REC_TYPE_SELECTED))
@@ -14,4 +15,4 @@ subprocedure REC_TYPE_INFO
 .   KEY_LABEL_!REPX = KEY_LABEL_!REPX + '  '
 . END REPEAT
 end subprocedure
-
+END PROCEDURE

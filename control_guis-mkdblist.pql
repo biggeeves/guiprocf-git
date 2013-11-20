@@ -1,0 +1,65 @@
+PROCEDURE      CONTROL_GUIS.MKDBLIST:T  (157305,51218)  |Last amended Jun 21, 2013,14:13:38
+C CREATE A FILE THAT INCLUDES DATABASE INFORMATION.  THIS FILE MAY BE INCLUDED IN OTHER PROGRAMS
+
+retrieval noautocase CRWARN
+. string * 32 DB$ STAGE$ MASTER_IP MASTER_PORT
+. string * 100 LIST
+. string * 300 DBPATH
+. integer * 1 YES NO LIVE
+. string * 400 FILE_LINE
+. set NO (0) YES (1) LIVE (3) LIST ('<GDATA4>DCC\Lists\delete.txt')
+. open  (LIST) dsnvar=LIST write lrecl=500
+. write (LIST) '| Path:      ' LIST
+. write (LIST) '| Creator:   Backup Routine'
+. write (LIST)['| Created:   ' + datec(today(0),'MM/DD/YYYY')]
+. write (LIST) '| Retired:'
+. write (LIST) '| Called by: 03CopyFiles.pql'
+. write (LIST) '| Calls:'
+. write (LIST) '| Reason:    List of databases, paths, and masters.'
+. write (LIST) '|            It is used by many programs to cycle through all DBs'
+. write (LIST) '| Output:'
+. write (LIST) '| Modified:  Recreated nightly by the backup routine'
+. write (LIST) 'string * 32  array DB$N STA$(500)'
+. write (LIST) 'string * 32  array MST_IP$ MST_PORT$(500)'
+. write (LIST) 'string * 250 array DIR$(500)'
+. write (LIST) 'integer * 2 DB#C'
+. write (LIST) 'set DB#C (0)'
+. process rec ADMIN
+.   get var DCCDB STAGE FOLDER
+.   if (exists(STAGE)  = NO) next rec
+.   if (exists(FOLDER) = NO) next rec
+C   STAGE is special.  Its value is tested below.
+.   STAGE$ = trim(vallab(STAGE))
+
+.   DB$ = trim(DCCDB)
+.   DB$ =  '"' + DB$ + '"'
+.   DB$ = PAD(DB$, ' ', 18, 18)
+
+.   DBPATH = FOLDER
+.   if (sbst(reverse(DBPATH),1,1) ne '\') DBPATH = DBPATH + '\'
+.   DBPATH = '"' + DBPATH  +'"'
+.   DBPATH = PAD(DBPATH, ' ', 70, 70)
+
+.   MASTER_IP = fst(MASTERIP,'')
+.   MASTER_IP = '"' + MASTER_IP + '"'
+.   MASTER_IP = PAD(MASTER_IP, ' ', 20,20)
+
+.   MASTER_PORT = fst(MASTER,'')
+.   MASTER_PORT = '"' + MASTER_PORT + '"'
+.   MASTER_PORT = PAD(MASTER_PORT, ' ', 10,10)
+
+.   if (exists(DBPATH) = NO or len(DBPATH) < 5) next rec
+.   ifthen (STAGE$ = 'DCC' or STAGE$ = 'Live' or STAGE$ = 'Not active' or STAGE$ = 'Development')
+.     STAGE$ = '"' + STAGE$ + '"'
+.     STAGE$ = PAD(STAGE$, ' ', 15,15)
+.     FILE_LINE = 'DB#C=DB#C+1; DB$N(DB#C)=' + DB$ + ';' +
+               ' DIR$(DB#C)=' + DBPATH + ';' +
+               ' STA$(DB#C)=' + STAGE$ + ';' +
+               ' MST_IP$(DB#C)=' + MASTER_IP + ';' +
+               ' MST_PORT$(DB#C)=' + MASTER_PORT
+.     write (LIST) FILE_LINE
+.   endif
+. end rec
+. close (LIST)
+end retrieval
+END PROCEDURE

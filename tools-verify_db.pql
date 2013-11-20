@@ -1,3 +1,4 @@
+PROCEDURE      TOOLS.VERIFY_DB:T  (157437,49451)  |Last amended Oct 31, 2013,13:44:11
 subroutine VERIFY_DB ( DB_NAME, DB_PATH ) RETURNING ( VERIFY_STATUS )
 . STRING  *     32   DB_NAME               | database name to verify
 . STRING  *    600   DB_PATH               | database file path
@@ -44,4 +45,4 @@ execute subroutine GUIPROCF.TOOLS.VERIFY_DB ('DEMO3' '\\dccmaincsfs\data1\demo3\
 WRITE VERIFY_STATUS
 end program
 CIF END
-
+END PROCEDURE

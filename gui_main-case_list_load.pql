@@ -1,3 +1,4 @@
+PROCEDURE      GUI_MAIN.CASE_LIST_LOAD:T  (157283,67396)  |Last amended May 30, 2013,18:43:16
 subprocedure CASE_LIST_LOAD
 <COMMENT> write 'Sub: CASE_LIST_LOAD'
 . | start with a blank canvas
@@ -20,4 +21,4 @@ subprocedure CASE_LIST_LOAD
 . BUFFER_LINE = 'end retrieval'     ; execute subprocedure BUFFER_WRITE
 . execute dbms ['INCLUDE BUFFER ' + BUFFER_NAME]
 end subprocedure
-
+END PROCEDURE

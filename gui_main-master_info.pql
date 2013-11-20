@@ -1,3 +1,4 @@
+PROCEDURE      GUI_MAIN.MASTER_INFO:T  (157260,53983)  |Last amended May 07, 2013,14:59:43
 subprocedure MASTER_INFO
 . REMOVE ALL MASTER_DISPLAY
 . APPEND LINE MASTER_DISPLAY, 'MASTER: ' + sglobal('MASTER')
@@ -26,4 +27,4 @@ C Users attached to master
 .   APPEND LINE MASTER_DISPLAY,  'No Clients/Users are currently attached to master'
 . endif
 end subprocedure
-
+END PROCEDURE

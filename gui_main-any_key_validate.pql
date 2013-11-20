@@ -1,3 +1,4 @@
+PROCEDURE      GUI_MAIN.ANY_KEY_VALIDATE:T  (157436,59255)  |Last amended Oct 30, 2013,16:27:35
 C PASS IN KEY VALUE AND VALIDATE.  RETURN PROCEED (0/1)
 
 subprocedure ANY_KEY_VALIDATE
@@ -15,4 +16,4 @@ subprocedure ANY_KEY_VALIDATE
 .   endif
 <comment> write 'Sub: Any_Key_Validate: VAL_VAR: ' VAL_VAR ', PROCEED: ' PROCEED
 end subprocedure
-
+END PROCEDURE

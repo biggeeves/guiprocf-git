@@ -1,3 +1,4 @@
+PROCEDURE      GUI_MAIN.BUFFER_SUBS:T  (157424,78847)  |Last amended Oct 18, 2013,21:54:07
 subprocedure BUFFER_START
 <comment> write 'Sub: BUFFER_START: ' BUFFER_NAME
 . BUFF# = 1
@@ -20,4 +21,4 @@ subprocedure BUFFER_ADD_CASE
 end subprocedure
 
 
-
+END PROCEDURE

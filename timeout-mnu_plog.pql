@@ -1,7 +1,8 @@
+PROCEDURE      TIMEOUT.MNU_PLOG:T  (156465,64207)  |Last amended Mar 04, 2011,17:50:07
 c
 c CALL this member in the SIR MainMenu "Prologue" just after STRING*1 DUMBTEXT
 c
 . INTEGER*4 TIMER__# AutoMin# t_stat#
 . AutoMin#= 55                  | Minutes for AutoTimeOut from SIR MainMenu
 . TIMER__#= minutes# * 10 * 60  | in tenths of seconds
-
+END PROCEDURE

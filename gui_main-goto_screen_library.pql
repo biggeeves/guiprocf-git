@@ -1,3 +1,4 @@
+PROCEDURE      GUI_MAIN.GOTO_SCREEN_LIBRARY:T  (157331,62204)  |Last amended Jul 17, 2013,17:16:44
 c Library appended at the end is a collection of stuff that should run together all the time.
 subprocedure GOTO_SCREEN_LIBRARY
 . execute subprocedure GOTO_SCREEN
@@ -8,4 +9,4 @@ subprocedure GOTO_SCREEN_LIBRARY
 . execute subprocedure ITEM_VISIBLE
 . execute subprocedure ITEM_ENABLE
 end subprocedure
-
+END PROCEDURE

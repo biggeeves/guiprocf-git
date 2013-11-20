@@ -1,3 +1,4 @@
+PROCEDURE      TIMEOUT.TIMEROK:T  (156465,65980)  |Last amended Mar 04, 2011,18:19:40
 c
 c Subroutine to Prompt User to Acknowledge presence for TimeOut feature
 c
@@ -54,4 +55,4 @@ end messages
 end dialog
 end subprocedure
 end subroutine
-
+END PROCEDURE

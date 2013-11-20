@@ -1,3 +1,4 @@
+PROCEDURE      GUI_MAIN.OLD_KEY_REFRESH:T  (157436,50415)  |Last amended Oct 30, 2013,14:00:15
 subprocedure OLD_KEY_REFRESH
 <comment> write 'Sub: OLD_KEY_REFRESH: Case:' CASE_VALUE'  Rec: ' REC_TYPE_NUM ', KEY_COUNT: ' KEY_COUNT ', KEY$T: ' KEY$T ', VIA: ' REC_VIA ' REFRESH_START_KEYNUM: ' REFRESH_START_KEYNUM
 
@@ -87,4 +88,4 @@ c make the retrieval in a buffer
 . endif
 end subprocedure
 |
-
+END PROCEDURE

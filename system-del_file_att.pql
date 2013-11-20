@@ -1,3 +1,4 @@
+PROCEDURE      SYSTEM.DEL_FILE_ATT:T  (157274,45027)  |Last amended May 21, 2013,12:30:27
 c Created: 3/21/2013
 c By: Greg Neils
 c Brief: Create Deletion File Attribute
@@ -18,4 +19,4 @@ program
 . DB_DEL_FILE = DB_DEL_FILE + '\deletion_reasons.txt'
 . EXECUTE DBMS ['SET ATTRIBUTE DB_DEL_FILE "'+ DB_DEL_FILE + '"']
 end program
-
+END PROCEDURE

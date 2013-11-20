@@ -1,0 +1,71 @@
+PROCEDURE      GUI_CUSTOM.CASE_INFO:T  (157457,48922)  |Last amended Nov 20, 2013,13:35:22
+C NUMERIC CASEID - LIST STATS FOR INDIVIDUAL CASE
+
+CALL GUIPROCF.GUI_CUSTOM.SET_LOCAL_CASE_TYPE
+
+program
+. STRING  * 32 CASE_NAME
+. INTEGER * 1  CASE_TYPE
+. INTEGER * 1 TEMP_VAR
+. CASE_NAME  = trimr(varname(0, 1))
+. CASE_TYPE  = vtype(0, CASE_NAME)
+. TEMP_VAR = GLOBALN( 'LOCAL_CASE_TYPE', CASE_TYPE )
+end program
+
+subroutine GUI_CUSTOM.CASE_INFO (THIS_CASEID ITEM_NUMBER) returning (PROCEED) replace
+
+string  *  32   THIS_CASEID      | incoming case id value is always a string
+string  *  32   LOCAL_CASE_ID$
+integer *   4   LOCAL_CASE_ID#
+integer *   2   ITEM_NUMBER
+integer *   1   PROCEED
+integer *   4   REC_TYPE_COUNT
+string  * 300   GEN_STR1
+INTEGER *   1   TEMP_VAR
+
+REC_TYPE_COUNT = 0
+
+LOCAL_CASE_ID$ = THIS_CASEID
+LOCAL_CASE_ID# = numbr(THIS_CASEID)
+
+PROCEED = 1
+
+if(exists (LOCAL_CASE_ID$) EQ 0 ) RETURN
+
+if(sglobal('comment') eq '.')  write 'IN GUI_CUSTOM.CASE_INFO: ' LOCAL_CASE_ID$  | in the subroutine, the global comment might not be set during the backup routine and will throw an error if the line starts with <comment>
+
+if(validate(0, VARNAMEC(0, 1), LOCAL_CASE_ID$) <> 0) DISPLAY INFOBOX 'NOT A VALID ID'; RETURN
+
+PROCEED = 0
+
+CIF EQ 1, 0<LOCAL_CASE_TYPE>    | STRING.  TREAT EVERYTHING ELSE AS NUMERIC
+. OLD CASE IS LOCAL_CASE_ID$
+CIF FALSE
+. OLD CASE IS LOCAL_CASE_ID#
+CIF END
+.   append line  ITEM_NUMBER, '<font size="+3"><B>' html
+.   append line  ITEM_NUMBER, THIS_CASEID html
+.   append line  ITEM_NUMBER, '</B>' HTML
+.   append line  ITEM_NUMBER, ' Record Summary'
+.   PROCEED = 1
+.   for EACH_RECORD_TYPE = 1, NRECS(0)
+.     IF (NVARSC(EACH_RECORD_TYPE) EQ 0) NEXT FOR
+.     GEN_STR1 = ''
+.     ifthen(len(recdoc(EACH_RECORD_TYPE, 0)) gt 0)
+.       GEN_STR1 = GEN_STR1 + trim(recdoc(EACH_RECORD_TYPE, 0))
+.     elseif(len(recdoc(EACH_RECORD_TYPE ,1)) gt 0)
+.       GEN_STR1 = GEN_STR1 + trim(recdoc(EACH_RECORD_TYPE, 1))
+.     endif
+.     GEN_STR1 = trimlr(replace(GEN_STR1, char(9), '', 5, 0, 0)) | remove tabs
+
+.     GEN_STR1 = '(' + format(count(EACH_RECORD_TYPE)) + ') ' + GEN_STR1
+.     append line  ITEM_NUMBER, '<BR>' + GEN_STR1 HTML
+.     REC_TYPE_COUNT = sum(REC_TYPE_COUNT, count(EACH_RECORD_TYPE))
+.   end for
+
+. END CASE IS
+. append line  ITEM_NUMBER, '<br>--------------<br>' + format(REC_TYPE_COUNT) + ' TOTAL RECORDS IN THE DATABASE.' HTML
+. TEMP_VAR = scrollto (ITEM_NUMBER,1)
+
+end subroutine
+END PROCEDURE

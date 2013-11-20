@@ -1,3 +1,4 @@
+PROCEDURE      GUI_MAIN.CASE_FIRST:T  (157268,48966)  |Last amended May 15, 2013,13:36:06
 ifthen (numcases(0) = 0)
 <comment> write 'Asking for first case'
 . display textbox "What is the first case" response RESVAR CASE_TEMP_VALUE
@@ -12,4 +13,4 @@ ifthen (numcases(0) = 0)
 .    write "hard to use the main gui without atleast one case"
 . endif
 endif
-
+END PROCEDURE

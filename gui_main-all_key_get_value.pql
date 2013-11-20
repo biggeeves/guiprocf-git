@@ -1,3 +1,4 @@
+PROCEDURE      GUI_MAIN.ALL_KEY_GET_VALUE:T  (157198,50415)  |Last amended Mar 06, 2013,14:00:15
 subprocedure ALL_KEY_GET_VALUE
 <comment> write 'Sub: ALL_KEY_GET_VALUE'
 | WORKS FOR BOTH OLD KEYS AND NEW KEY PAGE!  DEPENDS ON WHICH PAGE YOU ARE VIEWING
@@ -22,4 +23,4 @@ c   1 categorical variable must have the number passed to the data entry screen,
 . END REPEAT
 <comment> write 'End: ALL_KEY_GET_VALUE: K1: ' KEY_VALUE_1 ', K2: ' KEY_VALUE_2 ', K3: ' KEY_VALUE_3 ', K4: ' KEY_VALUE_4
 end subprocedure
-
+END PROCEDURE

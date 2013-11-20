@@ -1,0 +1,76 @@
+PROCEDURE      GUI_CUSTOM.REC_S_INFO:T  (157457,45504)  |Last amended Nov 20, 2013,12:38:24
+c Example:   IN SIR014.GUI_CUSTOM.CASE_INFO WRITE ONE LINE OF CODE
+c Numeric Case Ids: call GUIPROCF.GUI_CUSTOM.REC_N_INFO
+c String Case Ids:  call GUIPROCF.GUI_CUSTOM.REC_S_INFO
+
+
+c below is for a string  CASEID
+subroutine GUI_CUSTOM.REC_INFO (THIS_CASEID RECTYPENUM ITEMNUMBER) returning (PROCEED) replace
+
+string  *  32   CASEID$
+string  *  32   THIS_CASEID
+integer *   2   ITEMNUMBER
+integer *   1   PROCEED
+string  *  32   CASEID
+string  * 300   GENSTR1
+integer *   2   RECTYPENUM
+integer *   1   RECTYPECOUNT
+
+CASEID$ = THIS_CASEID
+
+PROCEED = 1
+
+if(exists (CASEID$) EQ 0 ) RETURN
+
+if(sglobal('comment') eq '.')  write 'IN GUICUSTOM.REC_INFO: ' CASEID$  RECTYPENUM  | in the subroutine, the global comment might not be set during the backup routine and will throw an error if the line starts with <comment>
+
+if(validate(0, VARNAMEC(0, 1), CASEID$) <> 0) DISPLAY INFOBOX 'NOT A VALID ID'; RETURN
+
+PROCEED = 1
+
+. OLD CASE IS CASEID$ lock=2
+
+.   append line ITEMNUMBER, '<body readonly="true"><font color="#0000FF" size="+2" face="Arial"><br>' HTML
+.   PROCEED = 1
+. DO REPEAT RECX = <GREC1>
+                <GREC2>
+                <GREC3>
+                <GREC4>
+.   ifthen (RECTYPENUM EQ RECX)
+.     ifthen(count(RECX) EQ 0)
+.       append line ITEMNUMBER, 'No Records' HTML
+.     else
+.       append line  ITEMNUMBER, 'Record Summary<BR><font color="#000000">' HTML
+.       ifthen (nkeys(RECX) EQ 0)
+.         process rec RECX
+.           GENSTR1 = 'Created: '  | break is added to restore black small font
+.           IF(EXISTS(DSTAMP) EQ 1)   GENSTR1 = 'Created ' + DSTAMP
+.           IF(EXISTS(DWHO) EQ 1)     GENSTR1 = GENSTR1 + ' by ' + DWHO
+.           GENSTR1 = GENSTR1 + '<br>Last Edit: '
+.           IF(EXISTS(DCCDATE) EQ 1)  GENSTR1 = GENSTR1 + ' on ' + DCCDATE
+.           IF(EXISTS(DCCTIME) EQ 1)  GENSTR1 = GENSTR1 + ' at ' + DCCTIME
+.           IF(EXISTS(DCCWHO) EQ 1)   GENSTR1 = GENSTR1 + ' by ' + DCCWHO
+.           append line  ITEMNUMBER, '<BR>' + GENSTR1 HTML
+.         end rec
+.       else
+.         RECTYPECOUNT = 0
+.         process rec RECX
+.           RECTYPECOUNT = RECTYPECOUNT + 1
+.           GENSTR1 = 'Row' + FORMAT(RECTYPECOUNT) +': '
+.           for FORKEY__4 = 1 + dbtype(0), nkeys(RECX) +  dbtype(0)
+.             KEYVNAME__4 = pack(keyname(RECX, FORKEY__4))
+.             STRING_VARGET = trimlr(varget(KEYVNAME__4))
+.             GENSTR1 = GENSTR1 + STRING_VARGET
+.             if (FORKEY__4 lt nkeys(RECX) +  dbtype(0)) GENSTR1 = GENSTR1 +', '
+.           end for
+.           append line  ITEMNUMBER, '<br>' + GENSTR1 HTML
+.         end rec
+.       endif
+.     endif
+.   endif
+. END REPEAT
+
+. END CASE IS
+. x = scrollto (ITEMNUMBER, 1)
+end subroutine
+END PROCEDURE

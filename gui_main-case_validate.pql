@@ -1,3 +1,4 @@
+PROCEDURE      GUI_MAIN.CASE_VALIDATE:T  (157176,49324)  |Last amended Feb 12, 2013,13:42:04
 subprocedure CASE_VALIDATE   |   CASE_TEMP_VALUE MUST BE PASSED IN
 C note, I'm not sure where the case id is going to be, either the new id field or the search field or a hidden field.  Who knows right now.
 <COMMENT> WRITE 'Sub: CASE_VALIDAte: ' CASE_TEMP_VALUE
@@ -25,4 +26,4 @@ C note, I'm not sure where the case id is going to be, either the new id field o
 .   display infobox 'Sorry, ' + CASE_TEMP_VALUE +', is not a valid value for ' + CASE_NAME
 . endif
 end subprocedure
-
+END PROCEDURE

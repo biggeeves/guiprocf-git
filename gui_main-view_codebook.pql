@@ -1,3 +1,4 @@
+PROCEDURE      GUI_MAIN.VIEW_CODEBOOK:T  (157262,46772)  |Last amended May 09, 2013,12:59:32
 subprocedure VIEW_CODEBOOK
 . if(SYSTEM(39) eq 0) display infobox "First Connect a DB" ; exit subprocedure
 . GEN_STR1 = replace(dsn('prefix'),'\database\','\',1,0,0) + 'Codebook.htm'
@@ -5,4 +6,4 @@ subprocedure VIEW_CODEBOOK
 . else display infobox 'Codebook not found at ' + GEN_STR1
 . endif
 end subprocedure
-
+END PROCEDURE

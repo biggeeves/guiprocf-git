@@ -1,3 +1,4 @@
+PROCEDURE      GUI_MAIN.EVB:T  (157217,42021)  |Last amended Mar 25, 2013,11:40:21
 EXTERNAL VARIABLE BLOCK GUI_MAIN.EVB:V REPLACE VARMAP
 | contains are customizable variables and variable necessary for customizing a user experience.
 
@@ -32,4 +33,4 @@ preset SPLASH_TEXT_2 (' The information contained in this database is confidenti
 
 
 END EXTERNAL VARIABLE BLOCK
-
+END PROCEDURE

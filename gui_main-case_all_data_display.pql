@@ -1,3 +1,4 @@
+PROCEDURE      GUI_MAIN.CASE_ALL_DATA_DISPLAY:T  (157367,52613)  |Last amended Aug 22, 2013,14:36:53
 subprocedure CASE_ALL_DATA_DISPLAY
 <comment> write 'Sub: CASE_ALL_DATA_DISPLAY: Case:' CASE_VALUE
 c displays all record information to the user.
@@ -43,4 +44,4 @@ c displays all record information to the user.
 . BUFFER_LINE = 'end retrieval'                   ;execute subprocedure BUFFER_WRITE
 . execute dbms ['INCLUDE BUFFER ' + BUFFER_NAME]
 end subprocedure
-
+END PROCEDURE

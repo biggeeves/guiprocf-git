@@ -1,3 +1,4 @@
+PROCEDURE      GUI_MAIN.ITEM_ENABLE:T  (157231,49579)  |Last amended Apr 08, 2013,13:46:19
 subprocedure ITEM_ENABLE
 | IF AN ITEM SHOULD BE ENABLED OR DISABLED BASED ON DATA IN THE DATABASE.
 | To control if a user can go there or not, use hide and show instead of enable disable.
@@ -16,4 +17,4 @@ C NEW RECS
 . endif
 
 end subprocedure
-
+END PROCEDURE

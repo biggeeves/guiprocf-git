@@ -1,3 +1,4 @@
+PROCEDURE      GUI_MAIN.SYSTEM_ERR_CHECK:T  (157231,41760)  |Last amended Apr 08, 2013,11:36:00
 subprocedure SYSTEM_ERR_CHECK
 ifNOT (sglobal('DEBUG_MODE') EQ '.') EXIT SUBPROCEDURE
 . ifthen (0 lt nglobal('GERROR') or  nglobal('TERROR') or nglobal('GWARNING') )
@@ -6,4 +7,4 @@ ifNOT (sglobal('DEBUG_MODE') EQ '.') EXIT SUBPROCEDURE
 .   DEBUG_LINE = DEBUG_LINE +1
 . endif
 end subprocedure
-
+END PROCEDURE

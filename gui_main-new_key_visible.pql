@@ -1,3 +1,4 @@
+PROCEDURE      GUI_MAIN.NEW_KEY_VISIBLE:T  (157196,40691)  |Last amended Mar 04, 2013,11:18:11
 subprocedure NEW_KEY_VISIBLE
 <comment> write 'Sub: NEW_KEY_VISIBLE- KEY_COUNT: ' KEY_COUNT
 . DO REPEAT REPX = 1 to 4
@@ -15,4 +16,4 @@ subprocedure NEW_KEY_VISIBLE
 .   if(getnitem(NEW_KEY_CHOICE_!REPX) eq 1) hide item NEW_KEY_CHOICE_!REPX   | A SINGLE SPACE IS THE FIRST ITEM.  THE FIRST LINE IS " ".
 . end repeat
 end subprocedure
-
+END PROCEDURE

@@ -1,3 +1,4 @@
+PROCEDURE      GUI_MAIN.CASE_NEW:T  (157200,37125)  |Last amended Mar 08, 2013,10:18:45
 subprocedure CASE_NEW  | PASS IN CASE_VALUE
 <comment> write 'Sub: CASE_NEW: ' CASE_VALUE
 c IT PASSED THE TEST NOW CREATE IT create buffer to insert new case
@@ -11,4 +12,4 @@ c IT PASSED THE TEST NOW CREATE IT create buffer to insert new case
 . BUFFER_LINE = 'end retrieval'; execute subprocedure BUFFER_WRITE
 . execute dbms ['INCLUDE BUFFER ' + BUFFER_NAME]
 end subprocedure
-
+END PROCEDURE

@@ -1,3 +1,4 @@
+PROCEDURE      GUI_MAIN.INITIALIZE:T  (157367,48453)  |Last amended Aug 22, 2013,13:27:33
 C if some globals already exist leave them alone.
 c if globals don't exist set value to "off"
 program
@@ -15,4 +16,4 @@ program
 . endif
 end program
 
-
+END PROCEDURE

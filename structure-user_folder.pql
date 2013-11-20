@@ -1,3 +1,4 @@
+PROCEDURE      STRUCTURE.USER_FOLDER:T  (157274,44207)  |Last amended May 21, 2013,12:16:47
 | File name: GUIPROCF.STRUCTURE.USER_FOLDER
 | Path:      GUIPROCF
 | Creator:   Greg Neils
@@ -20,4 +21,4 @@ program crwarn
 . execute dbms ["attribute USERFOLDER  filename='" + USER_FOL + "'"]
 
 end program
-
+END PROCEDURE

@@ -1,5 +1,6 @@
+PROCEDURE      TIMEOUT.MNU_ENDI:T  (156465,64146)  |Last amended Mar 04, 2011,17:49:06
 c
 c CALL this in SIR MainMenu just before the END INITIAL command
 c
 .   if(timer__# gt 0)enable timer TIMER__#
-
+END PROCEDURE

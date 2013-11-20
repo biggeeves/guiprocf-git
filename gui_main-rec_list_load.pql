@@ -1,3 +1,4 @@
+PROCEDURE      GUI_MAIN.REC_LIST_LOAD:T  (157379,56038)  |Last amended Sep 03, 2013,15:33:58
 subprocedure REC_LIST_LOAD
 <comment> write 'Sub: REC_LIST_LOAD'
 . FORM_COUNT = 0
@@ -29,4 +30,4 @@ subprocedure REC_LIST_LOAD
 . end for
 
 end subprocedure
-
+END PROCEDURE

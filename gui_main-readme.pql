@@ -1,2 +1,3 @@
+PROCEDURE      GUI_MAIN.README:T  (157179,33708)  |Last amended Feb 15, 2013,09:21:48
 The DB_TITLE at the top can have a funny background color if it is selected.  It is selected if it is the first thing drawn.  Tricky "bug" to chase down!
-
+END PROCEDURE

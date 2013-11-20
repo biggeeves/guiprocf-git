@@ -1,3 +1,4 @@
+PROCEDURE      GUI_MAIN.OLD_REC_COUNT:T  (157232,37095)  |Last amended Apr 09, 2013,10:18:15
 subprocedure OLD_REC_COUNT
 <comment> write 'Sub: OLD_REC_COUNT: Case:' CASE_VALUE'  Rec: ' REC_TYPE_NUM
 . if (exists(REC_TYPE_NUM) eq 0) exit subprocedure
@@ -20,4 +21,4 @@ endif
 . REC_ROW_COUNT = fst(getint(OLD_REC_COUNTER),0)
 <comment> write 'Sub: OLD_REC_COUNTER: ' REC_ROW_COUNT
 end subprocedure
-
+END PROCEDURE

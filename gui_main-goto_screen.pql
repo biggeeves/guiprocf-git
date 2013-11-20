@@ -1,3 +1,4 @@
+PROCEDURE      GUI_MAIN.GOTO_SCREEN:T  (157379,65121)  |Last amended Sep 03, 2013,18:05:21
 subprocedure GOTO_SCREEN
 <comment> write 'Sub: GOTO_SCREEN: Case: ' CASE_VALUE ', Key1: ' KEY_VALUE_1 ', Key2: ' KEY_VALUE_2 ', Key3: ' KEY_VALUE_3 ', Key4: ' KEY_VALUE_4
 <comment> write 'Include possiblity to partialy select keys.  For example select key1 and show all recs with key1 value.'
@@ -50,4 +51,4 @@ C CHECK RECORD TYPE EXISTS
 . endif
 <comment> write 5T 'End: GOTO_SCREEN: SCREEN_NAME  : ' SCREEN_NAME
 end subprocedure GOTO_SCREEN
-
+END PROCEDURE

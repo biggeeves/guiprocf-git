@@ -1,3 +1,4 @@
+PROCEDURE      GUI_MAIN.ANY_KEY_CLEAN:T  (157422,59580)  |Last amended Oct 16, 2013,16:33:00
 subprocedure ANY_KEY_CLEAN
 <comment> write 'Sub: ANY_KEY_CLEAN: (KEY$N,KEY$V)  (' KEY$N ',' KEY$V ') Passes back cleaned KEY$V.'
 . KEY$V = trimlr(KEY$V)
@@ -8,4 +9,4 @@ subprocedure ANY_KEY_CLEAN
 . if (POS GT 0) KEY$V = sbst(KEY$V, 1, POS - 1)
 <comment> write 'Sub: ANY_KEY_CLEAN Returning:  ' KEY$V
 end subprocedure ANY_KEY_CLEAN
-
+END PROCEDURE

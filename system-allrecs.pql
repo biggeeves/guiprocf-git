@@ -1,3 +1,4 @@
+PROCEDURE      SYSTEM.ALLRECS:T  (156947,35179)  |Last amended Jun 28, 2012,09:46:19
 program
 . integer * 1 NO YES
 . integer * 2 RECS# POS# MAXLEN# GLINE# NLINE#
@@ -78,4 +79,4 @@ program
 . x = globals('GDBNAME',trim(dbname(0)))
 . x = globals('GDBPATH',dsn('prefix'))
 end program
-
+END PROCEDURE

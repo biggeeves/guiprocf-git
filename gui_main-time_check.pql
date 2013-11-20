@@ -1,3 +1,4 @@
+PROCEDURE      GUI_MAIN.TIME_CHECK:T  (157232,51589)  |Last amended Apr 09, 2013,14:19:49
 subprocedure TIME_CHECK
 <comment> write 'Sub: TIME_CHECK: ' TIME_LEFT
 . TIME_LEFT = TIME_LEFT - 1
@@ -7,4 +8,4 @@ subprocedure TIME_CHECK
 . elseif (TIME_LEFT eq 0) execute dbms "CALL DCCPROCF.EXIT.MAIN"
 . endif
 end subprocedure
-
+END PROCEDURE

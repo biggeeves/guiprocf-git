@@ -1,5 +1,6 @@
+PROCEDURE      TIMEOUT.LO_MSG:T  (156465,65978)  |Last amended Mar 04, 2011,18:19:38
 c
 c For Idle Time Auto LOG_OUT, record time of Last User Action; CALL this in MESSAGES ALL and MESSAGE FOCUS blocks
 c
 . tmp__#1=globaln("LastAct",now(0)) | set time of most recent (last) user action
-
+END PROCEDURE

@@ -1,7 +1,11 @@
+PROCEDURE      DBA.ADD_DATE_RANGES:T  (157262,64575)  |Last amended May 09, 2013,17:56:15
 | File name: Add_Date_Ranges.pql
+| Path:      various
 | Creator:   Greg Neils and David Merle
 | Created:   11/11/2007
-| Deleted some comment code.
+| Called by: anything you want
+| Reason:    it checks data for wildly incorrect dates and then will write a modify schema to correct records that dont have bad dates.
+| Output:    to a schema file and a detailed report
 
 call SYSPROC.TOOLS.HTMLCODE
 
@@ -264,4 +268,4 @@ C report key values back
 . write (DATE_REP) STR$1 '</td>'
 end subprocedure
 end retrieval
-
+END PROCEDURE

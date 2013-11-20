@@ -1,3 +1,4 @@
+PROCEDURE      GUI_MAIN.REC_TABLE_DISPLAY:T  (157367,52089)  |Last amended Aug 22, 2013,14:28:09
 subprocedure REC_TABLE_DISPLAY
 <comment> write 'Sub: REC_TABLE_DISPLAY: Case:' CASE_VALUE'  Rec: ' REC_TYPE_NUM ', KEY_COUNT: ' KEY_COUNT
 . if (exists(REC_TYPE_NUM) eq 0) exit subprocedure
@@ -35,4 +36,4 @@ subprocedure REC_TABLE_DISPLAY
 . execute dbms ['INCLUDE BUFFER ' + BUFFER_NAME]
 . if (gettxt(OLD_KEY_LIST_1) = '' or exists(gettxt(OLD_KEY_LIST_1)) = 0) append item OLD_KEY_LIST_1, "No data"
 end subprocedure
-
+END PROCEDURE

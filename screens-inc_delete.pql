@@ -1,3 +1,4 @@
+PROCEDURE      SCREENS.INC_DELETE:T  (157388,58416)  |Last amended Sep 12, 2013,16:13:36
 ifthen(IDELETE eq 0)
 . set failscr (-1)
 . set failmess ("Sorry, You cannot delete this record.")
@@ -30,4 +31,4 @@ else
 .   set failmess ("It was NOT deleted.")
 . endif
 endif
-
+END PROCEDURE

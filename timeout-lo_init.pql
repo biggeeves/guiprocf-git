@@ -1,3 +1,4 @@
+PROCEDURE      TIMEOUT.LO_INIT:T  (156465,65977)  |Last amended Mar 04, 2011,18:19:37
 c
 c Auto LOG_OUT System Initial Block setup; CALL from PQL dialog INITIAL block
 c
@@ -28,4 +29,4 @@ c   TOUTTM_#   ( 1)'00:00' ( 2)'00:15' ( 3)'00:30' ( 4)'00:45' ( 5)'01:00' ( 6)'
 . timedone:
 . tmp__#1=globaln("LastAct",now(0))                      | set time of most recent (last) user action
 . if(touttm_# gt 0 or tout__# gt 0)enable timer 3
-
+END PROCEDURE
