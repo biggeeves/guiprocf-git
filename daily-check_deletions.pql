@@ -1,0 +1,38 @@
+PROCEDURE      DAILY.CHECK_DELETIONS:T  (157458,49573)  |Last amended Nov 21, 2013,13:46:13
+program
+. string * 300 EMAIL$
+. string * 300 ATTFILE$ ALLDELFILE
+. string * 800 EXEC$
+. string * 300 PATH$
+. string * 100 NAME$
+. string * 32  EXT$
+. integer *  1 	ESCAPERESULT
+. execute subroutine SYSPROC.TOOLS.FILENAME (dsn('sir014')) RETURNING (PATH$,NAME$,EXT$)
+. ATTFILE$  = PATH$ + 'deletion_reasons.txt'
+. ALLDELFILE = PATH$ + 'deletions'
+. if(fileis(ALLDELFILE) <> -1) t = makedir(ALLDELFILE)
+. ALLDELFILE = PATH$ + 'deletions\AllDeletions.txt'
+
+. EMAIL$ = 'gn2003@columbia.edu,ventura@nyspi.columbia.edu'
+. ifthen (fileis (ATTFILE$) eq 1)
+.   EXEC$  = '\\192.168.53.236\SIRXS\Email\blat "' + ATTFILE$  +'" -to ' + EMAIL$ +
+             ' -subject "' +  trimlr(DBNAME(0)) + 'deletion reasons" ' +
+             ' -attacht "' + ATTFILE$ + '"' +
+             ' -body " ' +  trimlr(DBNAME(0)) + ': Reasons for deletion"'
+.   pql escape EXEC$ RETURNING ESCAPERESULT
+.   ifthen (ESCAPERESULT eq 0)
+.     open (delfile) append lrecl=300 dsnvar=ALLDELFILE
+.     open (todaydel) read lrecl=300 dsnvar=ATTFILE$
+.       loop
+.         read (todaydel,end=DONE1) LINE$ (a300)
+.         write (delfile) LINE$
+.       end loop
+.       DONE1:
+.     close (todaydel)
+.     close (delfile)
+.     dummy = delfile(ATTFILE$)
+.   endif
+. endif
+
+end program
+END PROCEDURE

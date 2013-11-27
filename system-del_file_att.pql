@@ -1,11 +1,11 @@
-PROCEDURE      SYSTEM.DEL_FILE_ATT:T  (157274,45027)  |Last amended May 21, 2013,12:30:27
+PROCEDURE      SYSTEM.DEL_FILE_ATT:T  (157459,40302)  |Last amended Nov 22, 2013,11:11:42
 c Created: 3/21/2013
 c By: Greg Neils
 c Brief: Create Deletion File Attribute
-c Full Description:  Sets DB_DEL_FILE to proper location
+c Full Description:  Sets DAILY_DEL_FILE to proper location
 
 program
-. string * 300 DB_DEL_FILE
+. string * 300 DAILY_DEL_FILE
 . string * 300 PATH$
 . string * 100 NAME$
 . string * 32  EXT$
@@ -14,9 +14,10 @@ program
 
 . DB_PROC_FILE = 'SIR'+ PFORMAT(SYSTEM(39),'zz') +'4'
 . execute subroutine SYSPROC.TOOLS.FILENAME (dsn(DB_PROC_FILE)) RETURNING (PATH$,NAME$,EXT$)
-. DB_DEL_FILE = PATH$ + 'deletions'
-. if(fileis(DB_DEL_FILE) <> -1) t = makedir(DB_DEL_FILE)
-. DB_DEL_FILE = DB_DEL_FILE + '\deletion_reasons.txt'
-. EXECUTE DBMS ['SET ATTRIBUTE DB_DEL_FILE "'+ DB_DEL_FILE + '"']
+. DAILY_DEL_FILE = PATH$ + 'deletions'
+write DAILY_DEL_FILE
+. if(fileis(DAILY_DEL_FILE) <> -1) t = makedir(DAILY_DEL_FILE)
+. DAILY_DEL_FILE = DAILY_DEL_FILE + '\deletion_reasons.txt'
+. EXECUTE DBMS ['SET ATTRIBUTE DAILY_DEL_FILE "'+ DAILY_DEL_FILE + '"']
 end program
 END PROCEDURE

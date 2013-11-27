@@ -1,4 +1,4 @@
-PROCEDURE      GUI_MAIN.REC_INFO_CUSTOM:T  (157457,44676)  |Last amended Nov 20, 2013,12:24:36
+PROCEDURE      GUI_MAIN.REC_INFO_CUSTOM:T  (157464,47178)  |Last amended Nov 27, 2013,13:06:18
 subprocedure REC_INFO_CUSTOM
 . remove all FORM_INFO
 . ifthen (meminfo(DB_PROC_FILE + ".GUI_CUSTOM.REC_INFO:O", 1) EQ MEM_O)
@@ -6,7 +6,8 @@ subprocedure REC_INFO_CUSTOM
 .   ifthen (meminfo(DB_PROC_FILE + ".GUI_CUSTOM.REC_INFO:O", 8) EQ 0)
 .     execute subroutine [DB_PROC_FILE + '.GUI_CUSTOM.REC_INFO'] (CASE_VALUE REC_TYPE_NUM FORM_INFO) RETURNING (PROCEED) DYNAMIC
 .   else
-.     display infobox 'There is custom information available but not displayed.  Contact your DBA- compile: GUI_CUSTOM.REC_INFO'
+.     display infobox 'There is custom information available but not displayed.' +CHAR(13) +CHAR(13) +
+                      'Contact your DBA- compile: GUI_CUSTOM.REC_INFO'
 .   endif
 . endif
 end subprocedure
