@@ -1,4 +1,4 @@
-PROCEDURE      GUI_MAIN.GOTO_SCREEN:T  (157379,65121)  |Last amended Sep 03, 2013,18:05:21
+PROCEDURE      GUI_MAIN.GOTO_SCREEN:T  (157521,51107)  |Last amended Jan 23, 2014,14:11:47
 subprocedure GOTO_SCREEN
 <comment> write 'Sub: GOTO_SCREEN: Case: ' CASE_VALUE ', Key1: ' KEY_VALUE_1 ', Key2: ' KEY_VALUE_2 ', Key3: ' KEY_VALUE_3 ', Key4: ' KEY_VALUE_4
 <comment> write 'Include possiblity to partialy select keys.  For example select key1 and show all recs with key1 value.'
@@ -40,13 +40,18 @@ C CHECK RECORD TYPE EXISTS
 .   ifthen (meminfo(DVP_MEMBER, 1) = MEM_O)
 .     execute subroutine [DVP_MEMBER] (1,1, CASE_VALUE, KEY_VALUE_1, KEY_VALUE_2, KEY_VALUE_3, KEY_VALUE_4, KEY_VALUE_5, KEY_VALUE_6, KEY_VALUE_7) returning (EXIT__#) DYNAMIC
 .   elseif (meminfo(SCREEN_MEMBER, 1) = MEM_O)
-.     ifthen (dbtype(0) eq 1)
-.       execute subroutine [SCREEN_MEMBER] (CASE_VALUE, KEY_VALUE_1, KEY_VALUE_2, KEY_VALUE_3, KEY_VALUE_4, KEY_VALUE_5, KEY_VALUE_6) DYNAMIC
-.     else
-.       execute subroutine [SCREEN_MEMBER] (KEY_VALUE_1, KEY_VALUE_2, KEY_VALUE_3, KEY_VALUE_4, KEY_VALUE_5, KEY_VALUE_6, CASE_VALUE) DYNAMIC
+.     ifthen (meminfo(SCREEN_MEMBER, 8) EQ 0)  | correctly compiled
+.       ifthen (dbtype(0) eq 1)
+.         execute subroutine [SCREEN_MEMBER] (CASE_VALUE, KEY_VALUE_1, KEY_VALUE_2, KEY_VALUE_3, KEY_VALUE_4, KEY_VALUE_5, KEY_VALUE_6) DYNAMIC
+.       else
+.         execute subroutine [SCREEN_MEMBER] (KEY_VALUE_1, KEY_VALUE_2, KEY_VALUE_3, KEY_VALUE_4, KEY_VALUE_5, KEY_VALUE_6, CASE_VALUE) DYNAMIC
+.       endif
+.     else | NOT COMPIILED RECENTLY
+.       display infobox 'There is custom information available but not displayed.' +CHAR(13) +CHAR(13) +
+                        'Contact your DBA- compile: GUI_CUSTOM.REC_INFO'
 .     endif
 .   else
-.     display infobox "Please contact Administrator.  " + SCREEN_NAME + " is not available"
+.     display infobox "Please contact Administrator.  " + SCREEN_NAME + " is not available."
 .   endif
 . endif
 <comment> write 5T 'End: GOTO_SCREEN: SCREEN_NAME  : ' SCREEN_NAME

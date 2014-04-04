@@ -1,4 +1,4 @@
-PROCEDURE      GUI_MAIN.CASE_FIRST:T  (157268,48966)  |Last amended May 15, 2013,13:36:06
+PROCEDURE      GUI_MAIN.CASE_FIRST:T  (157591,51897)  |Last amended Apr 03, 2014,14:24:57
 ifthen (numcases(0) = 0)
 <comment> write 'Asking for first case'
 . display textbox "What is the first case" response RESVAR CASE_TEMP_VALUE
@@ -7,7 +7,7 @@ ifthen (numcases(0) = 0)
 .   execute subprocedure CASE_VALIDATE
 .   ifthen (PROCEED EQ 1)
 .     CASE_VALUE = CASE_TEMP_VALUE
-.     execute subprocedure CASE_NEW_LIBRARY
+.     execute subprocedure CASE_NEW  | do not call the case_new_library as that gets the new case value from a GUI control
 .   endif
 . else
 .    write "hard to use the main gui without atleast one case"

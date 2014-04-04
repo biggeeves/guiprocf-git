@@ -1,4 +1,4 @@
-PROCEDURE      SYSTEM.DEL_FILE_ATT:T  (157459,40302)  |Last amended Nov 22, 2013,11:11:42
+PROCEDURE      SYSTEM.DEL_FILE_ATT:T  (157590,51413)  |Last amended Apr 02, 2014,14:16:53
 c Created: 3/21/2013
 c By: Greg Neils
 c Brief: Create Deletion File Attribute
@@ -15,7 +15,6 @@ program
 . DB_PROC_FILE = 'SIR'+ PFORMAT(SYSTEM(39),'zz') +'4'
 . execute subroutine SYSPROC.TOOLS.FILENAME (dsn(DB_PROC_FILE)) RETURNING (PATH$,NAME$,EXT$)
 . DAILY_DEL_FILE = PATH$ + 'deletions'
-write DAILY_DEL_FILE
 . if(fileis(DAILY_DEL_FILE) <> -1) t = makedir(DAILY_DEL_FILE)
 . DAILY_DEL_FILE = DAILY_DEL_FILE + '\deletion_reasons.txt'
 . EXECUTE DBMS ['SET ATTRIBUTE DAILY_DEL_FILE "'+ DAILY_DEL_FILE + '"']

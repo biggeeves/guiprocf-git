@@ -1,4 +1,4 @@
-PROCEDURE      GUI_MAIN.INITIALIZE:T  (157367,48453)  |Last amended Aug 22, 2013,13:27:33
+PROCEDURE      GUI_MAIN.INITIALIZE:T  (157590,45020)  |Last amended Apr 02, 2014,12:30:20
 C if some globals already exist leave them alone.
 c if globals don't exist set value to "off"
 program
@@ -6,13 +6,13 @@ program
 .   t= globals('COMMENT', '|')
 . endif
 . ifthen (sglobal('DEBUG_MODE') = '')
-.   t= globals('DEBUG_MODE', '|')
+.   t= globals('DEBUG_MODE', '0')
 . endif
 . ifthen (sglobal('FUTURE_DEV') = '')
 .   t= globals('FUTURE_DEV', '|')
 . endif
 . ifthen (sglobal('SHOW_CUSTOM_INFO') = '')
-.   t= globals('SHOW_CUSTOM_INFO', '|')
+.   t= globals('SHOW_CUSTOM_INFO', '0')
 . endif
 end program
 

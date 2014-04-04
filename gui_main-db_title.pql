@@ -1,15 +1,15 @@
-PROCEDURE      GUI_MAIN.DB_TITLE:T  (157416,59589)  |Last amended Oct 10, 2013,16:33:09
+PROCEDURE      GUI_MAIN.DB_TITLE:T  (157591,55644)  |Last amended Apr 03, 2014,15:27:24
 subprocedure DB_TITLE
 . GEN_STR1 = ''
-. HTML_COLOR = HTML_YELLOW  | DEFAULTS TO ASSUME LIVE
+. HTML_COLOR = HTML_YELLOW1  | DEFAULTS TO ASSUME LIVE
 . ifthen ( pattern( upper( DB_SR1_FILE), '@DEVELOPMENT@') eq 1 )
 .   HTML_COLOR = HTML_GREY
 .   GEN_STR1 = 'DEVELOPMENT DB'
 . elseif ( pattern( upper( DB_SR1_FILE), '@\CLONE\@') eq 1 )
-.   HTML_COLOR = HTML_RED
+.   HTML_COLOR = HTML_RED3
 .   GEN_STR1 = 'CLONE DB'
 . elseif ( pattern( upper( DB_SR1_FILE), '@SIRXS\@') eq 1 )
-.   HTML_COLOR = HTML_ORANGE
+.   HTML_COLOR = HTML_ORANGE3
 .   GEN_STR1 = 'Backup: ' + datec(cdate(SUBSTR(DB_SR1_FILE,26,16),'YYYYIMMIDD'),'Mmm/DD/YYYY')
 . endif
 

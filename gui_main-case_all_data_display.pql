@@ -1,4 +1,4 @@
-PROCEDURE      GUI_MAIN.CASE_ALL_DATA_DISPLAY:T  (157367,52613)  |Last amended Aug 22, 2013,14:36:53
+PROCEDURE      GUI_MAIN.CASE_ALL_DATA_DISPLAY:T  (157591,58277)  |Last amended Apr 03, 2014,16:11:17
 subprocedure CASE_ALL_DATA_DISPLAY
 <comment> write 'Sub: CASE_ALL_DATA_DISPLAY: Case:' CASE_VALUE
 c displays all record information to the user.
@@ -30,7 +30,7 @@ c displays all record information to the user.
 .   BUFFER_LINE = '. SHOW_LINE_$ = "<br>"'                                                  ; execute subprocedure BUFFER_WRITE
 .   BUFFER_LINE = '. if( REC_TYPE_COUNT gt 0) TOTAL_REC_TYPE_COUNT = TOTAL_REC_TYPE_COUNT + 1'     ; execute subprocedure BUFFER_WRITE
 .   BUFFER_LINE = '. TOTAL_COUNT = TOTAL_COUNT + REC_TYPE_COUNT'                               ; execute subprocedure BUFFER_WRITE
-.   BUFFER_LINE = '. IF(REC_TYPE_COUNT GT 0) SHOW_LINE_$ = SHOW_LINE_$ + "<font color=""#FF0000"">"'       ; execute subprocedure BUFFER_WRITE
+.   BUFFER_LINE = '. IF(REC_TYPE_COUNT GT 0) SHOW_LINE_$ = SHOW_LINE_$ + "<font color=""' + HTML_RED3 + '"">"'       ; execute subprocedure BUFFER_WRITE
 .   BUFFER_LINE = '. SHOW_LINE_$ = SHOW_LINE_$ + " " + format(REC_TYPE_COUNT) + "  :   ' + GEN_STR1 + '"'   ; execute subprocedure BUFFER_WRITE
 .   BUFFER_LINE = '. SHOW_LINE_$ = trimr(SHOW_LINE_$)         '                              ; execute subprocedure BUFFER_WRITE
 .   BUFFER_LINE = '. append line GUI_ITEM_LIST , SHOW_LINE_$ HTML'        ;execute subprocedure BUFFER_WRITE

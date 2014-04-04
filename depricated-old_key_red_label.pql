@@ -1,14 +1,14 @@
-PROCEDURE      DEPRICATED.OLD_KEY_RED_LABEL:T  (157423,50998)  |Last amended Oct 17, 2013,14:09:58
+PROCEDURE      DEPRICATED.OLD_KEY_RED_LABEL:T  (157591,58425)  |Last amended Apr 03, 2014,16:13:45
 subprocedure OLD_KEY_RED_LABEL | DEPRICATED 10/17/2013 BY GREG NEILS
 <comment> write 'Sub: OLD_KEY_RED_LABEL: ' [GETPOS(OLD_KEY_LIST_1)] [GETPOS(OLD_KEY_LIST_2)]  [GETPOS(OLD_KEY_LIST_3)] [GETPOS(OLD_KEY_LIST_4)]
 . DO REPEAT REPX = 1 to 4
 .   ifthen ( getpos(OLD_KEY_LIST_!REPX) eq 0)
-.     set item font OLD_KEY_LABEL_!REPX , 1 , 0 , 0, 0 ,"#C00000"
+.     set item font OLD_KEY_LABEL_!REPX , 1 , 0 , 0, 0 , HTML_RED4
 .   else
-.     set item FONT OLD_KEY_LABEL_!REPX , 1 , 0 , 0, 0 ,"#000000"
+.     set item FONT OLD_KEY_LABEL_!REPX , 1 , 0 , 0, 0 , HTML_BLACK6
 .   endif
 . end repeat
 c exception for no data in key one
-. if(gettxt(OLD_KEY_LIST_1) eq 'No data') set item font OLD_KEY_LABEL_1 , 1 , 0 , 0, 0 ,"#C00000"
+. if(gettxt(OLD_KEY_LIST_1) eq 'No data') set item font OLD_KEY_LABEL_1 , 1 , 0 , 0, 0 , HTML_RED4
 end subprocedure
 END PROCEDURE

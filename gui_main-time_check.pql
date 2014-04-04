@@ -1,8 +1,8 @@
-PROCEDURE      GUI_MAIN.TIME_CHECK:T  (157232,51589)  |Last amended Apr 09, 2013,14:19:49
+PROCEDURE      GUI_MAIN.TIME_CHECK:T  (157529,44973)  |Last amended Jan 31, 2014,12:29:33
 subprocedure TIME_CHECK
 <comment> write 'Sub: TIME_CHECK: ' TIME_LEFT
 . TIME_LEFT = TIME_LEFT - 1
-. set item TIME_LABEL 'Minutes until time out: ' +format(TIME_LEFT)
+. set item TIME_LABEL 'Minutes until time out: ' + format(TIME_LEFT)
 . ifthen (TIME_LEFT ge 5) hide item TIME_LABEL
 . elseif (TIME_LEFT eq 4) show item TIME_LABEL
 . elseif (TIME_LEFT eq 0) execute dbms "CALL DCCPROCF.EXIT.MAIN"

@@ -1,4 +1,4 @@
-PROCEDURE      GUI_MAIN.ITEM_VISIBLE:T  (157417,45639)  |Last amended Oct 11, 2013,12:40:39
+PROCEDURE      GUI_MAIN.ITEM_VISIBLE:T  (157590,45038)  |Last amended Apr 02, 2014,12:30:38
 subprocedure ITEM_VISIBLE
 | first section is the show/hide portion.
 | defaults for every page
@@ -39,7 +39,7 @@ c GUI PROCFILE: LIVE OR RELEASE CANIDATE.
 .   check item COMMENT_SHOW
 . endif
 
-. ifthen (sglobal('DEBUG_MODE') eq '.')
+. ifthen (sglobal('DEBUG_MODE') eq '1')
 .   check item TURN_DEBBUGER_ON
 . endif
 

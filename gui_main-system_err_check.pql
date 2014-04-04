@@ -1,6 +1,6 @@
-PROCEDURE      GUI_MAIN.SYSTEM_ERR_CHECK:T  (157231,41760)  |Last amended Apr 08, 2013,11:36:00
+PROCEDURE      GUI_MAIN.SYSTEM_ERR_CHECK:T  (157590,45058)  |Last amended Apr 02, 2014,12:30:58
 subprocedure SYSTEM_ERR_CHECK
-ifNOT (sglobal('DEBUG_MODE') EQ '.') EXIT SUBPROCEDURE
+ifNOT (sglobal('DEBUG_MODE') EQ '1') EXIT SUBPROCEDURE
 . ifthen (0 lt nglobal('GERROR') or  nglobal('TERROR') or nglobal('GWARNING') )
 .   BUFFER_LINE = 'Total command errors: <GERROR>, Warnings: <GWARNING>, Total task errors: <TERROR>, '
 .   insert line into buffer 'DEBUG_INFO' numbered DEBUG_LINE from BUFFER_LINE
