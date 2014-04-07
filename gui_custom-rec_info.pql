@@ -1,4 +1,4 @@
-PROCEDURE      GUI_CUSTOM.REC_INFO:T  (157591,58210)  |Last amended Apr 03, 2014,16:10:10
+PROCEDURE      GUI_CUSTOM.REC_INFO:T  (157595,41451)  |Last amended Apr 07, 2014,11:30:51
 c outputs to gui item 1 row for each record in specified record type.
 c Example:   IN SIR014.GUI_CUSTOM.CASE_INFO WRITE ONE LINE OF CODE
 c            call GUIPROCF.GUI_CUSTOM.REC_INFO
@@ -37,7 +37,7 @@ CIF EQ 1, 0<LOCAL_CASE_TYPE>    | STRING.  TREAT EVERYTHING ELSE AS NUMERIC
 CIF FALSE
 . OLD CASE IS LOCAL_CASE_ID# lock=2
 CIF END
-.   GENSTR1 = '<body readonly="true"><font color="' + HTML_BLUE3 + '" size="+2" face="Arial"><br>'
+.   GENSTR1 = '<body readonly="true"><font color="#336af3" size="+2" face="Arial"><br>'
 .   append line ITEM_NUMBER, GENSTR1 HTML
 .   PROCEED = 1
 . DO REPEAT RECX = <GREC1>
@@ -48,7 +48,7 @@ CIF END
 .     ifthen(count(RECX) EQ 0)
 .       append line ITEM_NUMBER, 'No Records' HTML
 .     else
-.       GENSTR1 = 'Record Summary<BR><font color="' + HTML_BLACK5 + '">'
+.       GENSTR1 = 'Record Summary<BR><font color="#404040">'
 .       append line  ITEM_NUMBER, GENSTR1 HTML
 .       ifthen (nkeys(RECX) EQ 0)
 .         process rec RECX

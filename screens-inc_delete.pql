@@ -1,4 +1,4 @@
-PROCEDURE      SCREENS.INC_DELETE:T  (157464,52845)  |Last amended Nov 27, 2013,14:40:45
+PROCEDURE      SCREENS.INC_DELETE:T  (157595,42342)  |Last amended Apr 07, 2014,11:45:42
 ifthen(IDELETE eq 0)
 . set failscr (-1)
 . set failmess ("Sorry, You cannot delete this record.")
@@ -22,9 +22,9 @@ else
 .     set failmess ("It was NOT deleted.")
 .   else
 .     STR$1 = STR$1 + ' Reason: "' + MESSTEXT$ +'"'
-.     open (tmp) dsnvar =DELFILE$ append
-.       write (tmp) STR$1
-.     close (tmp)
+.     open (delfile) dsnvar =DELFILE$ append
+.       write (delfile) STR$1
+.     close (delfile)
 .   endif
 . else
 .   set failscr (-1)
