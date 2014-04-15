@@ -1,0 +1,21 @@
+PROCEDURE      TOOLS.CHECK_VERSION:T  (157603,50303)  |Last amended Apr 15, 2014,13:58:23
+C SET THE GUIPROCF ATTRIBUTE TO POINT TO LIVE VERSION OR RELEASE CANIDATE
+C If the global GUI_PROCF_RC is set to 1, use the Release Canidate Procfile.
+
+program
+. string  *    300   PATH$                    | File: Path
+. string  *    300   FILE_PATH                    | File: Path
+. string  *    100   FILE_NAME                    | File: Name
+. string  *      6   FILE_EXT                     | File: Ext
+. STRING  *    300   EXE_STRING
+IFTHEN ( SGLOBAL ( 'GUI_PROCF_RC' ) EQ '1' ) | development version
+. EXE_STRING =  'attribute GUIPROCF "' + dsn( 'GUIPROCF_RC' ) + '"'
+ELSE | live version
+c use live version.  Make sure "-rc" is removed from attribute
+. PATH$ = REPLACE( dsn( 'GUIPROCF' ) , '-RC' , '', 1 ,1 ,0)
+. PATH$ = REPLACE( PATH$ , '-rc' , '', 1 ,1 ,0)
+. EXE_STRING = 'attribute GUIPROCF = "' + PATH$  + '"'
+ENDIF
+execute dbms EXE_STRING
+END PROGRAM
+END PROCEDURE

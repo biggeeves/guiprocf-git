@@ -1,18 +1,27 @@
-PROCEDURE      GUI_MAIN.INITIALIZE:T  (157590,45020)  |Last amended Apr 02, 2014,12:30:20
+PROCEDURE      GUI_MAIN.INITIALIZE:T  (157603,50882)  |Last amended Apr 15, 2014,14:08:02
 C if some globals already exist leave them alone.
-c if globals don't exist set value to "off"
+c if globals don't exist set value to "off" (or if set to zero length string)
 program
-. ifthen (sglobal('COMMENT') = '')
-.   t= globals('COMMENT', '|')
+. INTEGER * 1 T
+. ifthen ( sglobal('COMMENT') eq '')
+.   t = globals('COMMENT', '|')
+. elseif ( exists( sglobal('COMMENT') ) eq 0)
+.   t = globals('COMMENT', '|')
 . endif
-. ifthen (sglobal('DEBUG_MODE') = '')
-.   t= globals('DEBUG_MODE', '0')
+. ifthen ( sglobal('DEBUG_MODE') eq '')
+.   t = globals('DEBUG_MODE', '0')
+. elseif ( exists( sglobal('DEBUG_MODE') ) eq 0 )
+.   t = globals('DEBUG_MODE', '0')
 . endif
-. ifthen (sglobal('FUTURE_DEV') = '')
-.   t= globals('FUTURE_DEV', '|')
+. ifthen ( sglobal('FUTURE_DEV') eq '')
+.   t = globals('FUTURE_DEV', '|')
+. elseif ( exists( sglobal('FUTURE_DEV') ) eq 0 )
+.   t = globals('FUTURE_DEV', '|')
 . endif
-. ifthen (sglobal('SHOW_CUSTOM_INFO') = '')
-.   t= globals('SHOW_CUSTOM_INFO', '0')
+. ifthen ( sglobal('SHOW_CUSTOM_INFO') eq '')
+.   t = globals('SHOW_CUSTOM_INFO', '0')
+. elseif ( exists( sglobal('SHOW_CUSTOM_INFO') ) eq 0 )
+.   t = globals('SHOW_CUSTOM_INFO', '0')
 . endif
 end program
 

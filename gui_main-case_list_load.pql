@@ -1,4 +1,4 @@
-PROCEDURE      GUI_MAIN.CASE_LIST_LOAD:T  (157283,67396)  |Last amended May 30, 2013,18:43:16
+PROCEDURE      GUI_MAIN.CASE_LIST_LOAD:T  (157603,53011)  |Last amended Apr 15, 2014,14:43:31
 subprocedure CASE_LIST_LOAD
 <COMMENT> write 'Sub: CASE_LIST_LOAD'
 . | start with a blank canvas

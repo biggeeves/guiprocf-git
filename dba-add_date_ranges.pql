@@ -1,4 +1,4 @@
-PROCEDURE      DBA.ADD_DATE_RANGES:T  (157262,64575)  |Last amended May 09, 2013,17:56:15
+PROCEDURE      DBA.ADD_DATE_RANGES:T  (157603,51990)  |Last amended Apr 15, 2014,14:26:30
 | File name: Add_Date_Ranges.pql
 | Path:      various
 | Creator:   Greg Neils and David Merle
@@ -9,7 +9,7 @@ PROCEDURE      DBA.ADD_DATE_RANGES:T  (157262,64575)  |Last amended May 09, 2013
 
 call SYSPROC.TOOLS.HTMLCODE
 
-call DCCPROCF.SYSTEM.ALLRECS
+call GUIPROCF.SYSTEM.ALLRECS
 
 program
 integer *     1   YNC_VAR#                   | What the user choose to do.

@@ -1,4 +1,4 @@
-PROCEDURE      STRUCTURE.ALLCALL:T  (157274,43949)  |Last amended May 21, 2013,12:12:29
+PROCEDURE      STRUCTURE.ALLCALL:T  (157603,52017)  |Last amended Apr 15, 2014,14:26:57
 | File name: structure
 | Path:      GUIPROCF
 | Creator:   Greg Neils
@@ -7,7 +7,7 @@ PROCEDURE      STRUCTURE.ALLCALL:T  (157274,43949)  |Last amended May 21, 2013,1
 | Full Description:    Create globals for record types, create html globals, create user folder for outputs.
 
 
-call DCCPROCF.SYSTEM.ALLRECS
+call GUIPROCF.SYSTEM.ALLRECS
 
 call SYSPROC.TOOLS.HTMLCODE  |sets html globals
 
