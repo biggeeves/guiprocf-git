@@ -21,6 +21,9 @@ execute subroutine SYSPROC.TOOLS.FILENAME (dsn('procfile')) RETURNING (FILE_PATH
 IMPORT_FOLDER = FILE_PATH + FILE_NAME + '-git'
 
 display textbox "Import Folder is..." RESPONSE RESVAR, IMPORT_FOLDER
+c remove trailing slash if on is there.
+if ( substr( import_folder, len(import_folder), 1 ) eq '\' ) import_folder = substr( import_folder, 1, len(import_folder ) -1)
+
 
 IF (RESVAR <0 ) EXIT PROGRAM
 if (fileis(IMPORT_FOLDER) <> -1) write "No such directory exists." / IMPORT_FOLDER; exit program
