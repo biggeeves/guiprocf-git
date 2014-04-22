@@ -628,12 +628,12 @@ execute subprocedure page
 <comment> write "initialize DCC vars"
 . string  *    600   GEN_STR1              | Generic/General String
 . integer *      1   CASE_TYPE             | What variable type is the case id
-. string  *     32   CASE_NAME             | Variable name of case, varname(0, 1)
+. string  *     36   CASE_NAME             | Variable name of case, varname(0, 1)
 . string  *     72   CASE_LABEL            | Variable label of case, vavarname(0, 1)
-. string  *     32   CASE_TEMP_VALUE        | Case Test Value
-. string  *     32   CASE_VALUE            | Case Value
+. string  *     36   CASE_TEMP_VALUE        | Case Test Value
+. string  *     36   CASE_VALUE            | Case Value
 . integer *      1   CASE_FOUND            | Does the case exists.
-. string  *     32   BUFFER_NAME           | Buffer Name
+. string  *     36   BUFFER_NAME           | Buffer Name
 . string  *    300   BUFFER_LINE           | Text to add to buffer
 . integer *      4   BUFF#                | Current line number to write in buffer
 . integer *      1   YES NO
@@ -652,11 +652,11 @@ execute subprocedure page
 . integer *      2   REC_ROW_COUNT          | How many rows of records are there
 . integer *      2   FORM_COUNT              | Space out the forms
 . integer *      2   KEY_COUNT             | key count
-. string  *     32   KEY_NAME_1   KEY_NAME_2   KEY_NAME_3   KEY_NAME_4
-. string  *     32   KEY_VALUE_1  KEY_VALUE_2  KEY_VALUE_3  KEY_VALUE_4 KEY_VALUE_5  KEY_VALUE_6  KEY_VALUE_7
+. string  *     36   KEY_NAME_1   KEY_NAME_2   KEY_NAME_3   KEY_NAME_4
+. string  *     36   KEY_VALUE_1  KEY_VALUE_2  KEY_VALUE_3  KEY_VALUE_4 KEY_VALUE_5  KEY_VALUE_6  KEY_VALUE_7
 . integer *      1   KEY_TYPE_1   KEY_TYPE_2   KEY_TYPE_3   KEY_TYPE_4  KEY_TYPE_5   KEY_TYPE_6  KEY_TYPE_7
 . string  *     72   KEY_LABEL_1  KEY_LABEL_2  KEY_LABEL_3  KEY_LABEL_4
-. string  *     32   KEY$N     KEY$V      | generic key name; key value (can be key1, key2, key3, or key4.
+. string  *     36   KEY$N     KEY$V      | generic key name; key value (can be key1, key2, key3, or key4.    Added a couple of spaces for manipulations like adding double qoutes
 . integer *      1   KEY$T                | generic key type
 . string  *    100   VTYPE_MAP             | generic Variable Type Map
 . real    *      8   KEY_MIN KEY_MAX        | generic Key Min and Max Values
@@ -668,8 +668,8 @@ execute subprocedure page
 . time               TIME#V ('HHiMMiSS')  | Right format for a Time Key
 . integer *      2   KEY_FOCUS
 . integer *      1   VIEW_SPLASH VIEW_HOME VIEW_OLD_KEYS VIEW_NEW_KEYS VIEW_TABLE VIEW_DBA VIEW_HIDDEN |  Which Page View, easily rearrange pages
-. string  *     32   SCREEN_RECTYPE_CHECK  | Is a record type correctly linked to a screen name?
-. string  *     32   SCREEN_NAME           | Start of Screen Name
+. string  *     36   SCREEN_RECTYPE_CHECK  | Is a record type correctly linked to a screen name?
+. string  *     36   SCREEN_NAME           | Start of Screen Name
 . string  *    300   SCREEN_MEMBER         | Fully qualified Name for PQL Painter Screen
 . string  *    300   DVP_MEMBER            | Fully qualified Name for DVPainter Screen
 . integer *      1   EXIT__#              | How did they exit the screen?
