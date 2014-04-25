@@ -1,0 +1,51 @@
+PROCEDURE      SCREENS.MAKE_SCREENS_ALLCALL:T  (157613,40186)  |Last amended Apr 25, 2014,11:09:46
+PROGRAM
+. INTEGER *      2   REC_TYPE_NUM    | RECORD_TYPE NUMBER
+. STRING  *    256   MEMBER_NAME
+. string  *    256   RECORD_NAME
+. STRING  *    200   MEMBER_LINE
+. INTEGER *      2   MY_IOSTAT       | IOSTAT FOR OPENING MEMBER
+. string  *     32   DB_PROC_FILE    | points to database procfile
+. INTEGER *      1   RESVAR
+
+. DB_PROC_FILE = 'SIR'+ PFORMAT(SYSTEM(39),'zz') +'4'
+. MEMBER_NAME  = 'SCREENS.ALLCALL'
+
+C CHECK IF DB PROCFILE IS AROUND.
+. ifTHEN (0 eq len(DB_PROC_FILE) or exists(DB_PROC_FILE) )
+.   display infobox 'No DB_PROC_FILE defined.  EXITING.  CONTACT ADMIN.'
+.   EXIT PROGRAM
+. ENDIF
+
+. execute dbms ["set procfile " + DB_PROC_FILE ] | screens go into database procfile file, not the guiprocf
+
+
+C CHECK FOR EXISTING SCREENS.ALLCALL
+. ifthen ( meminfo (DB_PROC_FILE + '.' + MEMBER_NAME + ':T', 1 )  > 0 ) | MEMBER ALREADY EXISTS
+.    DISPLAY YNBOX "THIS WILL RE-WRITE SCREENS.ALLCAL.    CONTINUE?" RESPONSE RESVAR
+.    IFTHEN (RESVAR EQ 0 )
+.      DISPLAY INFOBOX "CANCELED"
+.      EXIT PROGRAM
+.    ENDIF
+. ENDIF
+
+
+
+. open ( MEMBER_NAME ) dsnvar = MEMBER_NAME iostat = MY_IOSTAT  write lrecl=200 REPLACE member
+. ifthen (MY_IOSTAT NE 0)
+.   write 'unable to write to member.  exiting.  screen not made.  IOSTAT:' MY_IOSTAT
+.   EXIT PROGRAM
+. endif
+. write ( MEMBER_NAME ) '| Generate by GUIPROCF' /
+
+. for EACH_RECORD_NUM = 1,  nrecs( 0 )
+.   ifthen ( nvarsc( EACH_RECORD_NUM ) > 0 )
+.     MEMBER_LINE = 'CALL SCREENS.'  + recname( EACH_RECORD_NUM )
+.     write ( MEMBER_NAME  )  MEMBER_LINE
+.   endif
+. end for
+
+. close (MEMBER_NAME)
+
+END PROGRAM
+END PROCEDURE

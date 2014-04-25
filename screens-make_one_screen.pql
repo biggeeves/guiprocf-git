@@ -1,24 +1,8 @@
-PROCEDURE      SCREENS.MAKE_ONE_SCREEN:T  (157613,37486)  |Last amended Apr 25, 2014,10:24:46
+PROCEDURE      SCREENS.MAKE_ONE_SCREEN:T  (157613,42327)  |Last amended Apr 25, 2014,11:45:27
 C MAKE ONE DATA ENTRY SCREEN THAT WORKS WITH THE MAIN DATA ENTRY GUI
 C PASS THE SCREEN NUMBER YOU WANT TO MAKE
 
-CIF EQ 1,2
-SEPARATE MEMBER FOR ALL_CALLS
-. write ( ALL_CALL )  'PROCEDURE      SCREENS.ALLCALL'
-. for EACH_RECORD_NUM = 1,  nrecs( 0 )
-.   ifthen ( nvarsc( EACH_RECORD_NUM ) > 0 )
-.     RECORD_NAME = recname( EACH_RECORD_NUM )
-.     write ( ALL_CALL )  'CALL SCREENS.'  RECORD_NAME
-.   endif
-. end for
-. write ( ALL_CALL )  'END PROCEDURE'
-CIF END
-
-CIF EQ 1,2   | SHOULD BE IN AN ALL CALL OF SOME SORT
-. for EACH_RECORD_NUM = 1,  nrecs( 0 )
-CIF END
-
-. SUBROUTINE MAKE_ONE_SCREEN ( REC_TYPE_NUM ) CRWARN   REPLACE
+. SUBROUTINE MAKE_ONE_SCREEN ( REC_TYPE_NUM ) CRWARN   REPLACE NODATABASE
 . INTEGER *      2   REC_TYPE_NUM    | RECORD_TYPE NUMBER
 . STRING  *    256   MEMBER_NAME
 . string  *    256   RECORD_NAME
@@ -28,7 +12,7 @@ CIF END
 . string  *     36   CASE_NAME       | Variable name of case, varname(0, 1)
 . integer *      1   CASE_TYPE       | What variable type is the case id
 . integer *      2   KEY_COUNT       | key count
-. string  *     36   KEY_NAME       | generic key name
+. string  *     36   KEY_NAME        | generic key name
 . INTEGER *      2   MY_IOSTAT       | IOSTAT FOR OPENING MEMBER
 . integer *      1   IS_KEY           | IS IT A KEY VARIABLE
 . INTEGER *      1   YES NO
@@ -41,6 +25,9 @@ CIF END
 
 . DB_PROC_FILE = 'SIR'+ PFORMAT(SYSTEM(39),'zz') +'4'
 
+. if(0 eq len(DB_PROC_FILE) or exists(DB_PROC_FILE) ) display infobox 'No DB_PROC_FILE defined.  EXITING.  CONTACT ADMIN.'; RETURN
+
+
 . execute dbms ["set procfile " + DB_PROC_FILE ] | screens go into database procfile file, not the guiprocf
 
 set NO (0) YES (1)
@@ -51,15 +38,10 @@ FOR EACH_FAMILY = 1, SYSTEM(57)
 . IF ( FAMNAME(EACH_FAMILY) EQ 'SCREENS') SCREENS_EXIST = 1
 END FOR
 
+c create the non-existent family
 IFTHEN (SCREENS_EXIST EQ 0 )
 .  COMPUTE COMSTR = 'CREATE FAMILY SCREENS'
 .  EXECUTE DBMS COMSTR
-ELSE | FAMILY EXISTS
-.  DISPLAY YNBOX "THIS WILL OVERRIDE MEMBERS IN THE FAMILY CALLED SCREENS. CONTINUE?" RESPONSE RESVAR
-.  IFTHEN (RESVAR EQ 0 )
-.    DISPLAY INFOBOX "CANCELED"
-.    RETURN
-.  ENDIF
 ENDIF
 
 C DOUBLE CHECK FOR FAMILY NAME
@@ -79,6 +61,15 @@ C  ASK IF WANT TO APPEND
 . SCREEN_PAGE = 1
 . RECORD_NAME = trimlr( recname( REC_TYPE_NUM ) )
 . MEMBER_NAME = 'SCREENS.' + RECORD_NAME
+
+ifthen ( meminfo (DB_PROC_FILE + '.' + MEMBER_NAME + ':T', 1 )  > 0 ) | MEMBER ALREADY EXISTS
+.  DISPLAY YNBOX "THIS WILL RE-WRITE " + MEMBER_NAME + ". CONTINUE?" RESPONSE RESVAR
+.  IFTHEN (RESVAR EQ 0 )
+.    DISPLAY INFOBOX "CANCELED"
+.    RETURN
+.  ENDIF
+ENDIF
+
 
 . open ( MEMBER_NAME ) dsnvar = MEMBER_NAME iostat = MY_IOSTAT  write lrecl=200 REPLACE member
 . ifthen (MY_IOSTAT NE 0)
