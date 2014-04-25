@@ -1,4 +1,4 @@
-PROCEDURE      SCREENS.MAKE_ONE_SCREEN:T  (157612,83812)  |Last amended Apr 24, 2014,23:16:52
+PROCEDURE      SCREENS.MAKE_ONE_SCREEN:T  (157613,37486)  |Last amended Apr 25, 2014,10:24:46
 C MAKE ONE DATA ENTRY SCREEN THAT WORKS WITH THE MAIN DATA ENTRY GUI
 C PASS THE SCREEN NUMBER YOU WANT TO MAKE
 
@@ -94,11 +94,6 @@ C  ASK IF WANT TO APPEND
 . write ( MEMBER_NAME ) ['RECNUMBER# = RECNUM("' + format(REC_TYPE_NUM) + '")']
 . write ( MEMBER_NAME ) 'CALL GUIPROCF.SCREENS.INC_HEADER'
 
-| DEBUG CONTINUE FROM HERE
-. IFTHEN (1 EQ 0) | CHECK FOR MEMBER AND INCLUDE IT IF IT IS THERE.
-.   write ( MEMBER_NAME ) 'CALL SCREENS.INC_SUBJINFO'
-. ENDIF
-
 . KEY_COUNT = nkeys( REC_TYPE_NUM )
 
 . USING_KEYS = ''
@@ -116,14 +111,14 @@ C  ASK IF WANT TO APPEND
 . for EACH_KEY = 1, KEY_COUNT
 .   KEY_NAME = keyname( REC_TYPE_NUM, dbtype( 0 ) + EACH_KEY )
 .   ifthen ( vtype( REC_TYPE_NUM, KEY_NAME ) = 3 )
-.     write ( MEMBER_NAME ) ['DATE KEY' + format( EACH_KEY ) + '_ ( "' + datemap( REC_TYPE_NUM, KEY_NAME ) + '" )']
-.     USING_KEYS = USING_KEYS + ' KEY' + format( EACH_KEY ) + '_'
+.     write ( MEMBER_NAME ) ['DATE KEY_' + format( EACH_KEY ) + ' ( "' + datemap( REC_TYPE_NUM, KEY_NAME ) + '" )']
+.     USING_KEYS = USING_KEYS + ' KEY_' + format( EACH_KEY )
 .   elseif ( vtype( REC_TYPE_NUM, KEY_NAME ) = 4 )
-.     write ( MEMBER_NAME ) ['TIME KEY' + format( EACH_KEY ) + '_ ( "' + timemap( REC_TYPE_NUM, KEY_NAME ) + '" )']
-.     USING_KEYS = USING_KEYS + ' KEY' + format( EACH_KEY ) + '_'
+.     write ( MEMBER_NAME ) ['TIME KEY_' + format( EACH_KEY ) + ' ( "' + timemap( REC_TYPE_NUM, KEY_NAME ) + '" )']
+.     USING_KEYS = USING_KEYS + ' KEY_' + format( EACH_KEY )
 .   elseif ( vtype( REC_TYPE_NUM, KEY_NAME ) >= 5 )
 .     write ( MEMBER_NAME ) ['REAL * 8 KEY#' + format( EACH_KEY )]
-.     write ( MEMBER_NAME ) ['KEY' + format( EACH_KEY ) + '# = numbr( KEY$' + format( EACH_KEY ) + ')']
+.     write ( MEMBER_NAME ) ['KEY#' + format( EACH_KEY ) + ' = numbr( KEY$' + format( EACH_KEY ) + ')']
 .     USING_KEYS = USING_KEYS + ' KEY#' + format( EACH_KEY )
 .   else
 .     USING_KEYS = USING_KEYS + ' KEY$' + format( EACH_KEY )
@@ -152,40 +147,40 @@ C  ASK IF WANT TO APPEND
 .   write ( MEMBER_NAME )  '     WRITE  ( CALL GUIPROCF.SCREENS.INC_WRITE; )'
 . ENDIF
 . write ( MEMBER_NAME )  '     DELETE ( CALL GUIPROCF.SCREENS.INC_DELETE; )' /
+                         'FDISPLAY TEXT (' /
+                         '      fst(recdoc(RECNUMBER#, 0), recdoc(RECNUMBER#, 1), "")' /
+                         '      )' /
+                         '      AT 2, 4 WIDTH 83' /
+                         '      FONT (BOLD ) '/
                          'FDISPLAY       TEXT (' /
 			 '      MESSTEXT$' /
 			 '      )' /
-			 '      AT 2,85 WIDTH 38' /
-                         '      FONT (BOLD ) ' /
-                         'FDISPLAY TEXT (' /
-                         '           fst(recdoc(RECNUMBER#, 0), recdoc(RECNUMBER#, 1), "")' /
-                         '           )' /
-                         '      AT 5, 40 WIDTH 44' /
-                         '      FONT (BOLD ) '
+			 '      AT 2,90 WIDTH 42' /
+                         '      FONT (BOLD ) ' / /
 
-. DO REPEAT REP_VAR = DWHO  DSTAMP  DCCWHO  DCCDATE  DCCTIME  DCCEDITS /
-            REP_LINE = 1 2 3 4 5 6
-.   ifthen ( vtype( REC_TYPE_NUM, 'REP_VAR' ) > 0 ) | it is defined in schema
+. DO REPEAT REP_VAR = DWHO   DSTAMP    DCCDATE  DCCWHO  DCCTIME  DCCEDITS /
+            REP_COL = 1 18 35 65  82 99
+.   ifthen ( vtype( REC_TYPE_NUM, 'REP_VAR' ) > 0 )
 .     write ( MEMBER_NAME )  'FIELD REP_VAR' /
-                              '      DATA AT REP_LINE, 105 WIDTH 13' /
+                              '      DATA AT 31, REP_COL WIDTH 17' /
                               '      NOLABELS' /
-                              '      PROMPT VARLABEL AT REP_LINE, 88 WIDTH 16' /
+                              '      PROMPT VARLABEL AT 32, REP_COL WIDTH 17' /
                               '      FONT (FGROUND=C000FF )' /
                               '      READONLY' /
 .   ENDIF
 . END REPEAT
 
-. SCREEN_LINE = 6 | provide space at the top of the first screen
+. SCREEN_LINE = 3 | provide space at the top of the first screen
 
 c put keys at the top of the file
 . for EACH_KEY = 1, KEY_COUNT + dbtype( 0 )
 .   VAR_NAME = trim( keyname( REC_TYPE_NUM, EACH_KEY ) )
 .   SCREEN_LINE = SCREEN_LINE + 1
 .   write ( MEMBER_NAME )  [ 'FIELD ' + VAR_NAME ]
-.   write ( MEMBER_NAME )  [ '    PROMPT VARLABEL AT ' + format(SCREEN_LINE) + ', 1 WIDTH 18' ]
-.   write ( MEMBER_NAME )  [ '    DATA AT ' + format(SCREEN_LINE) +  ', 20 WIDTH 13' ]
+.   write ( MEMBER_NAME )  [ '    PROMPT VARLABEL AT ' + format(SCREEN_LINE) + ', 4 WIDTH 18' ]
+.   write ( MEMBER_NAME )  [ '    DATA AT ' + format(SCREEN_LINE) +  ', 23 WIDTH 13' ]
 .   write ( MEMBER_NAME )  [ '    FONT ( BOLD BGROUND=FFFF00  )' ]
-.   write ( MEMBER_NAME )  [ '    LABELS AT ' + format(SCREEN_LINE) +  ', 32 WIDTH 16' ]
+.   write ( MEMBER_NAME )  [ '    LABELS AT ' + format(SCREEN_LINE) +  ', 36 WIDTH 16' ]
 .   write ( MEMBER_NAME )  [ '    FONT ( BOLD BGROUND=FFFF00  )' ]
 . end for
 
@@ -203,38 +198,38 @@ c put keys at the top of the file
 .   if ( IS_KEY = YES ) next for | keys were already made at the top of the file
 .   SCREEN_LINE = SCREEN_LINE + 1
 .   write ( MEMBER_NAME )  [ 'FIELD ' + VAR_NAME ]
-.   write ( MEMBER_NAME )  [ '      PROMPT VARLABEL AT ' + format(SCREEN_LINE) +  ', 1 WIDTH 68' ]
-.   write ( MEMBER_NAME )  [ '      DATA AT ' + format(SCREEN_LINE) + ', 70 WIDTH 13' ]
-.   write ( MEMBER_NAME )  [ '      LABELS AT ' + format(SCREEN_LINE) + ', 83 WIDTH 23' ]
+.   write ( MEMBER_NAME )  [ '      PROMPT VARLABEL AT ' + format(SCREEN_LINE) +  ', 4 WIDTH 68' ]
+.   write ( MEMBER_NAME )  [ '      DATA AT ' + format(SCREEN_LINE) + ', 72 WIDTH 13' ]
+.   write ( MEMBER_NAME )  [ '      LABELS AT ' + format(SCREEN_LINE) + ', 85 WIDTH 23' ]
 .   ifthen ( amod( SCREEN_LINE, 29 ) eq 0 )  | page break
 .     ifnotthen ( EACH_VAR = nvarsc( REC_TYPE_NUM ) ) | CHECK FOR MORE VARIABLES, IF SO: CREATE NEW PAGE
 .       write ( MEMBER_NAME )  'PAGE'
-.       SCREEN_LINE = 1   | reset line number to bring variables to top of new page
+.       SCREEN_LINE = 3   | reset line number to bring variables to top of new page
 .       SCREEN_PAGE = SCREEN_PAGE + 1
 .     endif
 .   endif
 . end for
-. write ( MEMBER_NAME )  'FBUTTON EXIT' /
-                         '      AT 1, 120 WIDTH 13' /
-                         '      PROMPT "E&xit"' /
-                         'FBUTTON WRITE' /
-                         '      AT 2, 120 WIDTH 13' /
+. write ( MEMBER_NAME )  'FBUTTON WRITE' /
+                         '      AT 1, 50 WIDTH 14' /
                          '      PROMPT "&Save"' /
                          'FBUTTON DELETE' /
-                         '      AT 2, 120 WIDTH 13' /
+                         '      AT 1, 67 WIDTH 14' /
                          '      PROMPT "Delete"' /
+                         'FBUTTON EXIT' /
+                         '      AT 1, 118 WIDTH 14' /
+                         '      PROMPT "E&xit"' /
 . ifthen ( SCREEN_PAGE > 1 )
 .   write ( MEMBER_NAME )  'FBUTTON PAGEUP' /
-                           '      AT 3, 120 WIDTH 6' /
+                           '      AT 1, 84 WIDTH 14' /
                            '      PROMPT "Pg&Up"' /
                            'FBUTTON PAGEDOWN'/
-                           '      AT 3, 127 WIDTH 6'/
+                           '      AT 1, 101 WIDTH 14'/
                            '      PROMPT "Pg&Dn"' /
 . endif
 . write ( MEMBER_NAME )  'FBUTTON STATUS' /
                          '      AT 33, 1 WIDTH 40' /
-                         'END SCREEN' /
-                         'END FORM' /
+. write ( MEMBER_NAME )  'END SCREEN'
+. write ( MEMBER_NAME )  'END FORM'
 
 . close MEMBER_NAME
 
