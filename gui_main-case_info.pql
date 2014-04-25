@@ -1,7 +1,8 @@
-PROCEDURE      GUI_MAIN.CASE_INFO:T  (157591,58035)  |Last amended Apr 03, 2014,16:07:15
+PROCEDURE      GUI_MAIN.CASE_INFO:T  (157610,52521)  |Last amended Apr 22, 2014,14:35:21
 c display case specific info
 
 subprocedure CASE_INFO
+<comment> write 'Sub: CASE_INFO'
 . remove all CASE_BREAD_CRUMB
 . GEN_STR1 = '<body bgcolor="' + HTML_WHITE +'" readonly="true"><p align="center">'
            + '<font size="+3" color="' + HTML_BLUE3 + '"><B>' + CASE_VALUE

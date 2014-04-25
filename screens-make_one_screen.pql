@@ -1,4 +1,4 @@
-PROCEDURE      SCREENS.MAKE_ONE_SCREEN:T  (157612,52246)  |Last amended Apr 24, 2014,14:30:46
+PROCEDURE      SCREENS.MAKE_ONE_SCREEN:T  (157612,83812)  |Last amended Apr 24, 2014,23:16:52
 C MAKE ONE DATA ENTRY SCREEN THAT WORKS WITH THE MAIN DATA ENTRY GUI
 C PASS THE SCREEN NUMBER YOU WANT TO MAKE
 
@@ -19,7 +19,6 @@ CIF EQ 1,2   | SHOULD BE IN AN ALL CALL OF SOME SORT
 CIF END
 
 . SUBROUTINE MAKE_ONE_SCREEN ( REC_TYPE_NUM ) CRWARN   REPLACE
-. STRING  *    256   SCREEN_NAME     | NAME OF SCREEN TO MAKE
 . INTEGER *      2   REC_TYPE_NUM    | RECORD_TYPE NUMBER
 . STRING  *    256   MEMBER_NAME
 . string  *    256   RECORD_NAME
@@ -35,9 +34,33 @@ CIF END
 . INTEGER *      1   YES NO
 . string  *     32   VAR_NAME        | variable name
 . string  *    256   USING_KEYS      | key vars to pass to screen
+. string  *     32   DB_PROC_FILE    | points to database procfile
+. integer *      1   SCREENS_EXIST
+. string  *    256   comstr
+. INTEGER *      1   RESVAR
+
+. DB_PROC_FILE = 'SIR'+ PFORMAT(SYSTEM(39),'zz') +'4'
+
+. execute dbms ["set procfile " + DB_PROC_FILE ] | screens go into database procfile file, not the guiprocf
 
 set NO (0) YES (1)
 
+C DOES THE FAMILY SCREENS ALREADY EXISTS?  IF NOT MAKE IT.
+SCREENS_EXIST = 0
+FOR EACH_FAMILY = 1, SYSTEM(57)
+. IF ( FAMNAME(EACH_FAMILY) EQ 'SCREENS') SCREENS_EXIST = 1
+END FOR
+
+IFTHEN (SCREENS_EXIST EQ 0 )
+.  COMPUTE COMSTR = 'CREATE FAMILY SCREENS'
+.  EXECUTE DBMS COMSTR
+ELSE | FAMILY EXISTS
+.  DISPLAY YNBOX "THIS WILL OVERRIDE MEMBERS IN THE FAMILY CALLED SCREENS. CONTINUE?" RESPONSE RESVAR
+.  IFTHEN (RESVAR EQ 0 )
+.    DISPLAY INFOBOX "CANCELED"
+.    RETURN
+.  ENDIF
+ENDIF
 
 C DOUBLE CHECK FOR FAMILY NAME
 
@@ -55,7 +78,6 @@ C  ASK IF WANT TO APPEND
 
 . SCREEN_PAGE = 1
 . RECORD_NAME = trimlr( recname( REC_TYPE_NUM ) )
-. SCREEN_NAME = 'SCREENS.' + RECORD_NAME + ':T'
 . MEMBER_NAME = 'SCREENS.' + RECORD_NAME
 
 . open ( MEMBER_NAME ) dsnvar = MEMBER_NAME iostat = MY_IOSTAT  write lrecl=200 REPLACE member
@@ -70,8 +92,12 @@ C  ASK IF WANT TO APPEND
 . write ( MEMBER_NAME ) 'STRING * 32 CASE$  KEY$1  KEY$2  KEY$3  KEY$4  KEY$5  KEY$6' /
                         'CALL GUIPROCF.SCREENS.INC_VARS'
 . write ( MEMBER_NAME ) ['RECNUMBER# = RECNUM("' + format(REC_TYPE_NUM) + '")']
-. write ( MEMBER_NAME ) 'CALL GUIPROCF.SCREENS.INC_HEADER' /
-                        'CALL SCREENS.INC_SUBJINFO'
+. write ( MEMBER_NAME ) 'CALL GUIPROCF.SCREENS.INC_HEADER'
+
+| DEBUG CONTINUE FROM HERE
+. IFTHEN (1 EQ 0) | CHECK FOR MEMBER AND INCLUDE IT IF IT IS THERE.
+.   write ( MEMBER_NAME ) 'CALL SCREENS.INC_SUBJINFO'
+. ENDIF
 
 . KEY_COUNT = nkeys( REC_TYPE_NUM )
 
@@ -104,24 +130,28 @@ C  ASK IF WANT TO APPEND
 .   endif
 .   if (EACH_KEY < KEY_COUNT ) USING_KEYS = USING_KEYS + ', '
 . end for
-
-. write RECORD_NAME USING_KEYS REC_TYPE_NUM
-
-
+. ifthen ( dbtype ( 0 ) EQ 1  ) | If it is a CASE structured db
+.   USING_KEYS = '     USING ( ' + USING_KEYS  + ')'
+. ELSE
+.   USING_KEYS = '     VIA ( "",' + USING_KEYS  + ')'
+. endif
 
 . MEMBER_LINE = 'CALL SCREEN "' + RECORD_NAME + '"'; execute subprocedure MEMBER_WRITE
 . MEMBER_LINE = '     AT 1, 1'; execute subprocedure MEMBER_WRITE
 . MEMBER_LINE = '     PROMPT "' + RECORD_NAME + '"'; execute subprocedure MEMBER_WRITE
-. MEMBER_LINE = '     USING ( ' + USING_KEYS  + ')'; execute subprocedure MEMBER_WRITE
+. write ( MEMBER_NAME )  USING_KEYS
 . MEMBER_LINE = '     ONCALL FIRST'; execute subprocedure MEMBER_WRITE
 . MEMBER_LINE = '     WIDTH 0'; execute subprocedure MEMBER_WRITE
 . MEMBER_LINE = 'SCREEN RECORD ' + recname( REC_TYPE_NUM ); execute subprocedure MEMBER_WRITE
 . MEMBER_LINE = '     NOBUTTON'; execute subprocedure MEMBER_WRITE
 . MEMBER_LINE = '     NOAUTO'; execute subprocedure MEMBER_WRITE
 . MEMBER_LINE = '     TITLE ( SET DIALOG TITLE "' + RECORD_NAME + '" + PAGENO + "/" + PAGES + " " + CASE$ )' ; execute subprocedure MEMBER_WRITE
-. write ( MEMBER_NAME )  '     READ   ( CALL SCREENS.INC_PERMISSIONS )' /
-                         '     WRITE  ( CALL GUIPROCF.SCREENS.INC_WRITE; )' /
-                         '     DELETE ( CALL GUIPROCF.SCREENS.INC_DELETE; )' /
+| DEBUG CONTINUE FROM HERE
+. IFTHEN (1 EQ 0) | CHECK FOR MEMBER AND INCLUDE IT IF IT IS THERE.
+.   write ( MEMBER_NAME )  '     READ   ( CALL SCREENS.INC_PERMISSIONS )'
+.   write ( MEMBER_NAME )  '     WRITE  ( CALL GUIPROCF.SCREENS.INC_WRITE; )'
+. ENDIF
+. write ( MEMBER_NAME )  '     DELETE ( CALL GUIPROCF.SCREENS.INC_DELETE; )' /
                          'FDISPLAY       TEXT (' /
 			 '      MESSTEXT$' /
 			 '      )' /
@@ -132,9 +162,10 @@ C  ASK IF WANT TO APPEND
                          '           )' /
                          '      AT 5, 40 WIDTH 44' /
                          '      FONT (BOLD ) '
+
 . DO REPEAT REP_VAR = DWHO  DSTAMP  DCCWHO  DCCDATE  DCCTIME  DCCEDITS /
             REP_LINE = 1 2 3 4 5 6
-.   ifthen ( vtype( REC_TYPE_NUM, 'REP_VAR' ) > 0 )
+.   ifthen ( vtype( REC_TYPE_NUM, 'REP_VAR' ) > 0 ) | it is defined in schema
 .     write ( MEMBER_NAME )  'FIELD REP_VAR' /
                               '      DATA AT REP_LINE, 105 WIDTH 13' /
                               '      NOLABELS' /
@@ -208,7 +239,7 @@ c put keys at the top of the file
 . close MEMBER_NAME
 
 C COMPILE SCREEN
-c . EXECUTE DBMS ["CALL " + MEMBER_NAME ]
+. EXECUTE DBMS ["CALL " + MEMBER_NAME ]
 
 
 subprocedure MEMBER_WRITE

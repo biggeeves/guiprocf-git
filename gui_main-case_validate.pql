@@ -1,7 +1,12 @@
-PROCEDURE      GUI_MAIN.CASE_VALIDATE:T  (157591,51546)  |Last amended Apr 03, 2014,14:19:06
+PROCEDURE      GUI_MAIN.CASE_VALIDATE:T  (157610,52391)  |Last amended Apr 22, 2014,14:33:11
 subprocedure CASE_VALIDATE   |   CASE_TEMP_VALUE MUST BE PASSED IN
 C note, I'm not sure where the case id is going to be, either the new id field or the search field or a hidden field.  Who knows right now.
 <COMMENT> WRITE 'Sub: CASE_VALIDATE: ' CASE_TEMP_VALUE
+. ifthen ( DBTYPE(0) EQ 1 )
+<COMMENT> WRITE '---: CASE_VALIDATE: caseless db' CASE_TEMP_VALUE
+.   PROCEED = YES
+.   EXIT SUBPROCEDURE
+. endif
 . PROCEED = NO
 . if(exists(CASE_TEMP_VALUE) EQ 0) display infobox 'Sorry, no ' + CASE_NAME + ' was specified.'; exit subprocedure
 . if(len(CASE_TEMP_VALUE) EQ 0) display infobox 'Opps, ' + CASE_NAME + ' is blank.'; exit subprocedure
