@@ -1,0 +1,8 @@
+PROCEDURE      BASE.MSTSET:T  (157618,57274)  |Last amended Apr 30, 2014,15:54:34
+| Reason:    Turns Master Usage on if in a Master Session.  This would be called after having used BASE.MSTCLEAR
+
+program
+. MST_STAT = <MSTSTAT>
+. if(MST_STAT = 1) execute dbms 'SET MASTER'
+end program
+END PROCEDURE

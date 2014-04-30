@@ -1,9 +1,9 @@
-PROCEDURE      REPORTS.CODEBOOK_HTML:T  (157618,46477)  |Last amended Apr 30, 2014,12:54:37
+PROCEDURE      REPORTS.CODEBOOK_HTML:T  (157618,56976)  |Last amended Apr 30, 2014,15:49:36
 | Make a nice looking HTML codebook to send to someone
 
 
 call SYSPROC.TOOLS.HTMLCODE
-call DCCPROCF.SYSTEM.ALLRECS
+call GUIPROCF.SYSTEM.ALLRECS
 
 program crwarn
 <comment> write "making HTML Codebook"

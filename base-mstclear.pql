@@ -1,0 +1,9 @@
+PROCEDURE      BASE.MSTCLEAR:T  (157618,57244)  |Last amended Apr 30, 2014,15:54:04
+| Turns Master Usage Off for Read-Only Operations (Reports).
+| Created:   01/01/2007
+program
+. MST_STAT = system(38)
+. x = globaln('MSTSTAT', MST_STAT)
+. if ( MST_STAT EQ 1 ) execute dbms 'CLEAR MASTER'
+end program
+END PROCEDURE
