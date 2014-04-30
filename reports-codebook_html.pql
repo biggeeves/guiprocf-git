@@ -1,4 +1,4 @@
-PROCEDURE      REPORTS.CODEBOOK_HTML:T  (157618,44898)  |Last amended Apr 30, 2014,12:28:18
+PROCEDURE      REPORTS.CODEBOOK_HTML:T  (157618,45876)  |Last amended Apr 30, 2014,12:44:36
 | Make a nice looking HTML codebook to send to someone
 
 
@@ -49,7 +49,7 @@ set HTML_BLUE6  ( '#13275a' )	    HTML_BLUE5  ( '#1a3579' )	    HTML_BLUE4  ( '#
 . integer * 2 VARS# RECDOCN# RECLINE# LETTER# LETTERS#
 . string * 1 LETTER$
 . string * 32 MISS$ REC$ DB$ CVAR$ KEY$ COM$ LABEL$ FDATE$
-. string * 255 LINE$ HTM VARDOC$ RECDOC$ VALLAB$ VARLAB$
+. string * 255 HTML_LINE$ HTM VARDOC$ RECDOC$ VALLAB$ VARLAB$
 . string * 200 REPLACE$
 . STRING  * 32  ALTERNATE_BGCOLOR
 . date TODAY_ ('MM/DD/YYYY')
@@ -207,16 +207,17 @@ write 'Database codebook path: ' [DSN('HTM')]
 .     VARLAB$ = REPLACE$
 
 |putting it all together
-.     write ( HTM ) '<div class="ALL_VAR_INFO '
+.     HTML_LINE$ = '<div class="ALL_VAR_INFO '
 c     add another class for keyvars and common vars
 .     ifthen ( VAR_NAME = CASE_NAME )
-.       write ( HTM ) 'IMPORTANT_VAR '
+.       HTML_LINE$ = HTML_LINE$ + 'IMPORTANT_VAR '
 .     elseif ( KEYVAR = YES )
-.       write ( HTM ) 'IMPORTANT_VAR '
+.       HTML_LINE$ = HTML_LINE$ + 'IMPORTANT_VAR '
 .     elseif ( COMVAR = YES )
-.       write ( HTM ) 'IMPORTANT_VAR '
+.       HTML_LINE$ = HTML_LINE$ + 'IMPORTANT_VAR '
 .     endif
-.     write ( HTM ) '">'  | CLOSE THE CLASS QOUTES AND THE DIV
+.     HTML_LINE$ = HTML_LINE$ + '">'  | CLOSE THE CLASS QOUTES AND THE DIV
+.     write ( HTM ) 4t HTML_LINE$
 .     write ( HTM ) 4t '<p>'
 .     ifthen ( VAR_NAME = CASE_NAME )
 .       write ( HTM ) '(Case Variable) '
@@ -246,42 +247,42 @@ c     add another class for keyvars and common vars
 |
 . subprocedure MXFORMAT
 | Type
-.  LINE$ = ''
+.  HTML_LINE$ = ''
 .  ifthen ( vtype( EACH_REC, VAR_NAME ) = 1 ) |  string
-.    LINE$ = 'Text ( '
+.    HTML_LINE$ = 'Text ( '
 .  elseif ( vtype( EACH_REC, VAR_NAME ) = 2 ) |  categorical
-.    LINE$ = 'Number-Categorical( '
+.    HTML_LINE$ = 'Number-Categorical( '
 .  elseif ( vtype( EACH_REC, VAR_NAME ) = 3 ) |  date
-.    LINE$ = 'Date ( '
+.    HTML_LINE$ = 'Date ( '
 .  elseif ( vtype( EACH_REC, VAR_NAME ) = 4 ) |  time
-.    LINE$ = 'Time ( '
+.    HTML_LINE$ = 'Time ( '
 .  elseif ( vtype( EACH_REC, VAR_NAME ) = 5 ) |  integer
-.    LINE$ = 'Integer ( '
+.    HTML_LINE$ = 'Integer ( '
 .  elseif ( vtype( EACH_REC, VAR_NAME ) = 6 OR 7 ) |  real ( single precision )
-.    LINE$ = 'Decimal ( '
+.    HTML_LINE$ = 'Decimal ( '
 .  elseif ( vtype( EACH_REC, VAR_NAME ) = 8 ) |  scaled variable
-.    LINE$ = 'Number-Scaled ( '
+.    HTML_LINE$ = 'Number-Scaled ( '
 .  endif
 .  VAR_FORMAT = vschfmt( EACH_REC, VAR_NAME )
-.  LINE$ = '    <p class="indent2">' + LINE$ + VAR_FORMAT + ' )</p>'
-.  write ( HTM ) LINE$
+.  HTML_LINE$ = '    <p class="indent2">' + HTML_LINE$ + VAR_FORMAT + ' )</p>'
+.  write ( HTM ) HTML_LINE$
 
 | Range
-.  LINE$ = ''
+.  HTML_LINE$ = ''
 .  ifthen ( exists( nmin( EACH_REC, VAR_NAME ) ) )
 .    ifthen ( vtype( EACH_REC, VAR_NAME ) = 3 ) |  date
-.      LINE$ = datec( nmin( EACH_REC, VAR_NAME ), 'mm/dd/yyyy' ) + ' - ' + datec( NMAX( EACH_REC, VAR_NAME ), 'mm/dd/yyyy' )
+.      HTML_LINE$ = datec( nmin( EACH_REC, VAR_NAME ), 'mm/dd/yyyy' ) + ' - ' + datec( NMAX( EACH_REC, VAR_NAME ), 'mm/dd/yyyy' )
 .    elseif ( vtype( EACH_REC, VAR_NAME ) = 4 ) |  time
-.      LINE$ = timec( nmin( EACH_REC, VAR_NAME ), 'hh:mm' )+ ' - ' + timec( NMAX( EACH_REC, VAR_NAME ), 'hh:mm' )
+.      HTML_LINE$ = timec( nmin( EACH_REC, VAR_NAME ), 'hh:mm' )+ ' - ' + timec( NMAX( EACH_REC, VAR_NAME ), 'hh:mm' )
 .    else
-.      LINE$ = format( nmin( EACH_REC, VAR_NAME ) )+ ' - ' + format( NMAX( EACH_REC, VAR_NAME ) )
+.      HTML_LINE$ = format( nmin( EACH_REC, VAR_NAME ) )+ ' - ' + format( NMAX( EACH_REC, VAR_NAME ) )
 .    endif
 .  elseif ( exists( smin( EACH_REC, VAR_NAME ) ) )
-.     LINE$ = smin( EACH_REC, VAR_NAME )+ ' - ' + SMAX( EACH_REC, VAR_NAME )
+.     HTML_LINE$ = smin( EACH_REC, VAR_NAME )+ ' - ' + SMAX( EACH_REC, VAR_NAME )
 .  endif
-.  ifthen (len(LINE$)  gt 0 )
-.    LINE$ = '    <p class="indent2">Range: ' + LINE$  + '</p>'
-.    Write ( HTM ) LINE$
+.  ifthen (len(HTML_LINE$)  gt 0 )
+.    HTML_LINE$ = '    <p class="indent2">Range: ' + HTML_LINE$  + '</p>'
+.    Write ( HTM ) HTML_LINE$
 .  endif
 
 | Value Labels and Valid Values
@@ -295,21 +296,21 @@ c     add another class for keyvars and common vars
 .      write ( HTM ) 6t ['<li class="VALLABEL">( ' + vallabsv( EACH_REC, VAR_NAME, EACH_LABEL ) + ' ) "' + VALLAB$ + '"</li>']
 .    end for
 .    write ( HTM ) 4t '</ul>'
-.  elseif ( nvalid( EACH_REC, VAR_NAME ) > 0 )
-.    LINE$ = ''
+.    write ( HTM ) 4t '</p>' | End Value Labels
+.  elseif ( nvalid( EACH_REC, VAR_NAME ) > 0 )  | VALID VALUES
+.    HTML_LINE$ = ''
 .    for EACH_VALID = 1,  nvalid( EACH_REC, VAR_NAME )
-.      LINE$ = LINE$ + format( nvval( EACH_REC, VAR_NAME, EACH_VALID ) )
-.      if ( EACH_VALID < nvalid( EACH_REC, VAR_NAME ) ) LINE$ = LINE$ + ',  '
+.      HTML_LINE$ = HTML_LINE$ + format( nvval( EACH_REC, VAR_NAME, EACH_VALID ) )
+.      if ( EACH_VALID < nvalid( EACH_REC, VAR_NAME ) ) HTML_LINE$ = HTML_LINE$ + ',  '
 .    end for
-.    write ( HTM ) 4t '<p class="indent2"> Valid Values: ' LINE$ '</p>'
+.    write ( HTM ) 4t '<p class="indent2"> Valid Values: ' HTML_LINE$ '</p>'
 .  endif
-.  write ( HTM ) 4t '</p>' | End Value Labels
 
 | Missing
 .  ifthen ( exists( miss( EACH_REC, VAR_NAME, 1 ) ) = YES )
 .    MISS$ = '( ' + trim( miss( EACH_REC, VAR_NAME, 1 ) ) + ' )'
 |LABEL$ removed because it is too much bother converting the string value to a number,  etc. as needed
-.    write ( HTM ) '    <p class="indent1">Missing Values:'
+.    write ( HTM ) '    <p class="indent2">Missing Values:'
 .    write ( HTM ) '    <ul>'
 .    write ( HTM ) '    <li>1st &nbsp;'  MISS$
 .    ifthen ( exists( miss( EACH_REC, VAR_NAME, 2 ) ) = YES )
