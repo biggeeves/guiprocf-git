@@ -1,9 +1,9 @@
-PROCEDURE      REPORTS.CODEBOOK_HTML:T  (157618,45876)  |Last amended Apr 30, 2014,12:44:36
+PROCEDURE      REPORTS.CODEBOOK_HTML:T  (157618,46477)  |Last amended Apr 30, 2014,12:54:37
 | Make a nice looking HTML codebook to send to someone
 
 
 call SYSPROC.TOOLS.HTMLCODE
-call GUIPROCF.SYSTEM.ALLRECS
+call DCCPROCF.SYSTEM.ALLRECS
 
 program crwarn
 <comment> write "making HTML Codebook"
@@ -73,10 +73,13 @@ set HTML_BLUE6  ( '#13275a' )	    HTML_BLUE5  ( '#1a3579' )	    HTML_BLUE4  ( '#
 . HTM = '<1>'
 . HTM = replace(HTM,'"','',10,0,0)
 . HTM = replace(HTM,"'","",10,0,0)
-. IF ( len(HTM) EQ 0)  HTM = '<GDATA1>'  | TRY GDATA1 GLOBAL FIRST
-. IF ( len(HTM) EQ 0)  HTM = PATH_FILE   | Next try database folder
 . ifthen ( len(HTM) eq 0 )
-.   HTM = '<GDATA1>' + DB$ + '\Codebook.htm'
+.   HTM = '<GDATA1>'  | TRY GDATA1 GLOBAL FIRST
+.   IFTHEN ( len(HTM) > 0)
+.     HTM = HTM + DB$ + '\Codebook.htm'
+.   ELSE | TRY DATABASE PATH  (WHICH HAS SLASH IN IT)
+.     HTM = PATH_FILE + 'Codebook.htm'  | Next try database folder
+.   ENDIF
 . elseif ( sbst( reverse(HTM), 1, 1) <> '\')
 .   HTM = HTM + '\Codebook.htm'
 . else
