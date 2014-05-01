@@ -1,0 +1,12 @@
+PROCEDURE      TOOLS.SET_DB_PROCFILE_DEFAULT:T  (157619,48542)  |Last amended May 01, 2014,13:29:02
+c set the procfile to the database procfile
+program
+. string  *     32   DB_PROC_FILE    | points to database procfile
+. DB_PROC_FILE = 'SIR'+ PFORMAT(SYSTEM(39),'zz') +'4'
+. ifthen (0 eq len(DB_PROC_FILE) or exists(DB_PROC_FILE) )
+.   display infobox 'No DB_PROC_FILE defined.  EXITING.  CONTACT ADMIN.'
+.   exit program
+. endif
+. execute dbms ["set procfile " + DB_PROC_FILE ] | screens go into database procfile file, not the guiprocf
+end program
+END PROCEDURE
