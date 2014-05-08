@@ -1,4 +1,4 @@
-PROCEDURE      REPORTS.CODEBOOK_HTML:T  (157618,56976)  |Last amended Apr 30, 2014,15:49:36
+PROCEDURE      REPORTS.CODEBOOK_HTML:T  (157619,57805)  |Last amended May 01, 2014,16:03:25
 | Make a nice looking HTML codebook to send to someone
 
 
@@ -13,6 +13,7 @@ program crwarn
 . integer *      1   YES NO
 . integer *      1   PROCEED              | Control Flow Varialbe.  Yes/No
 . string  *    100   VTYPE_MAP             | generic Variable Type Map
+. string  *    100   VAR_LABEL            |
 . string  *     72   VAR_FORMAT
 . string  *    300   DB_SR1_FILE                      | string path to current database sr1  file
 . string  *    300   DB_FOLDER           | string path to current database folder
@@ -140,6 +141,36 @@ write 'Database codebook path: ' [DSN('HTM')]
 . end for
 . write ( HTM ) '    </tbody>'
 . write ( HTM ) '    </table>'
+
+. write ( HTM ) '<HR>'
+
+
+C DATABASE STRUCTURE AND KEYS
+. write ( HTM ) '    <h1>Database Tables and keys.   Relationships.</h1>'
+. write ( HTM ) '    <table><tr><th>Table</th><th>Keys</th></tr>'
+. write ( HTM ) '    <tbody>'
+. for EACH_REC = 0,  nrecs( 0 )
+.   if ( nvarsc( EACH_REC ) le 0 ) next for
+.   REC$ = trim( recname( EACH_REC ) )
+.   write ( HTM ) '    <tr>'
+.   write ( HTM ) '      <td>' REC$ '</td>'
+.   write ( HTM ) '      <td>'
+.   if(dbtype(0) eq nkeys(EACH_REC) + 1 ) write (HTM) 'No Keys'
+.   for EACH_KEY = 1, nkeys(EACH_REC)
+.     VAR_NAME  = trimlr(keyname(EACH_REC, EACH_KEY + dbtype(0)))
+.     VAR_LABEL = trimlr(varlabsc(EACH_REC, VAR_NAME))
+.     HTML_LINE$ =  VAR_NAME + '<span class="VARLABEL"> ' + '"' + VAR_LABEL + '"</span> '
+.     write( HTM ) ' Key' EACH_KEY ': 'HTML_LINE$
+.     if ( EACH_KEY < nkeys(EACH_REC)) WRITE ( HTM ) ', '
+C .     execute subprocedure MAKE_FORMAT
+.   end for
+.   write ( HTM ) '      </td>'
+.   write ( HTM ) '      </tr>'
+. end for
+. write ( HTM ) '    </tbody>'
+. write ( HTM ) '    </table>'
+
+
 |List of Variables by Record Type
 . for EACH_REC = 0,  nrecs( 0 )
 .   VARS# = nvarsc( EACH_REC )

@@ -1,0 +1,109 @@
+PROCEDURE      GUI_CUSTOM.MAKE_REC_LIST_LOAD:T  (157626,51408)  |Last amended May 08, 2014,14:16:48
+C MAKE ONE DATA ENTRY SCREEN THAT WORKS WITH THE MAIN DATA ENTRY GUI
+C PASS THE SCREEN NUMBER YOU WANT TO MAKE
+
+PROGRAM
+. INTEGER *      2   REC_TYPE_NUM    | RECORD_TYPE NUMBER
+. STRING  *    256   MEMBER_NAME
+. string  *    256   RECORD_NAME
+. STRING  *    256   MEMBER_LINE     | LINE TO WRITE TO THE MEMBER
+. INTEGER *      2   MY_IOSTAT       | IOSTAT FOR OPENING MEMBER
+. INTEGER *      1   YES NO
+. string  *     32   DB_PROC_FILE    | points to database procfile
+. integer *      1   FAMILY_EXISTS
+. string  *    256   COMSTR
+. INTEGER *      1   RESVAR
+
+. DB_PROC_FILE = 'SIR'+ PFORMAT(SYSTEM(39),'zz') +'4'
+
+. if(0 eq len(DB_PROC_FILE) or exists(DB_PROC_FILE) ) display infobox 'No DB_PROC_FILE defined.  EXITING.  CONTACT ADMIN.'; EXIT PROGRAM
+
+. execute dbms ["set procfile " + DB_PROC_FILE ] | gui_custom goes into database procfile file, not the guiprocf
+
+set NO (0) YES (1)
+
+C DOES THE FAMILY GUI_CUSTOM ALREADY EXIST?  IF NOT MAKE IT.
+FAMILY_EXISTS = 0
+FOR EACH_FAMILY = 1, SYSTEM(57)
+. IF ( FAMNAME(EACH_FAMILY) EQ 'GUI_CUSTOM') FAMILY_EXISTS = 1
+END FOR
+
+c create the non-existent family
+IFTHEN (FAMILY_EXISTS EQ 0 )
+<COMMENT> WRITE 'GUI_CUSTOM FAMILY DID NOT EXIST'
+.  COMPUTE COMSTR = 'CREATE FAMILY GUI_CUSTOM'
+.  EXECUTE DBMS COMSTR
+ENDIF
+
+. ifthen ( nvarsc( REC_TYPE_NUM ) EQ 0 )
+.   write 'no variables to create screen with '
+.   EXIT PROGRAM
+. endif
+
+. RECORD_NAME = trimlr( recname( REC_TYPE_NUM ) )
+. MEMBER_NAME = 'GUI_CUSTOM.REC_LIST_LOAD'
+
+ifthen ( meminfo (DB_PROC_FILE + '.' + MEMBER_NAME + ':T', 1 )  > 0 ) | MEMBER ALREADY EXISTS
+.  DISPLAY YNBOX "THIS  WILL  OVERWRITE " + MEMBER_NAME + ". CONTINUE?" RESPONSE RESVAR
+.  IFTHEN (RESVAR EQ 0 )
+.    DISPLAY INFOBOX "CANCELED"
+.    EXIT PROGRAM
+.  ENDIF
+ENDIF
+
+. open ( MEMBER_NAME ) dsnvar = MEMBER_NAME iostat = MY_IOSTAT  write lrecl=200 REPLACE member
+. ifthen (MY_IOSTAT NE 0)
+.   write 'unable to write to member.  exiting.  GUI_CUSTOM.REC_LIST_LOAD was NOT made.  IOSTAT:' MY_IOSTAT
+.   EXIT PROGRAM
+. endif
+
+. write ( MEMBER_NAME ) "c Originally created by the GUIPROCF"
+. write ( MEMBER_NAME ) "c Template for creating your own custom record type list"
+. write ( MEMBER_NAME ) "c Three different list must be appended using the same order"
+. write ( MEMBER_NAME ) "c 1) What the user see.  2) What is the member name   3) What is the record type name"
+. write ( MEMBER_NAME ) "c The code is prepopulated with all record type names in the schema numeric order."
+. write ( MEMBER_NAME ) "c Customize as you see fit and test."
+. write ( MEMBER_NAME ) "c Returns pass or fail.  Pass, the list is loaded.  Fail the list is not loaed."
+
+. write ( MEMBER_NAME ) "subroutine GUI_CUSTOM.REC_LIST_LOAD (GUI_FORM_LABEL  GUI_FORM_NAME  GUI_FORM_REC_TYPE ) returning (PROCEED) replace"
+. write ( MEMBER_NAME ) "integer * 2 GUI_FORM_LABEL  GUI_FORM_NAME  GUI_FORM_REC_TYPE"
+. write ( MEMBER_NAME ) "integer * 1 PROCEED"
+. write ( MEMBER_NAME ) "PROCEED = 1"
+. write ( MEMBER_NAME ) "if(sglobal('comment') eq '.') write 'in SAMPLE.DBPROC.GUI_CUSTOM.REC_LIST_LOAD'"
+
+. for EACH_RECORD_TYPE = 1, NRECS(0)
+.   IF (NVARSC(EACH_RECORD_TYPE) EQ 0) NEXT FOR
+.   MEMBER_LINE = ". append item GUI_FORM_LABEL, '"
+.   ifthen( len( recdoc( EACH_RECORD_TYPE, 0 ) ) gt 0 )
+.     MEMBER_LINE = MEMBER_LINE + trim(recdoc(EACH_RECORD_TYPE, 0 ) )
+.   elseif( len( recdoc( EACH_RECORD_TYPE, 1 ) ) gt 0 )
+.     MEMBER_LINE = MEMBER_LINE + trim(recdoc(EACH_RECORD_TYPE, 1 ) )
+.   endif
+.   MEMBER_LINE = MEMBER_LINE + "'" ; execute subprocedure MEMBER_WRITE
+.   MEMBER_LINE = ". append item GUI_FORM_NAME, '" + recname(EACH_RECORD_TYPE) + "'" ; execute subprocedure MEMBER_WRITE
+.   MEMBER_LINE = ". append item GUI_FORM_REC_TYPE, '" + recname(EACH_RECORD_TYPE) + "'"; execute subprocedure MEMBER_WRITE
+.   write ( MEMBER_NAME ) /
+. end for
+c . write ( MEMBER_NAME ) ". append item GUI_FORM_LABEL, 'PTRACK  (PTRACK) Patient Tracking'   ; append item GUI_FORM_NAME, 'PTRACK' ;    append item GUI_FORM_REC_TYPE, 'PTRACK' ;"
+c . write ( MEMBER_NAME ) ". append item GUI_FORM_LABEL, 'AAFORM  (AA) APO-E Form'             ; append item GUI_FORM_NAME, 'AAFORM' ;    append item GUI_FORM_REC_TYPE, 'AAFORM' ;"
+c . write ( MEMBER_NAME ) ". append item GUI_FORM_LABEL, 'BFORM   (B)  Demographics'           ; append item GUI_FORM_NAME, 'BFORM' ;     append item GUI_FORM_REC_TYPE, 'BFORM'"
+c . write ( MEMBER_NAME ) ". append item GUI_FORM_LABEL, 'BFORM   (B)  Demographics - SPANISH' ; append item GUI_FORM_NAME, 'BFORM_SP' ;  append item GUI_FORM_REC_TYPE, 'BFORM'"
+. write ( MEMBER_NAME ) "end subroutine"
+
+
+. close MEMBER_NAME
+
+C COMPILE THE NEW MEMBER
+
+subprocedure MEMBER_WRITE
+. if (exists(MEMBER_LINE) EQ 0) MEMBER_LINE = '| WARNING SYSTEM MISSING MEMBERLINE!'
+. write ( MEMBER_NAME )  MEMBER_LINE
+end subprocedure
+
+END PROGRAM
+
+CALL GUI_CUSTOM.REC_LIST_LOAD
+
+
+
+END PROCEDURE
