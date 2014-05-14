@@ -1,4 +1,4 @@
-PROCEDURE      REPORTS.CODEBOOK_HTML:T  (157619,57805)  |Last amended May 01, 2014,16:03:25
+PROCEDURE      REPORTS.CODEBOOK_HTML:T  (157632,37572)  |Last amended May 14, 2014,10:26:12
 | Make a nice looking HTML codebook to send to someone
 
 
@@ -100,61 +100,61 @@ set HTML_BLUE6  ( '#13275a' )	    HTML_BLUE5  ( '#1a3579' )	    HTML_BLUE4  ( '#
 write 'Database codebook is ' DB$ TODAY_IS
 write 'Database codebook path: ' [DSN('HTM')]
 . write ( HTM ) '<body>'
-. write ( HTM ) '<div class="page_header">'
-. write ( HTM ) '    <h2><a id="Top">Codebook</a> for the ' DB$ ' Database </h2>'
-. write ( HTM ) '    <h2>' TODAY_IS '</h2>'
-. write ( HTM ) '</div>' | page_header
+. write ( HTM ) '<div class="entire_rec">'
+. write ( HTM ) '  <h2><a id="Top">Codebook</a> for the ' DB$ ' Database </h2>'
+. write ( HTM ) '  <h2>' TODAY_IS '</h2>'
+. write ( HTM ) '</div>' | entire_rec
 |Index of Record Types
 . ALTERNATE_BGCOLOR = HTML_WHITE
-. write ( HTM ) '    <h1>Database Tables</h1>'
-. write ( HTM ) '    <table><tr><th>Table</th><th>Description</th></tr>'
-. write ( HTM ) '    <tbody>'
+. write ( HTM ) '  <h1>Database Tables</h1>'
+. write ( HTM ) '  <table><tr><th>Table</th><th>Description</th></tr>'
+. write ( HTM ) '  <tbody>'
 . for EACH_REC = 0,  nrecs( 0 )
 .   if ( nvarsc( EACH_REC ) le 0 ) next for
 .   REC$ = trim( recname( EACH_REC ) )
-.   write ( HTM ) '    <tr>'
-.   write ( HTM ) '      <td>'
-.   write ( HTM ) 8t ['<a href="#' + trim( format( EACH_REC ) )+'" title="' + format(EACH_REC) + '">']
-.   write ( HTM ) 8t REC$
-.   write ( HTM ) 8t '</a>'
-.   write ( HTM ) '      </td>'
+.   write ( HTM ) '<tr>'
+.   write ( HTM ) 1t '<td>'
+.   write ( HTM ) 1t ['<a href="#' + trim( format( EACH_REC ) )+'" title="' + format(EACH_REC) + '">']
+.   write ( HTM ) 1t REC$
+.   write ( HTM ) 1t '</a>'
+.   write ( HTM ) 1t '</td>'
 
 .   RECDOC$ = trimlr( recdoc( EACH_REC, 0 ) )
 .   ifthen ( len( RECDOC$ ) = 0 and REC$ = 'CIR' )
 .     RECDOC$ = 'Common Information'
 .   elseif ( len( RECDOC$ ) < 1 )
 .     REPLACE$ = trimlr( recdoc( EACH_REC, 1 ) )
-.     execute subprocedure REPLACE
+.     execute subprocedure REPLACE_HTML
 .     RECDOC$ = REPLACE$
 .   endif
 
-.   write ( HTM ) '    <td>'
+.   write ( HTM ) 1t '<td>'
 .   ifthen ( exists( RECDOC$ ) = YES )
-.   write ( HTM ) 8t ['<a href="#' + trim( format( EACH_REC ) )+'" title="' + format(EACH_REC) + '">']
+.   write ( HTM ) 1t ['<a href="#' + trim( format( EACH_REC ) )+'" title="' + format(EACH_REC) + '">']
 .     write ( HTM ) RECDOC$
-.   write ( HTM ) 8t '</a>'
+.   write ( HTM ) 1t '</a>'
 .   else
-.     write ( HTM ) '&nbsp;'
+.     write ( HTM ) 1t '&nbsp;'
 .   endif
-.   write ( HTM ) '    </td>'
-.   write ( HTM ) '  </tr>'
+.   write ( HTM ) 1t '</td>'
+.   write ( HTM ) 1t '</tr>'
 . end for
-. write ( HTM ) '    </tbody>'
-. write ( HTM ) '    </table>'
+. write ( HTM ) '</tbody>'
+. write ( HTM ) '</table>'
 
 . write ( HTM ) '<HR>'
 
 
 C DATABASE STRUCTURE AND KEYS
-. write ( HTM ) '    <h1>Database Tables and keys.   Relationships.</h1>'
-. write ( HTM ) '    <table><tr><th>Table</th><th>Keys</th></tr>'
-. write ( HTM ) '    <tbody>'
+. write ( HTM ) '<h1>Database Tables and keys.   Relationships.</h1>'
+. write ( HTM ) '  <table><tr><th>Table</th><th>Keys</th></tr>'
+. write ( HTM ) '  <tbody>'
 . for EACH_REC = 0,  nrecs( 0 )
 .   if ( nvarsc( EACH_REC ) le 0 ) next for
 .   REC$ = trim( recname( EACH_REC ) )
-.   write ( HTM ) '    <tr>'
-.   write ( HTM ) '      <td>' REC$ '</td>'
-.   write ( HTM ) '      <td>'
+.   write ( HTM ) '<tr>'
+.   write ( HTM ) ' <td>' REC$ '</td>'
+.   write ( HTM ) ' <td>'
 .   if(dbtype(0) eq nkeys(EACH_REC) + 1 ) write (HTM) 'No Keys'
 .   for EACH_KEY = 1, nkeys(EACH_REC)
 .     VAR_NAME  = trimlr(keyname(EACH_REC, EACH_KEY + dbtype(0)))
@@ -164,11 +164,11 @@ C DATABASE STRUCTURE AND KEYS
 .     if ( EACH_KEY < nkeys(EACH_REC)) WRITE ( HTM ) ', '
 C .     execute subprocedure MAKE_FORMAT
 .   end for
-.   write ( HTM ) '      </td>'
-.   write ( HTM ) '      </tr>'
+.   write ( HTM ) ' </td>'
+.   write ( HTM ) '</tr>'
 . end for
-. write ( HTM ) '    </tbody>'
-. write ( HTM ) '    </table>'
+. write ( HTM ) '</tbody>'
+. write ( HTM ) '</table>'
 
 
 |List of Variables by Record Type
@@ -182,23 +182,23 @@ C .     execute subprocedure MAKE_FORMAT
 .     RECDOC$ = 'Common Information'
 .   elseif ( len( RECDOC$ ) < 1 )
 .     REPLACE$ = trimlr( recdoc( EACH_REC, 1 ) )
-.     execute subprocedure REPLACE
+.     execute subprocedure REPLACE_HTML
 .     RECDOC$ = REPLACE$
 .   endif
 .   ifthen ( ALTERNATE_BGCOLOR EQ HTML_WHITE )
-.     ALTERNATE_BGCOLOR = HTML_BLUE1;
+.     ALTERNATE_BGCOLOR = HTML_YELLOW1;
 .   else
 .     ALTERNATE_BGCOLOR = HTML_WHITE;
 .   endif
-.   write ( HTM ) ['    <div class="recordtype" style="background-color:' + ALTERNATE_BGCOLOR + '" title="Viewing Table: ' + REC$ +  ' ">']
-.   write ( HTM ) ['    <div id="table_number">Table Number ' + format( EACH_REC ) + '</div>']
-.   write ( HTM ) '     <a href="#Top" class="button">Back to Top</a>'
-.   write ( HTM ) '     <div style="clear:both"></div>'
-.   write ( HTM ) ['    <h1><a id="' + format( EACH_REC ) + '">Table: ' +  REC$  + '</a>']
+.   write ( HTM ) ['<div class="recordtype" style="background-color:' + ALTERNATE_BGCOLOR + '" title="Viewing Table: ' + REC$ + ': ' + format( EACH_REC ) + ' ">']
+
+.   write ( HTM ) '<a href="#Top" class="button">Back to Top</a>'
+.   write ( HTM ) '<div style="clear:both"></div>'
+.   write ( HTM ) ['<h1><a id="' + format( EACH_REC ) + '">Table: ' +  REC$  + '</a>']
 .   ifthen ( len( RECDOC$ ) > 0 )
 .     write ( HTM ) ['<br> <span class="VARLABEL">"' + RECDOC$ + '"</span>']
 .   endif
-.   write ( HTM ) '    </h1>'
+.   write ( HTM ) '</h1>'
 .   write ( HTM ) '<hr class="record">'
 |Record Documentation,  if there is any
 .   RECDOCN# = recdocn( EACH_REC )
@@ -206,7 +206,7 @@ C .     execute subprocedure MAKE_FORMAT
 .   ifthen ( RECDOCN# > 0 )
 .     for RECLINE# = 1, RECDOCN#
 .       REPLACE$ = recdoc( EACH_REC, RECLINE# )
-.       execute subprocedure REPLACE
+.       execute subprocedure REPLACE_HTML
 .       RECDOC$ = REPLACE$
 .       ifthen ( RECLINE# = 1 )
 .         RECDOC$ = 'Table Documentation: ' + RECDOC$
@@ -233,11 +233,11 @@ C .     execute subprocedure MAKE_FORMAT
 .     end for
 |Var Doc
 .     REPLACE$ = vardocsn( EACH_REC, VAR_NAME, 1 )
-.     execute subprocedure REPLACE
+.     execute subprocedure REPLACE_HTML
 .     VARDOC$ = REPLACE$
 |Var Label
 .     REPLACE$ = varlabsc( EACH_REC, VAR_NAME )
-.     execute subprocedure REPLACE
+.     execute subprocedure REPLACE_HTML
 .     VARLAB$ = REPLACE$
 
 |putting it all together
@@ -251,8 +251,8 @@ c     add another class for keyvars and common vars
 .       HTML_LINE$ = HTML_LINE$ + 'IMPORTANT_VAR '
 .     endif
 .     HTML_LINE$ = HTML_LINE$ + '">'  | CLOSE THE CLASS QOUTES AND THE DIV
-.     write ( HTM ) 4t HTML_LINE$
-.     write ( HTM ) 4t '<p>'
+.     write ( HTM ) 1t HTML_LINE$
+.     write ( HTM ) 1t '<p>'
 .     ifthen ( VAR_NAME = CASE_NAME )
 .       write ( HTM ) '(Case Variable) '
 .     elseif ( KEYVAR = YES )
@@ -262,44 +262,45 @@ c     add another class for keyvars and common vars
 .     endif
 
 .     ifthen ( len( VARDOC$ ) > 0 )
-.       write ( HTM ) 4t ['<p class="indent1">Variable Documentation: "' + VARDOC$ + '"</p>']
+.       write ( HTM ) 1t ['<p class="indent1">Variable Documentation: "' + VARDOC$ + '"</p>']
 .     endif
-.     write ( HTM ) 6t ['<span class="VARNAME">' + VAR_NAME + ' </span><span class="VARLABEL">"' + VARLAB$ + '"</span>']
-.     write ( HTM ) 4t '</p>'
+.     write ( HTM ) 1t ['<span class="VARNAME">' + VAR_NAME + ': </span><span class="VARLABEL">"' + VARLAB$ + '"</span>']
+.     write ( HTM ) 1t '</p>'
 
 .     execute subprocedure MXFORMAT
 .     write ( HTM ) '</div>'
 
 
 
-.     if (EACH_VAR < VARS# ) write ( HTM ) 4t '<hr class="variable">'
+.     if (EACH_VAR < VARS# ) write ( HTM ) 1t '<hr class="variable">'
 .   end for
-.   write ( HTM ) 4t '</div>' | end of record type div.
+.   write ( HTM ) 1t '</div>' | end of record type div.
 . end for
 . write ( HTM )  '</body>'
 . write ( HTM )  '</html>'
 |
 . subprocedure MXFORMAT
 | Type
-.  HTML_LINE$ = ''
+.  Write ( HTM ) '<p class="indent3">'
 .  ifthen ( vtype( EACH_REC, VAR_NAME ) = 1 ) |  string
-.    HTML_LINE$ = 'Text ( '
+.    HTML_LINE$ = 'Text'
 .  elseif ( vtype( EACH_REC, VAR_NAME ) = 2 ) |  categorical
 .    HTML_LINE$ = 'Number-Categorical( '
 .  elseif ( vtype( EACH_REC, VAR_NAME ) = 3 ) |  date
-.    HTML_LINE$ = 'Date ( '
+.    HTML_LINE$ = 'Date'
 .  elseif ( vtype( EACH_REC, VAR_NAME ) = 4 ) |  time
-.    HTML_LINE$ = 'Time ( '
+.    HTML_LINE$ = 'Time'
 .  elseif ( vtype( EACH_REC, VAR_NAME ) = 5 ) |  integer
-.    HTML_LINE$ = 'Integer ( '
+.    HTML_LINE$ = 'Integer'
 .  elseif ( vtype( EACH_REC, VAR_NAME ) = 6 OR 7 ) |  real ( single precision )
-.    HTML_LINE$ = 'Decimal ( '
+.    HTML_LINE$ = 'Decimal'
 .  elseif ( vtype( EACH_REC, VAR_NAME ) = 8 ) |  scaled variable
-.    HTML_LINE$ = 'Number-Scaled ( '
+.    HTML_LINE$ = 'Number-Scaled'
 .  endif
+
 .  VAR_FORMAT = vschfmt( EACH_REC, VAR_NAME )
-.  HTML_LINE$ = '    <p class="indent2">' + HTML_LINE$ + VAR_FORMAT + ' )</p>'
-.  write ( HTM ) HTML_LINE$
+.  HTML_LINE$ = HTML_LINE$ + ' (' + VAR_FORMAT + ')'
+.  Write ( HTM ) 1t HTML_LINE$
 
 | Range
 .  HTML_LINE$ = ''
@@ -314,49 +315,60 @@ c     add another class for keyvars and common vars
 .  elseif ( exists( smin( EACH_REC, VAR_NAME ) ) )
 .     HTML_LINE$ = smin( EACH_REC, VAR_NAME )+ ' - ' + SMAX( EACH_REC, VAR_NAME )
 .  endif
-.  ifthen (len(HTML_LINE$)  gt 0 )
-.    HTML_LINE$ = '    <p class="indent2">Range: ' + HTML_LINE$  + '</p>'
-.    Write ( HTM ) HTML_LINE$
+.  ifthen ( HTML_LINE$ <> '' ) | a range was found
+.    HTML_LINE$ = '<span class="indent3">Range: ' + HTML_LINE$  + '</span>'
+.    Write ( HTM ) 1t HTML_LINE$
 .  endif
+
+.  Write ( HTM ) '</p>' | close 1st paragraph. formats and ranges
 
 | Value Labels and Valid Values
 .  ifthen ( nvallab( EACH_REC, VAR_NAME ) > 0 )
-.    write ( HTM ) 4t '<p class="indent2">Value Labels:'
-.    write ( HTM ) 4t '<ul>'
+.    write ( HTM ) '<p class="indent3">Value Labels:</p>'
+.    write ( HTM ) 1t '<ul>'
 .    for EACH_LABEL = 1, nvallab( EACH_REC, VAR_NAME )
 .      REPLACE$ = vallabsn( EACH_REC, VAR_NAME, EACH_LABEL )
-.      execute subprocedure REPLACE
+.      execute subprocedure REPLACE_HTML
 .      VALLAB$ = REPLACE$
-.      write ( HTM ) 6t ['<li class="VALLABEL">( ' + vallabsv( EACH_REC, VAR_NAME, EACH_LABEL ) + ' ) "' + VALLAB$ + '"</li>']
+.      write ( HTM ) 1t ['<li><span class="VALVALUE">(' + vallabsv( EACH_REC, VAR_NAME, EACH_LABEL ) + ')&nbsp;</span><span class="VALLABEL">' + VALLAB$ + '</span></li>']
 .    end for
-.    write ( HTM ) 4t '</ul>'
-.    write ( HTM ) 4t '</p>' | End Value Labels
+.    write ( HTM ) 1t '</ul>'
 .  elseif ( nvalid( EACH_REC, VAR_NAME ) > 0 )  | VALID VALUES
 .    HTML_LINE$ = ''
 .    for EACH_VALID = 1,  nvalid( EACH_REC, VAR_NAME )
 .      HTML_LINE$ = HTML_LINE$ + format( nvval( EACH_REC, VAR_NAME, EACH_VALID ) )
 .      if ( EACH_VALID < nvalid( EACH_REC, VAR_NAME ) ) HTML_LINE$ = HTML_LINE$ + ',  '
 .    end for
-.    write ( HTM ) 4t '<p class="indent2"> Valid Values: ' HTML_LINE$ '</p>'
+.    write ( HTM ) '<p class="indent3"> Valid Values: ' HTML_LINE$ '</p>'
 .  endif
 
 | Missing
-.  ifthen ( exists( miss( EACH_REC, VAR_NAME, 1 ) ) = YES )
-.    MISS$ = '( ' + trim( miss( EACH_REC, VAR_NAME, 1 ) ) + ' )'
-|LABEL$ removed because it is too much bother converting the string value to a number,  etc. as needed
-.    write ( HTM ) '    <p class="indent2">Missing Values:'
-.    write ( HTM ) '    <ul>'
-.    write ( HTM ) '    <li>1st &nbsp;'  MISS$
+.  MISS$ = '' | TRIGGER VARIABLE TO KNOW IF MISSING VALUES EXIST
+.  if ( 1 EQ (exists( miss( EACH_REC, VAR_NAME, 1 ) ) ) ) MISS$ = '1'
+.  if ( 1 EQ (exists( miss( EACH_REC, VAR_NAME, 2 ) ) ) ) MISS$ = '1'
+.  if ( 1 EQ (exists( miss( EACH_REC, VAR_NAME, 3 ) ) ) ) MISS$ = '1'
+.  ifthen ( MISS$ = '1')
+.    write ( HTM ) '<p class="indent3">Missing Values:</p>'
+.    write ( HTM ) '<ul>'
 .    ifthen ( exists( miss( EACH_REC, VAR_NAME, 2 ) ) = YES )
-.      MISS$ = '( ' + trim( miss( EACH_REC, VAR_NAME, 2 ) ) + ' )'
-.      write ( HTM ) '    <li>2nd '  MISS$
+.      MISS$ = trim( miss( EACH_REC, VAR_NAME, 1 ) )
+.      if ( MISS$ eq '')  MISS$ = 'BLANK'
+.      MISS$ = '( ' + MISS$ + ' )'
+.      write ( HTM ) 1t '<li>1st &nbsp;'  MISS$
+.    endif
+.    ifthen ( exists( miss( EACH_REC, VAR_NAME, 2 ) ) = YES )
+.      MISS$ = trim( miss( EACH_REC, VAR_NAME, 2 ) )
+.      if ( MISS$ eq '')  MISS$ = 'BLANK'
+.      MISS$ = '( ' + MISS$ + ' )'
+.      write ( HTM ) 1t '<li>2nd '  MISS$
 .    endif
 .    ifthen ( exists( miss( EACH_REC, VAR_NAME, 3 ) ) = YES )
-.      MISS$ = '( ' + trim( miss( EACH_REC, VAR_NAME, 3 ) ) + ' )'
-.      write ( HTM ) '    <li>3rd ' MISS$
+.      MISS$ = trim( miss( EACH_REC, VAR_NAME, 3 ) )
+.      if ( MISS$ eq '')  MISS$ = 'BLANK'
+.      MISS$ = '( ' + MISS$ + ' )'
+.      write ( HTM ) 1t '<li>3rd ' MISS$
 .    endif
-.    write ( HTM ) '    </ul>'
-.    write ( HTM ) '    </p>'
+.    write ( HTM ) 1t '</ul>'
 .  endif
 . end subprocedure
 |
@@ -366,157 +378,148 @@ c     add another class for keyvars and common vars
 .  write ( HTM )  '<head>'
 .  write ( HTM )  '<meta http-equiv="Content-Type" content="text/html;charset=utf-8">'
 .  write ( HTM )  '<title>' DB$ ' Codebook</title>'
-.  write ( HTM )  '  <STYLE type="text/css">'
-.  write ( HTM )  '     A {text-decoration:none; color:black}'
-.  write ( HTM )  '     BODY {'
-.  write ( HTM )  '           font-family: Arial, sans-serif;'
-.  write ( HTM )  '           color: black;'
-.  write ( HTM )  '           }'
-.  write ( HTM )  '     h1 {'
-.  write ( HTM )  '           text-align: center;'
-.  write ( HTM )  '           padding: 10px 0px 10px 0px;'
-.  write ( HTM )  '           margin: 0px;'
-.  write ( HTM )  '        }'
+.  write ( HTM )  '<STYLE type="text/css">'
+.  write ( HTM )  'A {text-decoration:none; color:black}'
+.  write ( HTM )  'BODY {'
+.  write ( HTM )  ' font-family: Arial, sans-serif;'
+.  write ( HTM )  ' color: black;'
+.  write ( HTM )  '}'
+.  write ( HTM )  'h1 {'
+.  write ( HTM )  ' text-align: center;'
+.  write ( HTM )  ' padding: 10px 0px 10px 0px;'
+.  write ( HTM )  ' margin: 0px;'
+.  write ( HTM )  '}'
 
-.  write ( HTM )  '     h2 {'
-.  write ( HTM )  '           text-align: center;'
-.  write ( HTM )  '           padding: 10px;'
-.  write ( HTM )  '           margin: 0px;'
-.  write ( HTM )  '           }'
-.  write ( HTM )  '     h4 {'
-.  write ( HTM )  '           text-align: center;'
-.  write ( HTM )  '           }'
-.  write ( HTM )  '     h5 {'
-.  write ( HTM )  '           background-color: orange;'
-.  write ( HTM )  '           border: 1px solid black;'
-.  write ( HTM )  '           padding: 10px;'
-.  write ( HTM )  '           margin: 0px 0px 30px 0px;'
-.  write ( HTM )  '           text-align: right;'
-.  write ( HTM )  '        }'
-.  write ( HTM )  '     p {'
-.  write ( HTM )  '           margin-top: .5em;'
-.  write ( HTM )  '           margin-bottom: .5em;'
-.  write ( HTM )  '        }'
-.  write ( HTM )  '     hr.record { width:50%;}'
-.  write ( HTM )  '     hr.variable { border-top:1px dotted #ccc;'
-.  write ( HTM )  '           color: #ffffff;'
-.  write ( HTM )  '           bakcground-color: #ffffff;'
-.  write ( HTM )  '           }'
-.  write ( HTM )  '     TABLE {border: 5px solid #555;'
-.  write ( HTM )  '           border-radius: 5px;'
-.  write ( HTM )  '           border-collapse: collapse;'
-.  write ( HTM )  '           width: 100%;'
-.  write ( HTM )  '           padding: 15px;'
-.  write ( HTM )  '           margin-bottom: 20px;'
-.  write ( HTM )  '           }'
-.  write ( HTM )  '     TH  {'
-.  write ( HTM )  '           background-color:' HTML_BLUE1 ';'
-.  write ( HTM )  '           font-weight:bold;'
-.  write ( HTM )  '           padding:15px;'
-.  write ( HTM )  '           }'
-.  write ( HTM )  '     tr:nth-child(even) {'
-.  write ( HTM )  '               background-color: #EEEEEE;'
-.  write ( HTM )  '           }'
-.  write ( HTM )  '     tr:hover, tr:nth-child(even):hover{'
-.  write ( HTM )  '               background-color: #DDDDDD;'
-.  write ( HTM )  '           }'
-.  write ( HTM )  '     TD    {border: 0px; padding:5px 15px 5px 15px;}'
-.  write ( HTM )  '     .page_header {'
-.  write ( HTM )  '           padding: 20px 0px 20px 0px;'
-.  write ( HTM )  '           background-color:' HTML_YELLOW1 ';'
-.  write ( HTM )  '           border: 1px solid #EEEEEE;'
-.  write ( HTM )  '           border-radius: 5px;'
-.  write ( HTM )  '     }'
-.  write ( HTM )  '     #table_number{'
-.  write ( HTM )  '           float: left;'
-.  write ( HTM )  '           padding: 15px;'
-.  write ( HTM )  '           font-weight:bold;'
-.  write ( HTM )  '     }'
-.  write ( HTM )  '     .ALL_VAR_INFO{'
-.  write ( HTM )  '           padding: 5px 20px 5px 20px;'
-.  write ( HTM )  '     }'
-.  write ( HTM )  '     .ALL_VAR_INFO:hover {'
-.  write ( HTM )  '           background-color: #fbeccb;'
-.  write ( HTM )  '     }'
-.  write ( HTM )  '     .IMPORTANT_VAR {'
-.  write ( HTM )  '           font-size: 1.3em;'
-.  write ( HTM )  '           font-weight: bold;'
-.  write ( HTM )  '     }'
-.  write ( HTM )  '     .IMPORTANT_VAR:hover {'
-.  write ( HTM )  '           background-color:' HTML_YELLOW1 ';'
-.  write ( HTM )  '     }'
-.  write ( HTM )  '     .button {'
-.  write ( HTM )  '             color: #000000;'
-.  write ( HTM )  '             border: solid 1px #da7c0c;'
-.  write ( HTM )  '             background: #f78d1d;'
-.  write ( HTM )  '             display: inline-block;'
-.  write ( HTM )  '             float: right;'
-.  write ( HTM )  '             outline: none;'
-.  write ( HTM )  '             text-align: center;'
-.  write ( HTM )  '             text-decoration: none;'
-.  write ( HTM )  '             font: 14px/100% Arial,  Helvetica,  sans-serif;'
-.  write ( HTM )  '             padding: .5em 2em .55em;'
-.  write ( HTM )  '             text-shadow: 0 1px 1px rgba( 0, 0, 0, .3 );'
-.  write ( HTM )  '             border-radius: .5em;'
-.  write ( HTM )  '             box-shadow: 0 1px 2px rgba( 0, 0, 0, .2 );'
-.  write ( HTM )  '             margin: -5px;'
-.  write ( HTM )  '     }'
-.  write ( HTM )  '     .button:hover {'
-.  write ( HTM )  '             text-decoration: none;'
-.  write ( HTM )  '             background: #f2741a;'
-.  write ( HTM )  '     }'
-.  write ( HTM )  '     .button:active {'
-.  write ( HTM )  '             position: relative;'
-.  write ( HTM )  '             top: 1px;'
-.  write ( HTM )  '     }'
+.  write ( HTM )  'h2 {'
+.  write ( HTM )  ' text-align: center;'
+.  write ( HTM )  ' padding: 10px;'
+.  write ( HTM )  ' margin: 0px;'
+.  write ( HTM )  '}'
+.  write ( HTM )  'h4 {text-align: center;}'
+.  write ( HTM )  'h5 {'
+.  write ( HTM )  ' background-color: orange;'
+.  write ( HTM )  ' border: 1px solid black;'
+.  write ( HTM )  ' padding: 10px;'
+.  write ( HTM )  ' margin: 0px 0px 30px 0px;'
+.  write ( HTM )  ' text-align: right;'
+.  write ( HTM )  '}'
+.  write ( HTM )  'p {'
+.  write ( HTM )  ' margin-top: .5em;'
+.  write ( HTM )  ' margin-bottom: .5em;'
+.  write ( HTM )  '}'
+.  write ( HTM )  'hr.record { width:50%;}'
+.  write ( HTM )  'hr.variable { border-top:1px dotted #ccc;'
+.  write ( HTM )  ' color: #ffffff;'
+.  write ( HTM )  ' bakcground-color: #ffffff;'
+.  write ( HTM )  '}'
+.  write ( HTM )  'table {border: 5px solid #555;'
+.  write ( HTM )  ' border-radius: 5px;'
+.  write ( HTM )  ' border-collapse: collapse;'
+.  write ( HTM )  ' width: 100%;'
+.  write ( HTM )  ' padding: 15px;'
+.  write ( HTM )  ' margin-bottom: 20px;'
+.  write ( HTM )  '}'
+.  write ( HTM )  'th  {'
+.  write ( HTM )  ' background-color:' HTML_BLUE1 ';'
+.  write ( HTM )  ' font-weight:bold;'
+.  write ( HTM )  ' padding:15px;'
+.  write ( HTM )  '}'
+.  write ( HTM )  'tr:nth-child(even) {background-color: #EEEEEE;}'
+.  write ( HTM )  'tr:hover, tr:nth-child(even):hover{'
+.  write ( HTM )  ' background-color: #DDDDDD;'
+.  write ( HTM )  '}'
+.  write ( HTM )  'td {border: 0px; padding:5px 15px 5px 15px;}'
+.  write ( HTM )  'ul {padding-left: 75px; margin-top:0px; margin-bottom:0px;}'
+.  write ( HTM )  'li {list-style-type: none; display: inline-block;margin-right:15px;margin-bottom:10px;}'
+.  write ( HTM )  '.entire_rec {'
+.  write ( HTM )  ' padding: 20px 0px 20px 0px;'
+.  write ( HTM )  ' background-color:' HTML_YELLOW1 ';'
+.  write ( HTM )  ' border: 1px solid #EEEEEE;'
+.  write ( HTM )  ' border-radius: 5px;'
+.  write ( HTM )  '}'
+.  write ( HTM )  '#table_number {'
+.  write ( HTM )  ' float: left;'
+.  write ( HTM )  ' padding: 15px;'
+.  write ( HTM )  ' font-weight:bold;'
+.  write ( HTM )  '}'
+.  write ( HTM )  '.ALL_VAR_INFO {padding: 5px 20px 5px 20px;}'
+.  write ( HTM )  '.ALL_VAR_INFO:hover {background-color: #fbeccb;}'
+.  write ( HTM )  '.IMPORTANT_VAR {'
+.  write ( HTM )  ' font-size: 1.3em;'
+.  write ( HTM )  ' font-weight: bold;'
+.  write ( HTM )  '}'
+.  write ( HTM )  '.IMPORTANT_VAR:hover {background-color:' HTML_YELLOW2 ';}'
+.  write ( HTM )  '.button {'
+.  write ( HTM )  ' color: #000000;'
+.  write ( HTM )  ' border: solid 1px #da7c0c;'
+.  write ( HTM )  ' background: #f78d1d;'
+.  write ( HTM )  ' display: inline-block;'
+.  write ( HTM )  ' float: right;'
+.  write ( HTM )  ' outline: none;'
+.  write ( HTM )  ' text-align: center;'
+.  write ( HTM )  ' text-decoration: none;'
+.  write ( HTM )  ' font: 14px/100% Arial,  Helvetica,  sans-serif;'
+.  write ( HTM )  ' padding: .5em 2em .55em;'
+.  write ( HTM )  ' text-shadow: 0 1px 1px rgba( 0, 0, 0, .3 );'
+.  write ( HTM )  ' border-radius: .5em;'
+.  write ( HTM )  ' box-shadow: 0 1px 2px rgba( 0, 0, 0, .2 );'
+.  write ( HTM )  ' margin: -5px;'
+.  write ( HTM )  '}'
+.  write ( HTM )  '.button:hover {'
+.  write ( HTM )  ' text-decoration: none;'
+.  write ( HTM )  ' background: #f2741a;'
+.  write ( HTM )  '}'
+.  write ( HTM )  '.button:active {'
+.  write ( HTM )  ' position: relative;'
+.  write ( HTM )  ' top: 1px;'
+.  write ( HTM )  '}'
 
 
-.  write ( HTM )  '     .COL1   {'
-.  write ( HTM )  '           background-color:' HTML_BLACK1 ';'
-.  write ( HTM )  '           border: 1px solid black;'
-.  write ( HTM )  '           text-align: center;'
-.  write ( HTM )  '           width: 50px;'
-.  write ( HTM )  '           }'
-.  write ( HTM )  '     .COL2   {'
-.  write ( HTM )  '           background-color:' HTML_YELLOW1 ';'
-.  write ( HTM )  '           border: 1px solid black;'
-.  write ( HTM )  '           width: 50px;'
-.  write ( HTM )  '           text-align: left;'
-.  write ( HTM )  '           }'
-.  write ( HTM )  '     ul {padding-left: 75px;}'
-.  write ( HTM )  '     .VARNAME   {'
-.  write ( HTM )  '           font-style: normal;'
-.  write ( HTM )  '           font-weight: bold;'
-.  write ( HTM )  '           }'
-.  write ( HTM )  '     .VARLABEL   {'
-.  write ( HTM )  '           color: #222222;'
-.  write ( HTM )  '           font-style: italic;'
-.  write ( HTM )  '           }'
-.  write ( HTM )  '     .VALLABEL   {'
-.  write ( HTM )  '           color: #222222;'
-.  write ( HTM )  '           font-style: italic;'
-.  write ( HTM )  '           }'
-.  write ( HTM )  '     .recordtype{'
-.  write ( HTM )  '           border: 5px solid #555;'
-.  write ( HTM )  '           border-radius: 5px;'
-.  write ( HTM )  '           padding: 10px;'
-.  write ( HTM )  '           margin-bottom: 15px;'
-.  write ( HTM )  '           }'
-.  write ( HTM )  '     .indent1{'
-.  write ( HTM )  '           padding-left: 10px;'
-.  write ( HTM )  '           }'
-.  write ( HTM )  '     .indent2{'
-.  write ( HTM )  '           padding-left: 25px;'
-.  write ( HTM )  '           }'
-.  write ( HTM )  '     .indent3{'
-.  write ( HTM )  '           padding-left: 45px;'
-.  write ( HTM )  '           }'
-
-.  write ( HTM )  '  </STYLE>'
-.  write ( HTM )  '</HEAD>'
+.  write ( HTM )  '.COL1   {'
+.  write ( HTM )  ' background-color:' HTML_BLACK1 ';'
+.  write ( HTM )  ' border: 1px solid black;'
+.  write ( HTM )  ' text-align: center;'
+.  write ( HTM )  ' width: 50px;'
+.  write ( HTM )  '}'
+.  write ( HTM )  '.COL2   {'
+.  write ( HTM )  ' background-color:' HTML_YELLOW1 ';'
+.  write ( HTM )  ' border: 1px solid black;'
+.  write ( HTM )  ' width: 50px;'
+.  write ( HTM )  ' text-align: left;'
+.  write ( HTM )  '}'
+.  write ( HTM )  '.VARNAME   {'
+.  write ( HTM )  ' font-style: normal;'
+.  write ( HTM )  ' font-weight: bold;'
+.  write ( HTM )  '}'
+.  write ( HTM )  '.VARLABEL   {'
+.  write ( HTM )  ' color: #222222;'
+.  write ( HTM )  ' font-style: italic;'
+.  write ( HTM )  ' font-weight: bold;'
+.  write ( HTM )  '}'
+.  write ( HTM )  '.VALVALUE   {'
+.  write ( HTM )  ' color: #222222;'
+.  write ( HTM )  ' font-weight: bold;'
+.  write ( HTM )  '}'
+.  write ( HTM )  '.VALLABEL   {'
+.  write ( HTM )  ' color: #222222;'
+.  write ( HTM )  ' font-style: italic;'
+.  write ( HTM )  ' font-weight: normal;'
+.  write ( HTM )  '}'
+.  write ( HTM )  '.VALLABEL:hover   {color:' HTML_RED3 ';}'
+.  write ( HTM )  '.recordtype{'
+.  write ( HTM )  ' border: 5px solid #555;'
+.  write ( HTM )  ' border-radius: 5px;'
+.  write ( HTM )  ' padding: 10px;'
+.  write ( HTM )  ' margin-bottom: 15px;'
+.  write ( HTM )  '}'
+.  write ( HTM )  '.indent1 {padding-left: 10px;}'
+.  write ( HTM )  '.indent2 {padding-left: 25px;}'
+.  write ( HTM )  '.indent3 {padding-left: 45px;}'
+.  write ( HTM )  '</style>'
+.  write ( HTM )  '</head>'
 . end subprocedure
 |
-. subprocedure REPLACE
+. subprocedure REPLACE_HTML
 .  REPLACE$ = trimlr( REPLACE$ )
 .  REPLACE$ = replace( REPLACE$, '<', '&lt;', 5, 1, 0 )
 .  REPLACE$ = replace( REPLACE$, '>', '&gt;', 5, 1, 0 )
@@ -531,7 +534,7 @@ c     add another class for keyvars and common vars
 .    REPLACE$ = replace( REPLACE$, LETTER$, ' ', 1, 0, 0 )
 .   endif
 .  end for
-. end subprocedure REPLACE
+. end subprocedure REPLACE_HTML
 |
 end program
 END PROCEDURE
