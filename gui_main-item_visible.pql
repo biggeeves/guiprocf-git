@@ -1,4 +1,4 @@
-PROCEDURE      GUI_MAIN.ITEM_VISIBLE:T  (157590,45038)  |Last amended Apr 02, 2014,12:30:38
+PROCEDURE      GUI_MAIN.ITEM_VISIBLE:T  (157655,30530)  |Last amended Jun 06, 2014,08:28:50
 subprocedure ITEM_VISIBLE
 | first section is the show/hide portion.
 | defaults for every page
@@ -101,7 +101,7 @@ C   REC TABLE BUTTON
 .   endif
 .   show item REC_BREAD_CRUMB
 .   show item REC_BREAD_CRUMB_BOX
-. elseif (m_page = VIEWCASE_DELETE)
+. elseif (m_page = VIEW_CASE_DELETE)
 .   show item CASE_BREAD_CRUMB
 .   show item CASE_BREAD_CRUMBOX
 . endif

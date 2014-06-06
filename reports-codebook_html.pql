@@ -1,4 +1,4 @@
-PROCEDURE      REPORTS.CODEBOOK_HTML:T  (157632,37572)  |Last amended May 14, 2014,10:26:12
+PROCEDURE      REPORTS.CODEBOOK_HTML:T  (157655,30722)  |Last amended Jun 06, 2014,08:32:02
 | Make a nice looking HTML codebook to send to someone
 
 
@@ -7,45 +7,7 @@ call GUIPROCF.SYSTEM.ALLRECS
 
 program crwarn
 <comment> write "making HTML Codebook"
-. string  *     36   CASE_NAME             | Variable name of case,  varname( 0,  1 )
-. string  *     72   CASE_LABEL            | Variable label of case,  vavarname( 0,  1 )
-. string  *     36   VAR_NAME              | Variable name
-. integer *      1   YES NO
-. integer *      1   PROCEED              | Control Flow Varialbe.  Yes/No
-. string  *    100   VTYPE_MAP             | generic Variable Type Map
-. string  *    100   VAR_LABEL            |
-. string  *     72   VAR_FORMAT
-. string  *    300   DB_SR1_FILE                      | string path to current database sr1  file
-. string  *    300   DB_FOLDER           | string path to current database folder
-. string  *    300   PATH_FILE                    | File: Path
-. string  *    100   NAME_FILE                    | File: Name
-. string  *      6   EXT_FILE                     | File: Ext
-. string  *      7   HTML_COLOR   | for assigning colors to areas.  calculated.
-. string  *      7   HTML_BLUE1   TO HTML_BLUE6
-                     HTML_GREEN1  TO HTML_GREEN6
-                     HTML_ORANGE1 TO HTML_ORANGE6
-                     HTML_YELLOW1 TO HTML_YELLOW6
-                     HTML_RED1    TO HTML_RED6
-                     HTML_BLACK1  TO HTML_BLACK6
-                     HTML_BLACK
-                     HTML_GREY        HTML_WHITE     |Standardized colors 1=LIGHT 6=DARK
-                     HTML_COLUMBIA_BLUE
-set HTML_BLUE6  ( '#13275a' )	    HTML_BLUE5  ( '#1a3579' )	    HTML_BLUE4  ( '#264fb6' )	
-    HTML_BLUE3  ( '#336af3' )	    HTML_BLUE2  ( '#9ab5f9' )	    HTML_BLUE1  ( '#eaf0fd' )
-    HTML_ORANGE6 ( '#5a4513' )      HTML_ORANGE5 ( '#795d1a' )      HTML_ORANGE4 ( '#b58c26' )	
-    HTML_ORANGE3 ( '#f2bb33' )	    HTML_ORANGE2 ( '#f9dd9a' )	    HTML_ORANGE1 ( '#fbedcc' )
-    HTML_RED6 ( '#5f0000' )	    HTML_RED5 ( '#7f0000' )	    HTML_RED4 ( '#bf0000' )	
-    HTML_RED3 ( '#ff0000' )	    HTML_RED2 ( '#ff8080' )	    HTML_RED1 ( '#febfbf' )
-    HTML_GREEN6 ( '#1e440e' )	    HTML_GREEN5 ( '#285b13' )	    HTML_GREEN4 ( '#3b881c' )	
-    HTML_GREEN3 ( '#4fb626' )	    HTML_GREEN2 ( '#a8db93' )	    HTML_GREEN1 ( '#d3ecc9' )
-    HTML_YELLOW6 ( '#5f5f1c' )      HTML_YELLOW5 ( '#7f7f26' )    HTML_YELLOW4 ( '#bfbf39' )	
-    HTML_YELLOW3 ( '#ffff4c' )	    HTML_YELLOW2 ( '#ffffa6' )	    HTML_YELLOW1 ( '#fefed2' )
-    HTML_BLACK6 ( '#303030' )	    HTML_BLACK5 ( '#404040' )	    HTML_BLACK4 ( '#606060' )	
-    HTML_BLACK3 ( '#808080' )	    HTML_BLACK2 ( '#c8c8c8' )	    HTML_BLACK1 ( '#efefef' )
-    HTML_BLACK   ( '#000000' )
-    HTML_GREY    ( '#EEEEEE' )
-    HTML_WHITE   ( '#FFFFFF' )
-    HTML_COLUMBIA_BLUE ( '#2060A4' )
+call GUIPROCF.GUI_MAIN.DECLARE_VARIABLES
 . integer * 1 KEYVAR COMVAR COM#
 . integer * 2 VARS# RECDOCN# RECLINE# LETTER# LETTERS#
 . string * 1 LETTER$
