@@ -1,0 +1,21 @@
+PROCEDURE      GUI_MAIN.GOTO_SCREEN_CHECKS:T  (157661,53461)  |Last amended Jun 12, 2014,14:51:01
+C CHECKS THE STANDARD WAY TO GOTO SCREEN, WHICH IS FROM THE PICK LIST
+SUBPROCEDURE GOTO_SCREEN_CHECKS
+. SCREEN_RECTYPE_CHECK  = trimlr(recname(REC_TYPE_NUM))
+. SCREEN_NAME  = gettxt(REC_FORM_SELECTED)
+<comment> write 5t 'SCREEN_RECTYPE_CHECK: ' SCREEN_RECTYPE_CHECK / 'SCREEN_NAME: ' SCREEN_NAME
+
+C CHECK RECORD TYPE EXISTS
+. ifthen (0 eq exists(SCREEN_RECTYPE_CHECK) or len(SCREEN_RECTYPE_CHECK) )
+.   display infobox "The linked TABLE was incorrect."  + char(13) + char(13) + "Please contact your D.B.A. at the D.C.C."
+.   PROCEED = NO
+.   EXIT SUBPROCEDURE
+. endif
+
+. ifthen (0 eq exists(SCREEN_NAME) or len(SCREEN_NAME ) )
+.   display infobox "The linked SCREEN was incorrect. " + char(13) + char(13) + "Please contact your D.B.A."
+.   PROCEED = NO
+.   EXIT SUBPROCEDURE
+. endif
+END SUBPROCEDURE
+END PROCEDURE

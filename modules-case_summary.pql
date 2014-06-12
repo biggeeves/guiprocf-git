@@ -1,4 +1,4 @@
-PROCEDURE      MODULES.CASE_SUMMARY:T  (157252,62507)  |Last amended Apr 29, 2013,17:21:47
+PROCEDURE      MODULES.CASE_SUMMARY:T  (157661,40401)  |Last amended Jun 12, 2014,11:13:21
 SUBROUTINE UTIL.LIST_IT (CASE$V) NODATABASE REPLACE
 | File name: XXXX
 | Path:      XXXX
@@ -37,8 +37,6 @@ FILELOC5 = dsn('monkey95')
 
 CASE_TYPE = VTYPE(0,VARNAMEC(0,1))
 if (CASE_TYPE = 1) NEED_QOUTE = '"'
-
-c execute dbms 'call SYSPROC.TOOLS.HTMLCODE'
 
 open monkey91   /write / dsnvar = FILELOC1 lrecl=600 iostat  = DUMB_N#
 write dumb_n# 'monkey91' [dsn('monkey91')]

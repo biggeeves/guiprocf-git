@@ -1,7 +1,8 @@
-PROCEDURE      GUI_MAIN.GOTO_SCREEN:T  (157521,51107)  |Last amended Jan 23, 2014,14:11:47
+PROCEDURE      GUI_MAIN.GOTO_SCREEN:T  (157661,53584)  |Last amended Jun 12, 2014,14:53:04
 subprocedure GOTO_SCREEN
 <comment> write 'Sub: GOTO_SCREEN: Case: ' CASE_VALUE ', Key1: ' KEY_VALUE_1 ', Key2: ' KEY_VALUE_2 ', Key3: ' KEY_VALUE_3 ', Key4: ' KEY_VALUE_4
 <comment> write 'Include possiblity to partialy select keys.  For example select key1 and show all recs with key1 value.'
+CIF EQ 1,2
 . SCREEN_RECTYPE_CHECK  = trimlr(recname(REC_TYPE_NUM))
 . SCREEN_NAME  = gettxt(REC_FORM_SELECTED)
 <comment> write 5t 'SCREEN_RECTYPE_CHECK: ' SCREEN_RECTYPE_CHECK / 'SCREEN_NAME: ' SCREEN_NAME
@@ -16,6 +17,7 @@ C CHECK RECORD TYPE EXISTS
 .   display infobox "The linked SCREEN was incorrect. " + char(13) + char(13) + "Please contact your D.B.A."
 .   EXIT SUBPROCEDURE
 . endif
+CIF END
 
 . SCREEN_MEMBER = DB_PROC_FILE + '.GUI_CUSTOM.GOTO_SCREEN:O' | CHECK FOR CUSTOM GOTO SCREEN
 . ifthen ( meminfo( SCREEN_MEMBER, 1) = MEM_O)
