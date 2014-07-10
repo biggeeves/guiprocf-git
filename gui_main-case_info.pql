@@ -1,4 +1,4 @@
-PROCEDURE      GUI_MAIN.CASE_INFO:T  (157610,52521)  |Last amended Apr 22, 2014,14:35:21
+PROCEDURE      GUI_MAIN.CASE_INFO:T  (157689,45668)  |Last amended Jul 10, 2014,12:41:08
 c display case specific info
 
 subprocedure CASE_INFO
@@ -10,16 +10,5 @@ subprocedure CASE_INFO
 
 . set item DELETE_CASE_LABEL, '  Delete ' + CASE_LABEL + ':   ' + CASE_VALUE + '?'
 
-. remove all CASE_INFO
-. GEN_STR1 = '<body bgcolor="' + HTML_YELLOW1 +'" readonly="true">'
-. append line CASE_INFO,  GEN_STR1  HTML
-
-. ifthen (meminfo(DB_PROC_FILE+'.GUI_CUSTOM.CASE_INFO:O',1) = MEM_O)
-<COMMENT> WRITE 'CALLING ' DB_PROC_FILE '.GUI_CUSTOM.CASE_INFO:O'
-.   execute subroutine [DB_PROC_FILE+'.GUI_CUSTOM.CASE_INFO'] (CASE_VALUE CASE_INFO) RETURNING (PROCEED) DYNAMIC
-. else
-.   GEN_STR1 = '<p align="center"><font size="+3"><B>Selected: ' + CASE_VALUE
-.   append line CASE_INFO, GEN_STR1 HTML
-. endif
 end subprocedure
 END PROCEDURE

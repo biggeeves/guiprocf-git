@@ -1,21 +1,44 @@
-PROCEDURE      SCREENS.INC_PERMISSIONS:T  (157464,52710)  |Last amended Nov 27, 2013,14:38:30
-C SAMPLE PERMISSIONS.  DO NOT USE IN YOUR DATABASE!
-C NOTE THAT THIS IS ALL OR NOTHING.  EVERY SCREEN THAT CALLS THIS MEMBER MUST HAVE ITEM 8 AND 9 (DELETE AND SAVE) OR THEY SEE AN ERROR MESSAGE.
-
+PROCEDURE      SCREENS.INC_PERMISSIONS:T  (157689,44444)  |Last amended Jul 10, 2014,12:20:44
 C USER PERMISSIONS ARE CONTROLLED FROM HERE.  DEFAULT IS READ ONLY.
+C SAMPLE PERMISSIONS.  Feel free to use in your database.
+c It will set the normal DCC Users to Write and everyone else to read by default
 
 IWRITE   = 0 | YES
 IREAD    = 0 | YES
 IDELETE  = 0 | YES
 MESSTEXT$ = 'Read Only'
 USER1 = upper(sglobal('USERA'))
-ifthen (USER1 eq 'GNEILS' or 'DMERLE' or 'HANDREWS' or 'MFENG' or 'BWILLIAMS' or 'MVENTURA' or 'YOUR USER NAME')
+ifthen (USER1 eq 'GNEILS' or 'DMERLE' or 'HANDREWS' or 'MFENG' or 'BWILLIAMS' or 'MVENTURA')
+c DBAs
+. IWRITE   = 1 | YES
+. IREAD    = 1 | YES
+. IDELETE  = 1 | YES
+. MESSTEXT$ = ''
+elseif (USER1 eq 'YOUR USER NAME')
+c set custom permissions here
 . IWRITE   = 1 | YES
 . IREAD    = 1 | YES
 . IDELETE  = 1 | YES
 . MESSTEXT$ = ''
 endif
 
-if (IDELETE <> 1) HIDE ITEM 8 | DELETE BUTTON    -!!!   ALL SCREENS MUST HAVE A DELETE BUTTON OR USER WILL SEE ERROR MESSAGE !!!
-if (IWRITE  <> 1) HIDE ITEM 9 | SAVE BUTTON      -!!!   ALL SCREENS MUST HAVE A SAVE BUTTON OR USER WILL SEE ERROR MESSAGE !!
+c Either show or hide the save and delete button based on the values set above.
+c test the buttons to see if they are accessible (on screen or not)
+ifthen ( idstatus(8) eq 1 )
+. ifthen ( IDELETE EQ 1 )
+.   show item 8
+. else
+.   hide item 8  | HIDE THE DELETE
+. endif
+endif
+
+ifthen ( idstatus( 9 ) eq 1 )  |Save Button
+. ifthen ( IDELETE EQ 1 )
+.   show item 9  | Show Save
+. else
+.   hide item 9  | HIDE SAVE
+. endif
+endif
+
+
 END PROCEDURE

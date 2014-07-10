@@ -1,10 +1,24 @@
-PROCEDURE      GUI_CUSTOM.SET_LOCAL_CASE_TYPE:T  (157457,48934)  |Last amended Nov 20, 2013,13:35:34
+PROCEDURE      GUI_CUSTOM.SET_LOCAL_CASE_TYPE:T  (157689,44757)  |Last amended Jul 10, 2014,12:25:57
+c set the global LOCAL_CASE_TYPE.  1= Numeric, 0=String
 program
-. STRING  * 32 CASE_NAME
-. INTEGER * 1  CASE_TYPE
-. INTEGER * 1 TEMP_VAR
-. CASE_NAME  = trimr(varname(0, 1))
-. CASE_TYPE  = vtype(0, CASE_NAME)
-. TEMP_VAR = GLOBALN( 'LOCAL_CASE_TYPE', CASE_TYPE )
+. STRING  * 32  CASE_NAME
+. INTEGER *  1  CASE_TYPE
+. INTEGER *  1  TEMP_VAR
+. CASE_NAME  = trimr( varname( 0, 1 ) )
+. CASE_TYPE  = vtype( 0, CASE_NAME )
+. TEMP_VAR   = GLOBALN( 'LOCAL_CASE_TYPE', CASE_TYPE )
 end program
+
+
+cif eq 1,2
+c values for vtype
+1 = string
+2 = categorical
+3 = date
+4 = time
+5 = integer
+6 = real (single precision)
+7 = real (double precision)
+8 = scaled variable
+cif end
 END PROCEDURE

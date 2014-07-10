@@ -1,4 +1,4 @@
-PROCEDURE      GUI_MAIN.ITEM_VISIBLE:T  (157655,30530)  |Last amended Jun 06, 2014,08:28:50
+PROCEDURE      GUI_MAIN.ITEM_VISIBLE:T  (157689,47122)  |Last amended Jul 10, 2014,13:05:22
 subprocedure ITEM_VISIBLE
 | first section is the show/hide portion.
 | defaults for every page
@@ -8,7 +8,10 @@ c . show item MEGA_CASE_LABEL
 . show item DB_TITLE
 . show item DB_FOOTER
 . show item LOG_OUT
-. if (dbtype(0) eq 1) show item PAGE_CASEIDS;  enable item PAGE_CASEIDS
+. ifthen (dbtype(0) eq 1)
+.   show item PAGE_CASEIDS
+.   enable item PAGE_CASEIDS
+. endif
 . show item PAGE_OLD_KEYS; ifnot(m_page = VIEW_OLD_KEYS ) enable item PAGE_OLD_KEYS
 
 
@@ -60,6 +63,7 @@ c page dependent items
 .   ifthen(I_GUI_CASE_LIST EQ 1) show item CASE_LIST
 .   else hide item CASE_LIST
 .   endif
+
 . elseif (m_page = VIEW_NEW_KEYS)
 .   ifthen (dbtype(0) eq 1)
 .     show item CASE_BREAD_CRUMB
@@ -71,6 +75,7 @@ c page dependent items
 
 .   show item REC_BREAD_CRUMB
 .   show item REC_BREAD_CRUMB_BOX
+
 . elseif (m_page = VIEW_OLD_KEYS )
 .   disable item PAGE_OLD_KEYS
 .   ifthen (dbtype(0) eq 1)
@@ -82,15 +87,30 @@ c page dependent items
 .   endif
 .   show item REC_BREAD_CRUMB
 .   show item REC_BREAD_CRUMB_BOX
+
 C   DELETE CASE BUTTON
 .   hide item PAGE_CASE_DELETE
 .   ifthen (dbtype(0) eq 1)
 .     if(I_GUI_DBA = 1) show item PAGE_CASE_DELETE
 .   endif
+
 C   REC TABLE BUTTON
 .   hide item PAGE_TABLE
 .   if(I_GUI_REC_TABLE = 1) show item PAGE_TABLE
 .   focus item FORM_LIST
+
+C   CASE SUMMARY BUTTON
+.   show item PAGE_CASE_SUMMARY
+
+. elseif (m_page = VIEW_CASE_SUMMARY)
+.   ifthen (dbtype(0) eq 1)
+.     show item CASE_BREAD_CRUMB
+.     show item CASE_BREAD_CRUMBOX
+.   else
+.     hide item CASE_BREAD_CRUMB
+.     hide item CASE_BREAD_CRUMBOX
+.   endif
+
 . elseif (m_page = VIEW_TABLE)
 .   ifthen (dbtype(0) eq 1)
 .     show item CASE_BREAD_CRUMB
@@ -101,6 +121,7 @@ C   REC TABLE BUTTON
 .   endif
 .   show item REC_BREAD_CRUMB
 .   show item REC_BREAD_CRUMB_BOX
+
 . elseif (m_page = VIEW_CASE_DELETE)
 .   show item CASE_BREAD_CRUMB
 .   show item CASE_BREAD_CRUMBOX
