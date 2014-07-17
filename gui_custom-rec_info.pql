@@ -1,11 +1,11 @@
-PROCEDURE      GUI_CUSTOM.REC_INFO:T  (157655,30639)  |Last amended Jun 06, 2014,08:30:39
+PROCEDURE      GUI_CUSTOM.REC_INFO:T  (157696,54828)  |Last amended Jul 17, 2014,15:13:48
 c outputs to gui item 1 row for each record in specified record type.
 c Example:   IN SIR014.GUI_CUSTOM.CASE_INFO WRITE ONE LINE OF CODE
 c            call GUIPROCF.GUI_CUSTOM.REC_INFO
 
 CALL GUIPROCF.GUI_CUSTOM.SET_LOCAL_CASE_TYPE  | make sure we have the global value for processing case ids correctly
 
-subroutine GUI_CUSTOM.REC_INFO (THIS_CASEID REC_TYPE_NUM ITEM_NUMBER) returning (PROCEED) replace
+subroutine GUI_CUSTOM.REC_INFO (THIS_CASEID REC_TYPE_NUM ITEM_NUMBER) returning (PROCEED) replace crwarn
 
 
 string  *  32   THIS_CASEID      | incoming case id value is always a string
@@ -17,6 +17,9 @@ integer *   1   PROCEED
 string  * 300   GEN_STR1
 integer *   2   REC_TYPE_NUM
 integer *   1   REC_TYPE_COUNT
+string  *  72   KEYVNAME__4
+string  * 300   STRING_VARGET
+string  *  32   TEMP_VARNAME
 
 
 LOCAL_CASE_ID$ = THIS_CASEID
@@ -53,12 +56,12 @@ CIF END
 .       ifthen (nkeys(RECX) EQ 0)
 .         process rec RECX
 .           GEN_STR1 = 'Created: '  | break is added to restore black small font
-.           IF(EXISTS(DSTAMP) EQ 1)   GEN_STR1 = 'Created ' + DSTAMP
-.           IF(EXISTS(DWHO) EQ 1)     GEN_STR1 = GEN_STR1 + ' by ' + DWHO
+TEMP_VARNAME = 'DSTAMP'; IF( EXISTS( VARGET( TEMP_VARNAME ) ) EQ 1 )   GEN_STR1 = 'Created ' + VARGET(TEMP_VARNAME)
+TEMP_VARNAME = 'DWHO'; IF( EXISTS( VARGET( TEMP_VARNAME ) ) EQ 1 )   GEN_STR1 = GEN_STR1 + ' by ' + VARGET(TEMP_VARNAME)
 .           GEN_STR1 = GEN_STR1 + '<br>Last Edit: '
-.           IF(EXISTS(DCCDATE) EQ 1)  GEN_STR1 = GEN_STR1 + ' on ' + DCCDATE
-.           IF(EXISTS(DCCTIME) EQ 1)  GEN_STR1 = GEN_STR1 + ' at ' + DCCTIME
-.           IF(EXISTS(DCCWHO) EQ 1)   GEN_STR1 = GEN_STR1 + ' by ' + DCCWHO
+TEMP_VARNAME = 'DCCDATE'; IF( EXISTS( VARGET( TEMP_VARNAME ) ) EQ 1 )   GEN_STR1 = GEN_STR1 + ' on ' + VARGET(TEMP_VARNAME)
+TEMP_VARNAME = 'DCCTIME'; IF( EXISTS( VARGET( TEMP_VARNAME ) ) EQ 1 )   GEN_STR1 = GEN_STR1 + ' at ' + VARGET(TEMP_VARNAME)
+TEMP_VARNAME = 'DCCWHO'; IF( EXISTS( VARGET( TEMP_VARNAME ) ) EQ 1 )   GEN_STR1 = GEN_STR1 + ' by ' + VARGET(TEMP_VARNAME)
 .           append line  ITEM_NUMBER, '<BR>' + GEN_STR1 HTML
 .         end rec
 .       else

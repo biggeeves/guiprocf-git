@@ -1,4 +1,4 @@
-PROCEDURE      TOOLS.SET_GUIPROCF_ATTRIBUTE:T  (157603,53093)  |Last amended Apr 15, 2014,14:44:53
+PROCEDURE      TOOLS.SET_GUIPROCF_ATTRIBUTE:T  (157693,35797)  |Last amended Jul 14, 2014,09:56:37
 program
 . integer *      2   RESVAR               | Response Variable
 . string  *    300   PATH$                    | File: Path
@@ -7,10 +7,9 @@ program
 . string  *      6   FILE_EXT                     | File: Ext
 . STRING  *    300   STR$1
 
-
+PATH$ = DSN(PROCFILE(0))
 DISPLAY OPENBOX "Locate the GUIPROCF" , "*.srp|*.SRP", "srp|SRP", 1 RESPONSE RESVAR, PATH$
 ifthen (RESVAR gt 0)
-.  write PATH$
 .  execute SUBROUTINE SYSPROC.TOOLS.FILENAME (PATH$) RETURNING (FILE_PATH, FILE_NAME, FILE_EXT)
 |  DEFINE GUIPROCF
 .  STR$1 = 'attribute GUIPROCF = "' + PATH$ + '"'

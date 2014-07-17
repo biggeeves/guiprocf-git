@@ -1,0 +1,23 @@
+PROCEDURE      GUI_CUSTOM.CASE_MEMO:T  (157696,52665)  |Last amended Jul 17, 2014,14:37:45
+CIF EQ 1,2
+SAMPLE SCHEMA FOR CREATING CASE_MEMO LOCK
+RECORD SCHEMA   2  CASE_MEMO  /LOCK
+DOCUMENT KIT Memos
+KEY FIELDS      AUTO_ID(A)
+MAX REC COUNT   100
+DATA LIST   KIT                                  3 -     8 (I2)
+            AUTO_ID                                *       (I2)
+            CASE_MEMO_LINE                        *             (A255)
+            CASE_MEMO_LOCKED                       *       (I1)
+            CASE_LOCKED_BY                         *       (A15)
+VAR RANGES      CASE_MEMO_LOCKED                (0 1)
+VALUE LABELS    CASE_MEMO_LOCKED                 (0)'Not locked.  Everyone can Access.'
+                                                 (1)'Locked.  Only I can edit it.'
+VAR LABEL       AUTO_ID                          'Auto numbered ID'
+                CASE_LOCKED_BY                   'Locked By:'
+                CASE_MEMO_LINE                        'Each Line of Text'
+                CASE_MEMO_LOCKED                 'Locked.  First ID.  Locked and others can only read.'
+END SCHEMA
+
+CIF END
+END PROCEDURE
