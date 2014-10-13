@@ -1,9 +1,9 @@
-PROCEDURE      SCREENS.CASE_MEMO:T  (157704,45361)  |Last amended Jul 25, 2014,12:36:01
-CALL GUIPROCF.GUI_CUSTOM.SET_LOCAL_CASE_TYPE
-
+PROCEDURE      MODULES.CASE_NOTES:T  (157704,44871)  |Last amended Jul 25, 2014,12:27:51
 C A NOTES SECTION FOR CASE IDS.
 C FIRST IN GETS THE LOCK ON THE NOTE SECTION.
 C LOCK IS RELEASED ON EXIT OR BY PUSH OF BUTTON.
+
+CALL GUIPROCF.GUI_CUSTOM.SET_LOCAL_CASE_TYPE
 
 SUBROUTINE SCREENS.CASE_MEMO ( CASE$ KEY$1 KEY$2 KEY$3 KEY$4 KEY$5 KEY$6 ) UPDATE REPLACE
 
@@ -16,32 +16,32 @@ integer*1 IDEXIT  ; preset IDEXIT   (0 )
 integer*1 LINE_BOTTOM                              ; preset LINE_BOTTOM (1 )
 integer*1 NOTES_AREA                               ; preset NOTES_AREA  (2 )
 integer*1 SAVE_BUTTON                              ; preset SAVE_BUTTON (3 )
-integer*1 EDIT_BUTTON                              ; preset EDIT_BUTTON (4 )
-integer*1 ID_LABEL                                 ; preset ID_LABEL     (5 )
-integer*1 LOCK_STATUS                              ; preset LOCK_STATUS (6 )
+integer*1 EDIT_BUTTON                              ; preset EDIT_BUTTON      (5 )
+integer*1 LOCK_STATUS                              ; preset LOCK_STATUS      (6 )
 
 dialog "Case MEMO:"
 
-line     LINE_BOTTOM                          ,   0, 24,   0, 440
+line     LINE_BOTTOM                          ,   0, 24,   0, 491
 button   SAVE_BUTTON                          , 22,      190,  70, 1, "Save"
 button   EDIT_BUTTON                          , 22,      270,  70, 1, "Edit"
 button   IDEXIT                               , 22,      350,  70, 0, "E&xit"
-text     NOTES_AREA                           ,   3, 17,   9, 400, 0
-LABEL    ID_LABEL                             ,   1, 5,   400, "Changes to CASEID"
-LABEL    LOCK_STATUS                          ,   2, 5,   400, 'also changes'
-
+text     NOTES_AREA                           ,   2, 20,   9, 471, 0
+LABEL    LOCK_STATUS                          ,   1, 5,   400, ''
 
 
 INITIAL
 STRING * 32 CASE$  KEY$1  KEY$2  KEY$3  KEY$4  KEY$5  KEY$6
+
+LOCAL_CASE_ID$ = CASE$
+LOCAL_CASE_ID# = numbr(CASE$)
+
 CALL GUIPROCF.SCREENS.INC_VARS
 RECNUMBER# = RECNUM("CASE_MEMO")
 CALL GUIPROCF.SCREENS.INC_HEADER
 
 . integer  *    4   MEMO_LINE_NUMBER
 . integer  *    4   LOCKED_RECORD
-. string  *    32   LOCAL_CASE_ID$
-. integer *     4   LOCAL_CASE_ID#
+. STRING   *   32   CASE_ID
 . string   *  500   array MEMO$ (100)
 . INTEGER  *    1   NO YES
 . INTEGER  *    1   LINE_NUMBER
@@ -51,25 +51,15 @@ CALL GUIPROCF.SCREENS.INC_HEADER
 . integer  *    1   I_HAVE_RECORD
 . integer  *    1   RES_VAR
 . string   *    1   T
-. string   *  255   STR_1
-. STRING   *    1   STRING_MISSING
-. SET STRING_MISSING (missing)
 . set MEMO_AREA_SIZE MEMO_LINE_NUMBER (0)
 . SET NO (0) YES (1)
 . SET MODIFIED_NOTE (0)
-. LOCAL_CASE_ID$ = CASE$
-. LOCAL_CASE_ID# = numbr(CASE$)
-
-. set item ID_LABEL VARNAMEC( 0, 1 ) + ": " + LOCAL_CASE_ID$
+. CASE_ID = '2'
 . I_HAVE_RECORD = NO | ASSUME NO WRITE
 . DO REPEAT IDTEXT = SAVE_BUTTON EDIT_BUTTON IDEXIT
 .   SET ITEM FONT IDTEXT, 1, 0, 0, 0, "#FF0000/#FFFFFF"
 . END REPEAT
 . execute subprocedure MEMO_LOAD
-. DISABLE ITEM SAVE_BUTTON
-c only one person can have control of the record at a time.  There is no means for outside users to reset this.
-. hide item EDIT_BUTTON
-. IFNOT ( I_HAVE_RECORD EQ 1 ) FOCUS ITEM IDEXIT
 end initial
 
 message ALL m_id, m_arg1, m_arg2
@@ -97,10 +87,6 @@ message ALL m_id, m_arg1, m_arg2
 .   EXECUTE SUBPROCEDURE REMOVE_LOCK  | REMOVE ANY LOCK UPON EXIT
 .   exit message
 . endif
-. IFTHEN ( MODIFIED_NOTE = YES )
-.   ENABLE ITEM SAVE_BUTTON
-. ENDIF
-
 end message
 
 end dialog
@@ -112,52 +98,41 @@ end dialog
 .   I_HAVE_RECORD = YES | ASSUME I HAVE THE RECORD EVEN IF WE DON'T GET INTO THE RECORD (IE NEW RECORDS DON'T EXISTS YET)
 .   REMOVE ALL NOTES_AREA
 .   focus item NOTES_AREA
-
 CIF EQ 1, 0<LOCAL_CASE_TYPE>    | STRING.  TREAT EVERYTHING ELSE AS NUMERIC
 . OLD CASE IS LOCAL_CASE_ID$
 CIF FALSE
 . OLD CASE IS LOCAL_CASE_ID#
 CIF END
-
-.     rec IS CASE_MEMO WITH (1)  | FIRST RECORD HAS GOLD STANDARD TOGGLE.
-.       GET VARS CASE_LOCKED_BY
-.       IFTHEN ( CASE_MEMO_LOCKED EQ YES)
-C         IF SOMEONE GETS KICKED OUT WHILE EDITING A CASE MEMO, ALLOW THEM BACK IN AND MAKE SURE THEY CAN UNLOCK THE CASE MEMO!
-.         IFTHEN ( SGLOBAL('USERA') EQ CASE_LOCKED_BY )
-.           I_HAVE_RECORD = YES
-.           CASE_MEMO_LOCKED = YES
-.           CASE_LOCKED_BY = sglobal('USERA')
-.           SET ITEM LOCK_STATUS 'Read and write.'
-.         ELSE
-.           I_HAVE_RECORD = NO
-.           STR_1 = fst(CASE_LOCKED_BY , 'Someone') + ' is currently editing this document.  It is read-only.'
-.           SET ITEM LOCK_STATUS, STR_1
-.           HIDE item SAVE_BUTTON
-.         ENDIF
+.     process rec CASE_MEMO WITH (1)  | ONLY THE FIRST LINE IS USED AS THE SWITCH
+.       IFTHEN ( MEMO_LOCKED EQ YES)
+.         I_HAVE_RECORD = NO
+.         SET ITEM LOCK_STATUS '!!! READ ONLY  !!!'
+.         disable item SAVE_BUTTON
 .       ELSE
-.         CASE_MEMO_LOCKED = YES
-.         CASE_LOCKED_BY = sglobal('USERA')
+.         MEMO_LOCKED = YES
 .         I_HAVE_RECORD = YES
 .         SET ITEM LOCK_STATUS 'Read and write.'
+.         disable item EDIT_BUTTON
 .       ENDIF
-.       GET VARS ALL
 .     END REC
 |     2ND TIME THROUGH GETS THE INFO AND DISPLAYS IT.
 .     process rec CASE_MEMO
-.       append line NOTES_AREA, CASE_MEMO_LINE
+C .       MEMO_LINE_NUMBER = MEMO_LINE_NUMBER + 1
+C .       MEMO$(MEMO_LINE_NUMBER) = MEMO_LINE
+.       append line NOTES_AREA, MEMO_LINE
 .     end rec
 .   end case
-
-.   ifthen ( GETNLINES(NOTES_AREA) eq 1)
-.     t = setpos( NOTES_AREA, 1) | first line for new memos.
-.   else
+write [GETNLINES(NOTES_AREA)]
+.   ifthen ( GETNLINES(NOTES_AREA) gt 1 )
 .     t = setpos( NOTES_AREA, GETNLINES(NOTES_AREA) + 1)
-.   endif
+.   else
+.     t = setpos( NOTES_AREA, 0 )
+.   elseif
 . end subprocedure
 
 . SUBPROCEDURE MEMO_SAVE
 .   IFTHEN ( I_HAVE_RECORD EQ NO )
-.     DISPLAY INFOBOX fst(CASE_LOCKED_BY , 'Someone') + " is writing to this note. Saving is not allowed at this time. Copy your work and try back later."
+.     DISPLAY INFOBOX "Someone else is writing to this note. Saving is not allowed at this time"
 .     exit SUBPROCEDURE
 .   ENDIF
 .   if ( MODIFIED_NOTE = NO) EXIT SUBPROCEDURE | IT WAS NOT MODIFIED DONT WASTE ENERGY SAVING.
@@ -167,80 +142,60 @@ CIF EQ 1, 0<LOCAL_CASE_TYPE>    | STRING.  TREAT EVERYTHING ELSE AS NUMERIC
 CIF FALSE
 . OLD CASE IS LOCAL_CASE_ID#
 CIF END
-
-|     1ST DELETE EVERYTHING
 .     process rec CASE_MEMO LOCK=6
 .       delete rec
-.     end rec
-|     CREATE THE LOCK
-.     rec IS CASE_MEMO WITH (1)  | FIRST RECORD HAS GOLD STANDARD LOCK TOGGLE.
-.       CASE_MEMO_LOCKED = YES
-.       I_HAVE_RECORD = YES
-.       CASE_LOCKED_BY = sglobal('USERA')   | IN CASE OF MULTIPLE SAVES WHILE OPEN THIS NEED TO BE UPDATED.
 .     end rec
 .     for MEMO_LINE_NUMBER = 1, MEMO_AREA_SIZE
 .       LINE_TEXT = getltxt( NOTES_AREA, MEMO_LINE_NUMBER )
 .       rec is CASE_MEMO with ( MEMO_LINE_NUMBER ) LOCK=6
-.         CASE_MEMO_LOCKED = YES
 .         MODIFIED_NOTE = NO  | ATLEAST ONE LINE MUST BE SAVED TO TOGGLE THIS VALUE
-.         CASE_MEMO_LINE = LINE_TEXT
+.         MEMO_LINE = LINE_TEXT
 .       end rec
 .     end for
 .   end case
-.   disable ITEM SAVE_BUTTON
 . END SUBPROCEDURE
 
 SUBPROCEDURE CHECK_MODS
 . ifthen ( MODIFIED_NOTE = YES)
 .   IFTHEN ( I_HAVE_RECORD EQ YES )
 .     display yesnobox  "Save changes first?" response res_var
-.     if ( res_var eq 1 ) execute SUBPROCEDURE MEMO_SAVE
+.     if (res_var eq 1) execute SUBPROCEDURE MEMO_SAVE
 .   ELSE
-.     display infobox "Sorry, you can not save it at this time.  " + CHAR(13) + CHAR(13) + "Copy your work and try back later."
+.     DISPLAY INFOBOX "You did not have save access to the form.  Changes were not saved"
 .   ENDIF
 . endif
 END SUBPROCEDURE
 
 SUBPROCEDURE REMOVE_LOCK
-. IFNOT  ( I_HAVE_RECORD EQ YES ) EXIT SUBPROCEDURE
 CIF EQ 1, 0<LOCAL_CASE_TYPE>    | STRING.  TREAT EVERYTHING ELSE AS NUMERIC
 . OLD CASE IS LOCAL_CASE_ID$
 CIF FALSE
 . OLD CASE IS LOCAL_CASE_ID#
 CIF END
-
 .   process rec CASE_MEMO WITH (1)
-.     CASE_MEMO_LOCKED = NO
+.     MEMO_LOCKED = NO
 .     I_HAVE_RECORD = NO
-.     CASE_LOCKED_BY = STRING_MISSING
 .     set item LOCK_STATUS, ' READ ONLY'
 .   end rec
 . end case
 END SUBPROCEDURE
 
 SUBPROCEDURE ADD_EDIT_LOCK  | I WANT TO EDIT THE NOTE!
-| Currently not in use.
 . IFTHEN ( I_HAVE_RECORD = NO )
-.   DISPLAY YESNOBOX "If someone else is editing this, their changes OR your changes will be lost.  Continue?"  response RES_VAR
+.   DISPLAY YESNOBOX "If someone else is editing this, their changes or your changes may be lost.  Continue?"  response RES_VAR
 .   IF (RES_VAR EQ 0) EXIT SUBPROCEDURE
 . ENDIF
 . I_HAVE_RECORD = YES
-
-
-
-
+. enable item SAVE_BUTTON
+. disable item EDIT_BUTTON
+. set item LOCK_STATUS, 'Editable'
 CIF EQ 1, 0<LOCAL_CASE_TYPE>    | STRING.  TREAT EVERYTHING ELSE AS NUMERIC
 . OLD CASE IS LOCAL_CASE_ID$
 CIF FALSE
 . OLD CASE IS LOCAL_CASE_ID#
 CIF END
-
 .   process rec CASE_MEMO WITH (1) LOCK=6
 .     MEMO_LOCKED = YES
-.     enable item SAVE_BUTTON
-.     disable item EDIT_BUTTON
-.     show item SAVE_BUTTON
-.     set item LOCK_STATUS, 'You can edit this document.'
 .   end rec
 . end case
 END SUBPROCEDURE
