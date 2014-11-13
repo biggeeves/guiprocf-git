@@ -858,9 +858,6 @@ C if no cases in database option to create first case.
 .   execute subroutine [DB_PROC_FILE+'.GUI_CUSTOM.SPLASH_TEXT'] ( SPLASH_TEXT ) RETURNING ( PROCEED ) DYNAMIC
 . endif
 |
-c added these lines to see if PAGE COULD BE CORRECTED DEBUGGIN PAINTER PARSER ERROR
-. m_page = 1
-. execute subprocedure PAGE
 |}
 end initial
 
@@ -998,7 +995,7 @@ ENDIF
 
 IFTHEN (M_ID eq PAGE_OLD_KEYS)
 |< PAGE_OLD_KEYS
-ifthen( m_page eq VIEW_OLD_KEYS)
+ifthen (m_page eq VIEW_OLD_KEYS)
 . display infobox "You are on this page already."
 else
 . execute subprocedure OLD_KEY_PAGE_DISPLAY_LIBRARY
@@ -1880,7 +1877,7 @@ subprocedure page
 .  hide item NEW_CASE_LABEL
 .  hide item REC_BREAD_CRUMB_BOX
 .  hide item ID_00070
-.  ifthen( m_page EQ 1  )
+.  ifthen (m_page EQ 1)
 .    show item I_AGREE
 .    show item I_DISAGREE
 .    show item USER_NAME
@@ -1892,7 +1889,7 @@ subprocedure page
 .    show item ID_00054
 .    show item SPLASH_HEADER
 .  endif
-.  ifthen( m_page EQ 2  )
+.  ifthen (m_page EQ 2)
 .    show item DB_TITLE
 .    show item DB_FOOTER
 .    show item CASE_SEARCH
@@ -1914,14 +1911,14 @@ subprocedure page
 .    show item USER_NAME_EVERY_PAGE
 .    show item PAGE_NEWIDS
 .  endif
-.  ifthen( m_page EQ 3  )
+.  ifthen (m_page EQ 3)
 .    show item CASE_NEW
 .    show item CASE_NEWLABEL
 .    show item CASE_NEWBOX
 .    show item CASE_NEWB
 .    show item NEW_CASE_LABEL
 .  endif
-.  ifthen( m_page EQ 4  )
+.  ifthen (m_page EQ 4)
 .    show item CASE_BREAD_CRUMB
 .    show item FORM_LIST
 .    show item FORM_INFO
@@ -1946,7 +1943,7 @@ subprocedure page
 .    show item CASE_LABEL_BREAD_CRUMB
 .    show item REC_BREAD_CRUMB_BOX
 .  endif
-.  ifthen( m_page EQ 5  )
+.  ifthen (m_page EQ 5)
 .    show item NEW_KEY_LABEL_1
 .    show item NEW_KEY_CHOICE_1
 .    show item NEW_KEY_LABEL_2
@@ -1968,7 +1965,7 @@ subprocedure page
 .    show item NEW_REC_BUTTON
 .    show item NEW_REC_CANCEL
 .  endif
-.  ifthen( m_page EQ 6  )
+.  ifthen (m_page EQ 6)
 .    show item REC_TABLE_DATA
 .    show item TABLE_KEY_LABEL_1
 .    show item TABLE_KEY_LABEL_2
@@ -1978,7 +1975,7 @@ subprocedure page
 .    show item ID_00019
 .    show item TABLE_VIEW_HELP
 .  endif
-.  ifthen( m_page EQ 7  )
+.  ifthen (m_page EQ 7)
 .    show item DELETE_CASE_LABEL
 .    show item CASE_DELETE_INFO
 .    show item CASE_DELETE_REASON
@@ -1988,14 +1985,14 @@ subprocedure page
 .    show item CASE_REC_WARNING
 .    show item DELETE_CASE_BACK
 .  endif
-.  ifthen( m_page EQ 8  )
+.  ifthen (m_page EQ 8)
 .    show item ID_00064
 .    show item CASE_INFO_SUMMARY
 .    show item ID_00069
 .    show item CASE_DETAILED_INFO
 .    show item ID_00070
 .  endif
-.  ifthen( m_page EQ 9  )
+.  ifthen (m_page EQ 9)
 .    show item DBA_PAGE
 .    show item DEBUG_CODE
 .    show item PAGE_HIDDEN
@@ -2046,7 +2043,7 @@ subprocedure page
 .    show item MAKE_CUSTOM_REC_LIST
 .    show item ID_00063
 .  endif
-.  ifthen( m_page EQ 10  )
+.  ifthen (m_page EQ 10)
 .    show item BACK_TO_ADMIN
 .    show item REC_DELETE_SELECTION_LABEL
 .    show item REC_SELECTION_CRITERIA
@@ -2054,7 +2051,7 @@ subprocedure page
 .    show item ID_00053
 .    show item ID_00062
 .  endif
-.  ifthen( m_page EQ 11  )
+.  ifthen (m_page EQ 11)
 .    show item GUI_VERSION
 .    show item REC_SELECT_LABEL
 .    show item DEFAULT_BUTTON
