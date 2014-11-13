@@ -1,4 +1,4 @@
-PROCEDURE      GUI_MAIN.DECLARE_VARIABLES:T  (157767,65347)  |Last amended Sep 26, 2014,18:09:07
+PROCEDURE      GUI_MAIN.DECLARE_VARIABLES:T  (157815,57780)  |Last amended Nov 13, 2014,16:03:00
 <comment> write "initialize DCC vars"
 . string  *    600   GEN_STR1               | Generic/General String
 . integer *      1   CASE_TYPE              | What variable type is the case id
@@ -22,6 +22,7 @@ PROCEDURE      GUI_MAIN.DECLARE_VARIABLES:T  (157767,65347)  |Last amended Sep 2
 . integer *      2   REPOS                  | REPOSitition the list to what was selected before.
 . integer *      4   DUMMY                  | Dummy Variable
 . integer *      2   REC_TYPE_NUM           | RECORD NUMBER
+. integer *      2   PREVIOUS_REC_TYPE_NUM  | Previous Record type number
 . integer *      2   REC_ROW_COUNT_INITIAL  | How many rows of records are there INITIALLY
 . integer *      2   REC_ROW_COUNT          | How many rows of records are there
 . string  *     32   RECORD_NAME            | Record Type Name
@@ -37,6 +38,8 @@ PROCEDURE      GUI_MAIN.DECLARE_VARIABLES:T  (157767,65347)  |Last amended Sep 2
 . string  *     72   KEY_LABEL_1  KEY_LABEL_2  KEY_LABEL_3  KEY_LABEL_4
 . string  *     36   KEY$N     KEY$V        | generic key name; key value (can be key1, key2, key3, or key4.    Added a couple of spaces for manipulations like adding double qoutes
 . integer *      1   KEY$T                  | generic key type
+. string  *     36   PREVIOUS_KEY_NAME_1   PREVIOUS_KEY_NAME_2   PREVIOUS_KEY_NAME_3   PREVIOUS_KEY_NAME_4   | Previous Keys
+. string  *     36   PREVIOUS_KEY_VALUE_1  PREVIOUS_KEY_VALUE_2  PREVIOUS_KEY_VALUE_3  PREVIOUS_KEY_VALUE_4  | Previous Values
 . string  *     36   VAR_NAME               | Variable name
 . string  *     36   VAR_NAME_CB           | Variable Name with Curly Brackets
 . string  *    100   VAR_LABEL              | Variable label

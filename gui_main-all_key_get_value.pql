@@ -1,24 +1,24 @@
-PROCEDURE      GUI_MAIN.ALL_KEY_GET_VALUE:T  (157198,50415)  |Last amended Mar 06, 2013,14:00:15
+PROCEDURE      GUI_MAIN.ALL_KEY_GET_VALUE:T  (157813,67058)  |Last amended Nov 11, 2014,18:37:38
 subprocedure ALL_KEY_GET_VALUE
 <comment> write 'Sub: ALL_KEY_GET_VALUE'
 | WORKS FOR BOTH OLD KEYS AND NEW KEY PAGE!  DEPENDS ON WHICH PAGE YOU ARE VIEWING
-. set KEY_VALUE_1 KEY_VALUE_2 KEY_VALUE_3 KEY_VALUE_4 (missing)
+. set KEY_VALUE_1 KEY_VALUE_2 KEY_VALUE_3 KEY_VALUE_4 ( missing )
 . DO REPEAT REPX = 1 TO 4
 .   KEY$N = KEY_NAME_!REPX
-.   ifthen (m_page = VIEW_OLD_KEYS)
-.     KEY$V = trim(gettxt(OLD_KEY_LIST_!REPX))
-.   elseif (m_page = VIEW_NEW_KEYS)
-.     KEY$V = trim(gettxt(NEW_KEY_VALUE_!REPX))
+.   ifthen ( m_page = VIEW_OLD_KEYS )
+.     KEY$V = trim( gettxt( OLD_KEY_LIST_!REPX ) )
+.   elseif ( m_page = VIEW_NEW_KEYS )
+.     KEY$V = trim( gettxt( NEW_KEY_VALUE_!REPX ) )
 .   endif
 .   KEY$T = KEY_TYPE_!REPX
 .   execute subprocedure ANY_KEY_CLEAN
 .   KEY_VALUE_!REPX = KEY$V
 c   1 categorical variable must have the number passed to the data entry screen, not the character!
 .   ifthen (KEY$T = 2)  | Categorical
-.     for FORN = 1, nvalid(REC_TYPE_NUM, KEY$N)  |must cycle thru and get values instead of use "catint"
-.       if (svval(REC_TYPE_NUM, KEY$N, FORN ) =  KEY$V ) write 'FYI: ' FORN; EXIT FOR
+.     for EACH_VALID = 1, nvalid(REC_TYPE_NUM, KEY$N)  |must cycle thru and get values instead of use "catint"
+.       if (svval(REC_TYPE_NUM, KEY$N, EACH_VALID ) =  KEY$V ) write 'FYI: ' EACH_VALID; EXIT FOR
 .     end for
-.     compute KEY$V = format(FORN)
+.     compute KEY$V = format( EACH_VALID )
 .   endif
 . END REPEAT
 <comment> write 'End: ALL_KEY_GET_VALUE: K1: ' KEY_VALUE_1 ', K2: ' KEY_VALUE_2 ', K3: ' KEY_VALUE_3 ', K4: ' KEY_VALUE_4

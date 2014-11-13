@@ -1,4 +1,4 @@
-PROCEDURE      GUI_MAIN.ITEM_VISIBLE:T  (157766,47198)  |Last amended Sep 25, 2014,13:06:38
+PROCEDURE      GUI_MAIN.ITEM_VISIBLE:T  (157815,51216)  |Last amended Nov 13, 2014,14:13:36
 subprocedure ITEM_VISIBLE
 | first section is the show/hide portion.
 | defaults for every page
@@ -90,12 +90,15 @@ c page dependent items
 .   ifthen (dbtype(0) eq 1)
 .     show item CASE_BREAD_CRUMB
 .     show item CASE_LABEL_BREAD_CRUMB
+.     show item CASE_BOX_BREAD_CRUMB
 .   else
 .     hide item CASE_BREAD_CRUMB
 .     hide item CASE_LABEL_BREAD_CRUMB
+.     hide item CASE_BOX_BREAD_CRUMB
 .   endif
 .   show item REC_BREAD_CRUMB
-.   show item REC_BREAD_CRUMB_BOX
+.   show item REC_BOX_BREAD_CRUMB
+.   show item HEADER_BOTTOM_BORDER
 
 C   DELETE CASE BUTTON
 .   ifthen (dbtype(0) eq 1)
@@ -120,37 +123,45 @@ C   Case Memo Button
 .   ifthen (dbtype(0) eq 1)
 .     show item CASE_BREAD_CRUMB
 .     show item CASE_LABEL_BREAD_CRUMB
+.     show item CASE_BOX_BREAD_CRUMB
 .   else
 .     hide item CASE_BREAD_CRUMB
 .     hide item CASE_LABEL_BREAD_CRUMB
+.     hide item CASE_BOX_BREAD_CRUMB
 .   endif
-
 .   show item REC_BREAD_CRUMB
-.   show item REC_BREAD_CRUMB_BOX
+.   show item REC_BOX_BREAD_CRUMB
+.   show item HEADER_BOTTOM_BORDER
 
 . elseif (m_page = VIEW_CASE_SUMMARY)
 .   ifthen (dbtype(0) eq 1)
 .     show item CASE_BREAD_CRUMB
 .     show item CASE_LABEL_BREAD_CRUMB
+.     show item CASE_BOX_BREAD_CRUMB
 .   else
 .     hide item CASE_BREAD_CRUMB
 .     hide item CASE_LABEL_BREAD_CRUMB
+.     hide item CASE_BOX_BREAD_CRUMB
 .   endif
 
 . elseif (m_page = VIEW_TABLE)
 .   ifthen (dbtype(0) eq 1)
 .     show item CASE_BREAD_CRUMB
 .     show item CASE_LABEL_BREAD_CRUMB
+.     show item CASE_BOX_BREAD_CRUMB
 .   else
 .     hide item CASE_BREAD_CRUMB
 .     hide item CASE_LABEL_BREAD_CRUMB
+.     hide item CASE_BOX_BREAD_CRUMB
 .   endif
 .   show item REC_BREAD_CRUMB
-.   show item REC_BREAD_CRUMB_BOX
+.   show item REC_BOX_BREAD_CRUMB
+.   show item HEADER_BOTTOM_BORDER
 
 . elseif (m_page = VIEW_CASE_DELETE)
 .   show item CASE_BREAD_CRUMB
 .   show item CASE_LABEL_BREAD_CRUMB
+.   show item CASE_BOX_BREAD_CRUMB
 . endif
 
 end subprocedure

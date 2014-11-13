@@ -1,6 +1,6 @@
-PROCEDURE      GUI_MAIN.OLD_KEY_REFRESH:T  (157436,50415)  |Last amended Oct 30, 2013,14:00:15
+PROCEDURE      GUI_MAIN.OLD_KEY_REFRESH:T  (157813,66072)  |Last amended Nov 11, 2014,18:21:12
 subprocedure OLD_KEY_REFRESH
-<comment> write 'Sub: OLD_KEY_REFRESH: Case:' CASE_VALUE'  Rec: ' REC_TYPE_NUM ', KEY_COUNT: ' KEY_COUNT ', KEY$T: ' KEY$T ', VIA: ' REC_VIA ' REFRESH_START_KEYNUM: ' REFRESH_START_KEYNUM
+<comment> write 'Sub: OLD_KEY_REFRESH: Get Info: Case:' CASE_VALUE'  Rec: ' REC_TYPE_NUM ', KEY_COUNT: ' KEY_COUNT ', KEY$T: ' KEY$T ', VIA: ' REC_VIA ' REFRESH_START_KEYNUM: ' REFRESH_START_KEYNUM
 
 c checks
 . if (exists(REFRESH_START_KEYNUM) eq 0) write 'Refresh Start KeyNUM must be defined!:'; exit subprocedure
@@ -24,7 +24,7 @@ c special note.  Must go before most things as KEY$N and KEY$T are recycled
 .   KEY$T = vtype(REC_TYPE_NUM, KEY$N)
 .   execute subprocedure ANY_KEY_CLEAN
 .   if (KEY$T EQ 1 or 3 or 4) KEY$V = '"' + KEY$V +'" '  | make sure to add a space afterwards, gives room for next key value
-.   REC_VIA = REC_VIA + KEY$V
+.   REC_VIA = REC_VIA + KEY$V + ' '
 . end for
 . REC_VIA = REC_VIA + ' )'
 . IF (REFRESH_START_KEYNUM LE 1) REC_VIA = ''

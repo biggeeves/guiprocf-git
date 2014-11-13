@@ -1,6 +1,7 @@
-PROCEDURE      GUI_MAIN.FORM_LIST_LIBRARY:T  (157425,1444)  |Last amended Oct 19, 2013,00:24:04
+PROCEDURE      GUI_MAIN.FORM_LIST_LIBRARY:T  (157815,58059)  |Last amended Nov 13, 2014,16:07:39
 subprocedure FORM_LIST_LIBRARY
 <COMMENT> WRITE 'START FORM_LIST_LIBRARY'
+.   execute subprocedure SET_PREVIOUS_KEYS
 .   FORM_LIST_LAST_LINE = getpos(FORM_LIST)
 .   execute subprocedure REC_DISPLAY
 .   execute subprocedure REC_TYPE_INFO
@@ -8,6 +9,7 @@ subprocedure FORM_LIST_LIBRARY
 .   execute subprocedure OLD_KEY_VISIBLE
 .   REFRESH_START_KEYNUM = 1
 .   execute subprocedure OLD_KEY_REFRESH
+.   execute subprocedure SELECT_PREVIOUS_KEY
 .   execute subprocedure OLD_REC_COUNT
 .   execute subprocedure ITEM_ENABLE
 .   execute subprocedure REC_INFO_CUSTOM
