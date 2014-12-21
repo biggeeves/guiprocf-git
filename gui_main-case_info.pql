@@ -1,12 +1,13 @@
-PROCEDURE      GUI_MAIN.CASE_INFO:T  (157689,45668)  |Last amended Jul 10, 2014,12:41:08
+PROCEDURE      GUI_MAIN.CASE_INFO:T  (157766,47945)  |Last amended Sep 25, 2014,13:19:05
 c display case specific info
 
 subprocedure CASE_INFO
 <comment> write 'Sub: CASE_INFO'
-. remove all CASE_BREAD_CRUMB
-. GEN_STR1 = '<body bgcolor="' + HTML_WHITE +'" readonly="true"><p align="center">'
-           + '<font size="+3" color="' + HTML_BLUE3 + '"><B>' + CASE_VALUE
-. append line CASE_BREAD_CRUMB,  GEN_STR1  HTML
+. ifthen ( exists ( CASE_VALUE ) eq 1 )
+.   set item CASE_BREAD_CRUMB,  CASE_VALUE
+. else
+.   set item CASE_BREAD_CRUMB,  'No Case Selected'
+. endif
 
 . set item DELETE_CASE_LABEL, '  Delete ' + CASE_LABEL + ':   ' + CASE_VALUE + '?'
 

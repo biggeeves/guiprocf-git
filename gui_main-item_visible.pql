@@ -1,20 +1,24 @@
-<<<<<<< HEAD
 PROCEDURE      GUI_MAIN.ITEM_VISIBLE:T  (157815,51216)  |Last amended Nov 13, 2014,14:13:36
-=======
-PROCEDURE      GUI_MAIN.ITEM_VISIBLE:T  (157690,37122)  |Last amended Jul 11, 2014,10:18:42
->>>>>>> parent of 4ce807b... New version with better GUI
 subprocedure ITEM_VISIBLE
 | first section is the show/hide portion.
 | defaults for every page
 
 . hide item TIME_LABEL | always hidden as to get here the timer will have been refreshed anyway
 c . show item MEGA_CASE_LABEL
+| ALWAYS VISIBLE
 . show item DB_TITLE
 . show item DB_FOOTER
 . show item LOG_OUT
+. show item OPTIONS
+
+| Default Hidden
+. hide item PAGE_CASE_DELETE
+
 . ifthen (dbtype(0) eq 1)
 .   show item PAGE_CASEIDS
 .   enable item PAGE_CASEIDS
+.   show item PAGE_NEWIDS
+.   enable item PAGE_NEWIDS
 . endif
 . show item PAGE_OLD_KEYS; ifnot(m_page = VIEW_OLD_KEYS ) enable item PAGE_OLD_KEYS
 
@@ -64,22 +68,31 @@ c page dependent items
 . ifthen (m_page = VIEW_HOME)
 .   focus item CASE_SEARCH
 .   disable item PAGE_CASEIDS
+.   show item PAGE_NEWIDS
+.   show item PAGE_OLD_KEYS
+.   disable item PAGE_OLD_KEYS
 .   ifthen(I_GUI_CASE_LIST EQ 1)
 .     show item CASE_LIST
 .   else
 .     hide item CASE_LIST
 .   endif
 
+| Create a new case ID
+. elseif (m_page = VIEW_NEW_CASE)
+.   focus item CASE_NEW
+.   show item PAGE_CASEIDS
+.   disable item PAGE_OLD_KEYS
+.   disable item PAGE_NEWIDS
+
+| Main form page
 . elseif (m_page = VIEW_OLD_KEYS )  | Main page for speicific case ID
 .   disable item PAGE_OLD_KEYS
 .   ifthen (dbtype(0) eq 1)
 .     show item CASE_BREAD_CRUMB
-.     show item CASE_BREAD_CRUMBOX
 .     show item CASE_LABEL_BREAD_CRUMB
 .     show item CASE_BOX_BREAD_CRUMB
 .   else
 .     hide item CASE_BREAD_CRUMB
-.     hide item CASE_BREAD_CRUMBOX
 .     hide item CASE_LABEL_BREAD_CRUMB
 .     hide item CASE_BOX_BREAD_CRUMB
 .   endif
@@ -88,7 +101,6 @@ c page dependent items
 .   show item HEADER_BOTTOM_BORDER
 
 C   DELETE CASE BUTTON
-.   hide item PAGE_CASE_DELETE
 .   ifthen (dbtype(0) eq 1)
 .     if(I_GUI_DBA = 1) show item PAGE_CASE_DELETE
 .   endif
@@ -98,22 +110,22 @@ C   REC TABLE BUTTON
 .   if(I_GUI_REC_TABLE = 1) show item PAGE_TABLE
 .   focus item FORM_LIST
 
-C   CASE SUMMARY BUTTON
+C   Case Summary Button
 .   show item PAGE_CASE_SUMMARY
+
+C   Case Memo Button
 .   ifthen ( exists( recnum ('CASE_MEMO') ) eq 0 )
 .     hide item GOTO_CASE_MEMO
 .   endif
 
-
+| Choose keys for a new form
 . elseif (m_page = VIEW_NEW_KEYS)
 .   ifthen (dbtype(0) eq 1)
 .     show item CASE_BREAD_CRUMB
-.     show item CASE_BREAD_CRUMBOX
 .     show item CASE_LABEL_BREAD_CRUMB
 .     show item CASE_BOX_BREAD_CRUMB
 .   else
 .     hide item CASE_BREAD_CRUMB
-.     hide item CASE_BREAD_CRUMBOX
 .     hide item CASE_LABEL_BREAD_CRUMB
 .     hide item CASE_BOX_BREAD_CRUMB
 .   endif
@@ -124,12 +136,10 @@ C   CASE SUMMARY BUTTON
 . elseif (m_page = VIEW_CASE_SUMMARY)
 .   ifthen (dbtype(0) eq 1)
 .     show item CASE_BREAD_CRUMB
-.     show item CASE_BREAD_CRUMBOX
 .     show item CASE_LABEL_BREAD_CRUMB
 .     show item CASE_BOX_BREAD_CRUMB
 .   else
 .     hide item CASE_BREAD_CRUMB
-.     hide item CASE_BREAD_CRUMBOX
 .     hide item CASE_LABEL_BREAD_CRUMB
 .     hide item CASE_BOX_BREAD_CRUMB
 .   endif
@@ -137,12 +147,10 @@ C   CASE SUMMARY BUTTON
 . elseif (m_page = VIEW_TABLE)
 .   ifthen (dbtype(0) eq 1)
 .     show item CASE_BREAD_CRUMB
-.     show item CASE_BREAD_CRUMBOX
 .     show item CASE_LABEL_BREAD_CRUMB
 .     show item CASE_BOX_BREAD_CRUMB
 .   else
 .     hide item CASE_BREAD_CRUMB
-.     hide item CASE_BREAD_CRUMBOX
 .     hide item CASE_LABEL_BREAD_CRUMB
 .     hide item CASE_BOX_BREAD_CRUMB
 .   endif
@@ -152,7 +160,6 @@ C   CASE SUMMARY BUTTON
 
 . elseif (m_page = VIEW_CASE_DELETE)
 .   show item CASE_BREAD_CRUMB
-.   show item CASE_BREAD_CRUMBOX
 .   show item CASE_LABEL_BREAD_CRUMB
 .   show item CASE_BOX_BREAD_CRUMB
 . endif
