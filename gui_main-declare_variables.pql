@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 PROCEDURE      GUI_MAIN.DECLARE_VARIABLES:T  (157815,57780)  |Last amended Nov 13, 2014,16:03:00
+=======
+PROCEDURE      GUI_MAIN.DECLARE_VARIABLES:T  (157689,46118)  |Last amended Jul 10, 2014,12:48:38
+>>>>>>> parent of 4ce807b... New version with better GUI
 <comment> write "initialize DCC vars"
 . string  *    600   GEN_STR1               | Generic/General String
 . integer *      1   CASE_TYPE              | What variable type is the case id
@@ -56,9 +60,8 @@ PROCEDURE      GUI_MAIN.DECLARE_VARIABLES:T  (157815,57780)  |Last amended Nov 1
 . integer *      2   KEY_FOCUS
 . integer *      1   REFRESH_START_KEYNUM   | Key Number to start the refresh.
 . integer *      1   VIEW_CASE_DELETE   VIEW_SPLASH
-                     VIEW_HOME          VIEW_NEW_CASE
-                     VIEW_OLD_KEYS      VIEW_NEW_KEYS
-                     VIEW_TABLE
+                     VIEW_HOME          VIEW_OLD_KEYS
+                     VIEW_NEW_KEYS      VIEW_TABLE
                      VIEW_CASE_SUMMARY
                      VIEW_DBA           VIEW_HIDDEN
                      VIEW_BULK_RECORD_DELETE            |  Which Page View, easily rearrange pages
@@ -78,7 +81,6 @@ PROCEDURE      GUI_MAIN.DECLARE_VARIABLES:T  (157815,57780)  |Last amended Nov 1
 . integer *      1   SMALL LARGE XLARGE     | Fonts Size specifications
 . string  *     20   NP_FONT                | Font type for lists
 . string  *     20   P_FONT                 | Font type for lables
-. STRING  *     20   ID_FONT                | Font type for ID
 | Record Information and Navigation
 . integer *      2   array REC_INFO_NUM     (1000)  | Rec Number
 . string  *     32   array REC_INFO_NAME    (1000)  | Rec Name

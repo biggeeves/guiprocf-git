@@ -1,13 +1,11 @@
-PROCEDURE      GUI_MAIN.REC_DISPLAY:T  (157766,48368)  |Last amended Sep 25, 2014,13:26:08
+PROCEDURE      GUI_MAIN.REC_DISPLAY:T  (157591,58352)  |Last amended Apr 03, 2014,16:12:32
 subprocedure REC_DISPLAY
 <comment> write 'Sub: REC_DISPLAY'
-. select item REC_TYPE_SELECTED, getpos( FORM_LIST )
-. select item REC_FORM_SELECTED, getpos( FORM_LIST )
-. GEN_STR1 = trimlr( pack ( gettxt ( FORM_LIST ) ) )
-. ifthen (len ( GEN_STR1 ) gt 27 )
-.   GEN_STR1 = substr( GEN_STR1, 1, 25 )   + '...'
-. endif
-. set item REC_BREAD_CRUMB, GEN_STR1
-. set item NEW_REC_HELP, ' New ' + gettxt ( FORM_LIST )
+. select item REC_TYPE_SELECTED, getpos(FORM_LIST)
+. select item REC_FORM_SELECTED, getpos(FORM_LIST)
+. remove all REC_BREAD_CRUMB
+. GEN_STR1 = '<body bgcolor="#FFFFFF" readonly="true"><font color="' + HTML_BLUE3 + '" size="+3"><b>' + trim(gettxt (FORM_LIST))
+. append line REC_BREAD_CRUMB, GEN_STR1 html
+. set item NEW_REC_HELP, ' New ' + gettxt (FORM_LIST)
 end subprocedure
 END PROCEDURE
