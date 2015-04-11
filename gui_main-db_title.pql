@@ -1,19 +1,19 @@
-PROCEDURE      GUI_MAIN.DB_TITLE:T  (157591,55644)  |Last amended Apr 03, 2014,15:27:24
+PROCEDURE      GUI_MAIN.DB_TITLE:T  (157963,62530)  |Last amended Apr 10, 2015,17:22:10
 subprocedure DB_TITLE
 . GEN_STR1 = ''
-. HTML_COLOR = HTML_YELLOW1  | DEFAULTS TO ASSUME LIVE
+. HTML_COLOR = HTML_COLUMBIA_BLUE  | DEFAULTS TO ASSUME LIVE
 . ifthen ( pattern( upper( DB_SR1_FILE), '@DEVELOPMENT@') eq 1 )
-.   HTML_COLOR = HTML_GREY
+.   HTML_COLOR = HTML_ORANGE6
 .   GEN_STR1 = 'DEVELOPMENT DB'
 . elseif ( pattern( upper( DB_SR1_FILE), '@\CLONE\@') eq 1 )
 .   HTML_COLOR = HTML_RED3
 .   GEN_STR1 = 'CLONE DB'
 . elseif ( pattern( upper( DB_SR1_FILE), '@SIRXS\@') eq 1 )
-.   HTML_COLOR = HTML_ORANGE3
+.   HTML_COLOR = HTML_RED6
 .   GEN_STR1 = 'Backup: ' + datec(cdate(SUBSTR(DB_SR1_FILE,26,16),'YYYYIMMIDD'),'Mmm/DD/YYYY')
 . endif
 
-. GEN_STR1 = '<body bgcolor="' + HTML_COLOR + '" readonly="true"><font color="#11399E" size="+3">' + GEN_STR1
+c . GEN_STR1 = '<body bgcolor="' + HTML_COLOR + '" readonly="true"><font color="#11399E" size="+3">' + GEN_STR1
 
 
 . ifthen (system(40) lt 1)
@@ -31,7 +31,8 @@ subprocedure DB_TITLE
 .   write "TWO DATABASES ATTACHED.  DEFAULT DATABASE IS:" [DBNAME(0)]
 . endif
 
-. append line DB_TITLE, GEN_STR1 html
+. set item DB_TITLE, GEN_STR1
+. SET ITEM FONT DB_TITLE ,1,0,0, 1,HTML_COLOR
 
 end subprocedure
 END PROCEDURE

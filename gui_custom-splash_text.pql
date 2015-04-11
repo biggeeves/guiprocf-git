@@ -1,0 +1,21 @@
+PROCEDURE      GUI_CUSTOM.SPLASH_TEXT:T  (157940,52982)  |Last amended Mar 18, 2015,14:43:02
+c modify the lines below to create your own version of the Spash Text.
+c This is the first screen that everyone sees and must agree to.
+
+SUBROUTINE GUI_CUSTOM.SPLASH_TEXT (SPLASHTEXT) RETURNING (PROCEED) REPLACE
+STRING * 600 STR$1
+INTEGER * 4 SPLASHTEXT
+INTEGER * 1 PROCEED
+REMOVE ALL SPLASHTEXT
+APPEND LINE SPLASHTEXT, '<body readonly="true"> <br><p align="center"><font color="#0000FF" size="+4" face="Arial"><B>Welcome to the NEUSTART Clinical Trial Database</P>' HTML
+APPEND LINE SPLASHTEXT, '<p align="center"><font size="+4" face="Arial"><B>A SPOTRIAS PROJECT</P>' HTML
+APPEND LINE SPLASHTEXT, '<p align="center"><font size="+2" face="Arial"><B>Principal Investigator: Mitchell Elkind, MD</P>' HTML
+APPEND LINE SPLASHTEXT, '<p align="center"><font size="+2" face="Arial"><B>Columbia University</P>' HTML
+STR$1 = '<p align="left"><font color="#000000" face="Arial"><B>'+
+        '  The information contained in this database is confidential.<br>'+
+        '  Unauthorized or improper use of this system, or the information it contains, is prohibited.'
+
+APPEND LINE SPLASHTEXT,  STR$1 HTML
+
+END SUBROUTINE
+END PROCEDURE

@@ -1,18 +1,22 @@
-PROCEDURE      GUI_MAIN.ITEM_VISIBLE:T  (157815,51216)  |Last amended Nov 13, 2014,14:13:36
+PROCEDURE      GUI_MAIN.ITEM_VISIBLE:T  (157963,72110)  |Last amended Apr 10, 2015,20:01:50
 subprocedure ITEM_VISIBLE
 | first section is the show/hide portion.
 | defaults for every page
 
-. hide item TIME_LABEL | always hidden as to get here the timer will have been refreshed anyway
-c . show item MEGA_CASE_LABEL
+| ALWAYS HIDDEN
+. hide item TIME_LABEL
+. hide item TABEL_LABEL
+. hide item REC_TYPE_SELECTED
+. hide item SCREEN_LABEL
+. hide item REC_FORM_SELECTED
+. hide item PAGE_CASE_DELETE
+
 | ALWAYS VISIBLE
-. show item DB_TITLE
 . show item DB_FOOTER
 . show item LOG_OUT
 . show item OPTIONS
 
 | Default Hidden
-. hide item PAGE_CASE_DELETE
 
 . ifthen (dbtype(0) eq 1)
 .   show item PAGE_CASEIDS
@@ -63,8 +67,6 @@ C DBA BUTTON
 . if (I_GUI_DBA = 1) show item PAGE_DBA
 
 c page dependent items
-
-
 . ifthen (m_page = VIEW_HOME)
 .   focus item CASE_SEARCH
 .   disable item PAGE_CASEIDS
@@ -86,19 +88,16 @@ c page dependent items
 
 | Main form page
 . elseif (m_page = VIEW_OLD_KEYS )  | Main page for speicific case ID
+.   focus item FORM_LIST
 .   disable item PAGE_OLD_KEYS
 .   ifthen (dbtype(0) eq 1)
 .     show item CASE_BREAD_CRUMB
 .     show item CASE_LABEL_BREAD_CRUMB
-.     show item CASE_BOX_BREAD_CRUMB
 .   else
 .     hide item CASE_BREAD_CRUMB
 .     hide item CASE_LABEL_BREAD_CRUMB
-.     hide item CASE_BOX_BREAD_CRUMB
 .   endif
 .   show item REC_BREAD_CRUMB
-.   show item REC_BOX_BREAD_CRUMB
-.   show item HEADER_BOTTOM_BORDER
 
 C   DELETE CASE BUTTON
 .   ifthen (dbtype(0) eq 1)
@@ -108,7 +107,6 @@ C   DELETE CASE BUTTON
 C   REC TABLE BUTTON
 .   hide item PAGE_TABLE
 .   if(I_GUI_REC_TABLE = 1) show item PAGE_TABLE
-.   focus item FORM_LIST
 
 C   Case Summary Button
 .   show item PAGE_CASE_SUMMARY
@@ -123,45 +121,34 @@ C   Case Memo Button
 .   ifthen (dbtype(0) eq 1)
 .     show item CASE_BREAD_CRUMB
 .     show item CASE_LABEL_BREAD_CRUMB
-.     show item CASE_BOX_BREAD_CRUMB
 .   else
 .     hide item CASE_BREAD_CRUMB
 .     hide item CASE_LABEL_BREAD_CRUMB
-.     hide item CASE_BOX_BREAD_CRUMB
 .   endif
 .   show item REC_BREAD_CRUMB
-.   show item REC_BOX_BREAD_CRUMB
-.   show item HEADER_BOTTOM_BORDER
 
 . elseif (m_page = VIEW_CASE_SUMMARY)
 .   ifthen (dbtype(0) eq 1)
 .     show item CASE_BREAD_CRUMB
 .     show item CASE_LABEL_BREAD_CRUMB
-.     show item CASE_BOX_BREAD_CRUMB
 .   else
 .     hide item CASE_BREAD_CRUMB
 .     hide item CASE_LABEL_BREAD_CRUMB
-.     hide item CASE_BOX_BREAD_CRUMB
 .   endif
 
 . elseif (m_page = VIEW_TABLE)
 .   ifthen (dbtype(0) eq 1)
 .     show item CASE_BREAD_CRUMB
 .     show item CASE_LABEL_BREAD_CRUMB
-.     show item CASE_BOX_BREAD_CRUMB
 .   else
 .     hide item CASE_BREAD_CRUMB
 .     hide item CASE_LABEL_BREAD_CRUMB
-.     hide item CASE_BOX_BREAD_CRUMB
 .   endif
 .   show item REC_BREAD_CRUMB
-.   show item REC_BOX_BREAD_CRUMB
-.   show item HEADER_BOTTOM_BORDER
 
 . elseif (m_page = VIEW_CASE_DELETE)
-.   show item CASE_BREAD_CRUMB
-.   show item CASE_LABEL_BREAD_CRUMB
-.   show item CASE_BOX_BREAD_CRUMB
+.   hide item CASE_BREAD_CRUMB
+.   hide item CASE_LABEL_BREAD_CRUMB
 . endif
 
 end subprocedure

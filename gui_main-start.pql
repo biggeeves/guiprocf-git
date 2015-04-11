@@ -1,4 +1,4 @@
-PROCEDURE      GUI_MAIN.START:T  (157693,36161)  |Last amended Jul 14, 2014,10:02:41
+PROCEDURE      GUI_MAIN.START:T  (157963,59365)  |Last amended Apr 10, 2015,16:29:25
 C CALL THIS MEMBER TO STAR THE GUIPROCF!!!!
 
 C IF GUI_PROCF_RC = 1, USE THE RELEASE CANIDATE.  IF NOT PROCEED WITH THE USUAL GUI.
@@ -9,6 +9,7 @@ C IF FILE DOES NOT EXISTS SET GLOBAL TO NOT CONTINUE
 
 GLOBAL GO_ON = 1   | THIS GLOBAL IS ONLY USED HERE.  VERY IMPORTANT GLOBAL IN THE BEGINNING
 
+c check to see that GUIPROCF is defined
 program
 integer * 1 T
 ifthen ( exists(dsn('GUIPROCF')) EQ 0 )
@@ -21,7 +22,8 @@ ifthen ( fileis(dsn('GUIPROCF')) ne 1 )
 endif
 end program
 
-c must exit program to allow attribute to actually be set
+c must exit program to set attribute
+
 program
 C CHECK RESULTS
 ifthen ( exists(dsn('GUIPROCF')) EQ 0 )

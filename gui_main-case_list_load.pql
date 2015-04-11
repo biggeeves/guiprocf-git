@@ -1,10 +1,11 @@
-PROCEDURE      GUI_MAIN.CASE_LIST_LOAD:T  (157603,53011)  |Last amended Apr 15, 2014,14:43:31
+PROCEDURE      GUI_MAIN.CASE_LIST_LOAD:T  (157935,44186)  |Last amended Mar 13, 2015,12:16:26
 subprocedure CASE_LIST_LOAD
 <COMMENT> write 'Sub: CASE_LIST_LOAD'
 . | start with a blank canvas
 . if (dbtype(0) eq 0) exit subprocedure | caseless database
 . remove all CASE_LIST
 . ifthen (meminfo('GUI_CUSTOM.CASE_LIST_LOAD:O',1) = MEM_O)
+<COMMENT> write ' Calling db_proc.GUI_CUSTOM.CASE_LIST_LOAD: ' PROCEED
 .   execute subroutine GUI_CUSTOM.CASE_LIST_LOAD (CASE_LIST) RETURNING (PROCEED) DYNAMIC
 <COMMENT> write ' After: User Defined CASE_LIST_LOAD, Proceed: ' PROCEED
 .   EXIT SUBPROCEDURE

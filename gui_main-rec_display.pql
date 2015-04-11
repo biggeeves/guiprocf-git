@@ -1,11 +1,11 @@
-PROCEDURE      GUI_MAIN.REC_DISPLAY:T  (157766,48368)  |Last amended Sep 25, 2014,13:26:08
+PROCEDURE      GUI_MAIN.REC_DISPLAY:T  (157963,66851)  |Last amended Apr 10, 2015,18:34:11
 subprocedure REC_DISPLAY
 <comment> write 'Sub: REC_DISPLAY'
 . select item REC_TYPE_SELECTED, getpos( FORM_LIST )
 . select item REC_FORM_SELECTED, getpos( FORM_LIST )
 . GEN_STR1 = trimlr( pack ( gettxt ( FORM_LIST ) ) )
-. ifthen (len ( GEN_STR1 ) gt 27 )
-.   GEN_STR1 = substr( GEN_STR1, 1, 25 )   + '...'
+. ifthen (len ( GEN_STR1 ) gt 35 )
+.   GEN_STR1 = substr( GEN_STR1, 1, 35 )   + '...'
 . endif
 . set item REC_BREAD_CRUMB, GEN_STR1
 . set item NEW_REC_HELP, ' New ' + gettxt ( FORM_LIST )
