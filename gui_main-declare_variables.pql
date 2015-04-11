@@ -1,4 +1,4 @@
-PROCEDURE      GUI_MAIN.DECLARE_VARIABLES:T  (157815,57780)  |Last amended Nov 13, 2014,16:03:00
+PROCEDURE      GUI_MAIN.DECLARE_VARIABLES:T  (157963,81080)  |Last amended Apr 10, 2015,22:31:20
 <comment> write "initialize DCC vars"
 . string  *    600   GEN_STR1               | Generic/General String
 . integer *      1   CASE_TYPE              | What variable type is the case id
@@ -6,6 +6,7 @@ PROCEDURE      GUI_MAIN.DECLARE_VARIABLES:T  (157815,57780)  |Last amended Nov 1
 . string  *     72   CASE_LABEL             | Variable label of case, vavarname(0, 1)
 . string  *     36   CASE_TEMP_VALUE        | Case Test Value
 . string  *     36   CASE_VALUE             | Case Value
+. real    *      8   CASE_VALUE#            | Numeric Case Value
 . integer *      1   CASE_FOUND             | Does the case exists.
 . string  *     36   BUFFER_NAME            | Buffer Name
 . string  *    300   BUFFER_LINE            | Text to add to buffer
@@ -32,6 +33,7 @@ PROCEDURE      GUI_MAIN.DECLARE_VARIABLES:T  (157815,57780)  |Last amended Nov 1
 
 . string  *     36   KEY_NAME              | Key Name
 . string  *     36   KEY_VALUE             | Key Value
+
 . string  *     36   KEY_NAME_1   KEY_NAME_2   KEY_NAME_3   KEY_NAME_4
 . string  *     36   KEY_VALUE_1  KEY_VALUE_2  KEY_VALUE_3  KEY_VALUE_4 KEY_VALUE_5  KEY_VALUE_6  KEY_VALUE_7
 . integer *      1   KEY_TYPE_1   KEY_TYPE_2   KEY_TYPE_3   KEY_TYPE_4  KEY_TYPE_5   KEY_TYPE_6  KEY_TYPE_7
@@ -116,6 +118,25 @@ PROCEDURE      GUI_MAIN.DECLARE_VARIABLES:T  (157815,57780)  |Last amended Nov 1
 . integer *      4   RECURSIVE_COUNT   | Use to limit recursive calls.
 . integer *      4   BUFFER_COUNT      | How many buffers are there
 . string  *    600   HYPER_LINK
+
+
+integer *   2  db_row                | database row
+string  *  32  array db_rec_keys   ( 100, 8 ) |row, key1, key2, key3, key4, key5, key6
+string  *  32  array rec_key_list  ( 100, 8 ) |value, key1, key2, key3, key4, key5, key6
+integer *   2  array rec_key_list_pointer   ( 8 )      | next row to add to array for each key
+string  *  32  array match_value   ( 8 )      | User matching criteria.  Updated when 1st match is encountered
+integer *   1  start_key             | which key was clicked
+integer *   1  key_refresh_start     | First key to refresh
+integer *   1  first_match           | First row that matched user defined criteria was encountered.  If so set all match values to current row values
+string  *  32  current_key_value     | what is the value of this key
+integer *   1  previous_keys_match   | if all previous keys match check current key value to see if it is unique
+integer *   1  KEY_VTYPE
+
+string  * 123  KEY_VALUE_LABEL       | Key value label
+string  * 123  DISPLAY_TEXT          | text to output to window
+
+
+
 set HTML_BLUE6  ( '#13275a' )	
     HTML_BLUE5  ( '#1a3579' )	
     HTML_BLUE4  ( '#264fb6' )	

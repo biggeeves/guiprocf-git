@@ -1,0 +1,41 @@
+PROCEDURE      GUI_MAIN.REC_TYPE_DATA:T  (157963,81723)  |Last amended Apr 10, 2015,22:42:03
+do repeat RECX = <GREC1>
+                 <GREC2>
+                 <GREC3>
+                 <GREC4>
+. SUBPROCEDURE GET_REC_!RECX
+CIF EQ 1, 0<LOCAL_CASE_TYPE>    | STRING.  TREAT EVERYTHING ELSE AS NUMERIC
+.   OLD CASE IS CASE_VALUE lock=2 | HERE
+CIF FALSE
+.   OLD CASE IS CASE_VALUE# lock=2
+CIF END
+.     db_row = 0
+.     set db_rec_keys * (missing)
+.     PROCESS REC RECX LOCK=2
+.       execute subprocedure MAKE_ROW_OF_ALL_KEYS
+.     END REC
+.   END CASE IS
+. END SUBPROCEDURE
+end repeat
+
+subprocedure MAKE_ROW_OF_ALL_KEYS
+C WRITE '-----------   Make ROW ADB Array     -----------'
+. db_row = db_row + 1
+. for each_key = 1 + dbtype(0), KEY_COUNT + dbtype(0)
+.   db_rec_keys (db_row, each_key) = varget( keyname( REC_TYPE_NUM, each_key ) )
+. end for
+end subprocedure
+
+subprocedure view_all_keys
+WRITE '---------   ALL  VALUES in Array   --------'
+. GEN_STR1 = ""
+. for each_db_row = 1, db_row
+. GEN_STR1 = format (each_db_row ) + ': '
+.   for each_key = 1 + dbtype(0), KEY_COUNT + dbtype(0)
+.     GEN_STR1 = GEN_STR1 + db_rec_keys (each_db_row, each_key)
+.     if(each_key lt KEY_COUNT + dbtype(0)) GEN_STR1 = GEN_STR1 + " | "
+.   end for
+.   write GEN_STR1
+. end for
+end subprocedure
+END PROCEDURE

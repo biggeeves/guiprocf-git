@@ -1,21 +1,21 @@
-PROCEDURE      GUI_MAIN.OLD_REC_COUNT:T  (157232,37095)  |Last amended Apr 09, 2013,10:18:15
+PROCEDURE      GUI_MAIN.OLD_REC_COUNT:T  (157963,82664)  |Last amended Apr 10, 2015,22:57:44
 subprocedure OLD_REC_COUNT
 <comment> write 'Sub: OLD_REC_COUNT: Case:' CASE_VALUE'  Rec: ' REC_TYPE_NUM
 . if (exists(REC_TYPE_NUM) eq 0) exit subprocedure
 . REC_ROW_COUNT_INITIAL = fst(getint(OLD_REC_COUNTER),0)  | ALLOWS YOU TO COMPARE REC COUNTS.  IF THEY CHANGED REFRESH KEYS.
 |
-. BUFFER_NAME = 'OLD_REC_COUNT'                        ; execute subprocedure BUFFER_START
+. BUFFER_NAME = 'OLD_REC_COUNT'                      ; execute subprocedure BUFFER_START
 . BUFFER_LINE = 'retrieval'                          ; execute subprocedure BUFFER_WRITE
-. BUFFER_LINE = 'integer * 4  OLD_REC_COUNT'           ; execute subprocedure BUFFER_WRITE
+. BUFFER_LINE = 'integer * 4  OLD_REC_COUNT'         ; execute subprocedure BUFFER_WRITE
 ifthen (dbtype(0) eq 1)
 . BUFFER_LINE = 'old case is '                       ; execute subprocedure BUFFER_ADD_CASE; execute subprocedure BUFFER_WRITE
 endif
-. BUFFER_LINE = '. OLD_REC_COUNT = count( ' + format(REC_TYPE_NUM) + ')'         ;execute subprocedure BUFFER_WRITE
-. BUFFER_LINE = '. t= globaln("OLD_REC_COUNT", OLD_REC_COUNT )'                  ;execute subprocedure BUFFER_WRITE
+. BUFFER_LINE = '. OLD_REC_COUNT = count( ' + format(REC_TYPE_NUM) + ')'     ;execute subprocedure BUFFER_WRITE
+. BUFFER_LINE = '. t= globaln("OLD_REC_COUNT", OLD_REC_COUNT )'              ;execute subprocedure BUFFER_WRITE
 ifthen (dbtype(0) eq 1)
 . BUFFER_LINE = 'end case'                                                   ;execute subprocedure BUFFER_WRITE
 endif
-. BUFFER_LINE = 'set item ' + format(OLD_REC_COUNTER) + ', OLD_REC_COUNT '       ;execute subprocedure BUFFER_WRITE
+. BUFFER_LINE = 'set item ' + format(OLD_REC_COUNTER) + ', OLD_REC_COUNT '   ;execute subprocedure BUFFER_WRITE
 . BUFFER_LINE = 'end retrieval'                                              ;execute subprocedure BUFFER_WRITE
 . execute dbms ['INCLUDE BUFFER ' + BUFFER_NAME]
 . REC_ROW_COUNT = fst(getint(OLD_REC_COUNTER),0)

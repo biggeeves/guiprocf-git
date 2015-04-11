@@ -1,28 +1,36 @@
-PROCEDURE      GUI_MAIN.INITIALIZE:T  (157603,50882)  |Last amended Apr 15, 2014,14:08:02
+PROCEDURE      GUI_MAIN.INITIALIZE:T  (157963,81990)  |Last amended Apr 10, 2015,22:46:30
 C if some globals already exist leave them alone.
 c if globals don't exist set value to "off" (or if set to zero length string)
 program
-. INTEGER * 1 T
+
+. STRING  * 32  CASE_NAME
+. INTEGER *  1  CASE_TYPE
+. INTEGER *  1  TEMP_VAR
+. CASE_NAME  = trimr( varname( 0, 1 ) )
+. CASE_TYPE  = vtype( 0, CASE_NAME )
+. TEMP_VAR   = GLOBALN( 'LOCAL_CASE_TYPE', CASE_TYPE )
+
 . ifthen ( sglobal('COMMENT') eq '')
-.   t = globals('COMMENT', '|')
+.   TEMP_VAR = globals('COMMENT', '|')
 . elseif ( exists( sglobal('COMMENT') ) eq 0)
-.   t = globals('COMMENT', '|')
+.   TEMP_VAR = globals('COMMENT', '|')
 . endif
 . ifthen ( sglobal('DEBUG_MODE') eq '')
-.   t = globals('DEBUG_MODE', '0')
+.   TEMP_VAR = globals('DEBUG_MODE', '0')
 . elseif ( exists( sglobal('DEBUG_MODE') ) eq 0 )
-.   t = globals('DEBUG_MODE', '0')
+.   TEMP_VAR = globals('DEBUG_MODE', '0')
 . endif
 . ifthen ( sglobal('FUTURE_DEV') eq '')
-.   t = globals('FUTURE_DEV', '|')
+.   TEMP_VAR = globals('FUTURE_DEV', '|')
 . elseif ( exists( sglobal('FUTURE_DEV') ) eq 0 )
-.   t = globals('FUTURE_DEV', '|')
+.   TEMP_VAR = globals('FUTURE_DEV', '|')
 . endif
 . ifthen ( sglobal('SHOW_CUSTOM_INFO') eq '')
-.   t = globals('SHOW_CUSTOM_INFO', '0')
+.   TEMP_VAR = globals('SHOW_CUSTOM_INFO', '0')
 . elseif ( exists( sglobal('SHOW_CUSTOM_INFO') ) eq 0 )
-.   t = globals('SHOW_CUSTOM_INFO', '0')
+.   TEMP_VAR = globals('SHOW_CUSTOM_INFO', '0')
 . endif
+
 end program
 
 END PROCEDURE

@@ -1,4 +1,4 @@
-PROCEDURE      GUI_MAIN.CASE_NEW_LIBRARY:T  (157766,49332)  |Last amended Sep 25, 2014,13:42:12
+PROCEDURE      GUI_MAIN.CASE_NEW_LIBRARY:T  (157963,79763)  |Last amended Apr 10, 2015,22:09:23
 subprocedure CASE_NEW_LIBRARY
 <comment> write 'Sub: CASE_NEW_Library'
 . CASE_TEMP_VALUE = trimlr(gettxt(CASE_NEW))
@@ -8,6 +8,7 @@ subprocedure CASE_NEW_LIBRARY
 . execute subprocedure CASE_LIST_SEARCH
 . ifthen (CASE_FOUND EQ 0)  | case already exists
 .   CASE_VALUE = CASE_TEMP_VALUE
+.   CASE_VALUE# = numbr(CASE_VALUE)
 .   ifthen (meminfo(DB_PROC_FILE+'.GUI_CUSTOM.CASE_NEW:O',1) = MEM_O)
 <COMMENT> WRITE 'CALLING ' DB_PROC_FILE '.GUI_CUSTOM.CASE_NEW:O'
 .     execute subroutine [DB_PROC_FILE+'.GUI_CUSTOM.CASE_NEW'] (CASE_TEMP_VALUE) RETURNING (PROCEED) DYNAMIC
