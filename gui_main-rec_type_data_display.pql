@@ -1,6 +1,22 @@
-PROCEDURE      GUI_MAIN.REC_TYPE_DATA_DISPLAY:T  (157963,82188)  |Last amended Apr 10, 2015,22:49:48
+PROCEDURE      GUI_MAIN.REC_TYPE_DATA_DISPLAY:T  (157964,2726)  |Last amended Apr 11, 2015,00:45:26
+| The data must already be in the referenced array
+| everything you need to refresh keys
+|
+subprocedure MASTER_REFRESH_KEYS
+. if( exists( REC_TYPE_NUM) eq 0) exit subprocedure
+. if( nkeys( REC_TYPE_NUM) eq 0)  exit subprocedure              | NO KEYS - NO REASON TO RUN
+. if( gettxt( OLD_KEY_LIST_1) eq 'No data') exit subprocedure    | No records with data
+. if( getfocus(0) eq OLD_KEY_LIST_4)   exit subprocedure        | LAST KEY, NO NEED TO GET MORE DATA
+. ifthen ( dbtype(0) eq 1)
+.   if ( 0 eq len(CASE_VALUE) OR exists(CASE_VALUE) ) WRITE 'ERROR NO CASE ID'; exit subprocedure
+. endif
+. execute subprocedure SET_MATCH_VALUES
+. execute subprocedure CREATE_MATCHED_KEY_ARRAYS
+. execute subprocedure REFRESH_KEYS
+end subprocedure
+|
 subprocedure CREATE_MATCHED_KEY_ARRAYS
-WRITE '--------   Create Match Key Arrays --------'
+<comment> write '--------   Create Match Key Arrays --------'
 . if (KEY_COUNT + dbtype(0) lt 1) exit subprocedure
 . FIRST_MATCH = 0 | no matching row yet
 . set REC_KEY_LIST_POINTER * (1)  | starting position for each key list
@@ -21,14 +37,13 @@ end subprocedure
 |
 |
 subprocedure CHECK_ALL_MATCH_CRITERIA
-write '------ Looking for First Match   ----------'
+<comment> write '------ Looking for First Match   ----------'
 . if(FIRST_MATCH eq 1) exit subprocedure | values already set
 . ifthen (KEY_REFRESH_START eq 1 + dbtype(0) ) | special rule for first keys- grab first row
 .   FIRST_MATCH = 1
 . else | if all keys upto match key match set flag
-write 'checking for matches. Key1: ' MATCH_VALUE( 1 ) MATCH_VALUE( 2 ) MATCH_VALUE( 3 )
+<comment> write 'checking for matches. Key1: ' MATCH_VALUE( 1 ) MATCH_VALUE( 2 ) MATCH_VALUE( 3 )
 .   for MATCH_KEY = 1 + dbtype(0), KEY_REFRESH_START - 1
-write 'key' MATCH_KEY 'DB:'  DB_REC_KEYS (EACH_DB_ROW, MATCH_KEY)  ' value: ' MATCH_VALUE( MATCH_KEY )
 .     ifthen(  MATCH_VALUE( MATCH_KEY - dbtype(0) ) = DB_REC_KEYS (EACH_DB_ROW, MATCH_KEY) )
 .       FIRST_MATCH = 1
 .     else
@@ -38,9 +53,9 @@ write 'key' MATCH_KEY 'DB:'  DB_REC_KEYS (EACH_DB_ROW, MATCH_KEY)  ' value: ' MA
 .   end for
 . endif
 . ifthen (FIRST_MATCH eq 1) | set all of the match values.
-write 'settting match criteria: '
+<comment> write 'settting match criteria: '
 .   for MATCH_KEY = 1 + dbtype(0), KEY_COUNT + dbtype(0)
-write 'key ' MATCH_KEY ' value ' DB_REC_KEYS (EACH_DB_ROW, MATCH_KEY)
+<comment> write 'key ' MATCH_KEY ' value ' DB_REC_KEYS (EACH_DB_ROW, MATCH_KEY)
 .       MATCH_VALUE( MATCH_KEY ) = DB_REC_KEYS (EACH_DB_ROW, MATCH_KEY)
 .   end for
 . endif
@@ -48,18 +63,17 @@ end subprocedure
 |
 |
 subprocedure PREVIOUS_KEYS_MATCH
-c write '-----------   PREVIOUS_KEYS_MATCH   ---------------'
+<comment> write'-----------   PREVIOUS_KEYS_MATCH   ---------------'
 . ifthen (EACH_KEY eq 1 + dbtype(0) ) | special rule for first keys
 .   PREVIOUS_KEYS_MATCH = 1
 .   exit subprocedure
 . endif
 . PREVIOUS_KEYS_MATCH = 0
 . for check_key = 1 + dbtype(0), EACH_KEY - 1  | Check all keys up to but not including current key
-| write 'checking key: ' check_key '.  db value: ' DB_REC_KEYS (EACH_DB_ROW, check_key ) ' and match value: ' MATCH_VALUE (check_key)
+<comment> write 'checking key: ' check_key '.  db value: ' DB_REC_KEYS (EACH_DB_ROW, check_key ) ' and match value: ' MATCH_VALUE (check_key)
 .   ifthen ( DB_REC_KEYS (EACH_DB_ROW, CHECK_KEY ) eq MATCH_VALUE (check_key) )
 .     PREVIOUS_KEYS_MATCH = 1
 .   else
-c write 5t 'failed match. DB: ' DB_REC_KEYS (EACH_DB_ROW, check_key ) ' != Match: ' MATCH_VALUE (check_key)
 .     PREVIOUS_KEYS_MATCH = 0
 .     exit subprocedure | can exit immediately when a single match fails
 .  endif
@@ -80,18 +94,32 @@ end subprocedure
 |
 subprocedure refresh_keys
 | here cycle through keys, start with first that needs to be updated. append list
-WRITE // '-----------   show values to update -----------'
-c WRITE 'These keys: ' KEY_REFRESH_START  ' - ' KEY_COUNT + dbtype(0)
+<comment> write '-----------   show values to update -----------'
+<comment> write 'These keys: ' KEY_REFRESH_START  ' - ' [KEY_COUNT + dbtype(0)]
 ifthen (DB_ROW eq 0 )
-. write "No data"
+. append item OLD_KEY_LIST_1, "No data"
 . exit subprocedure
 endif
+<comment> write 'refresh starts at ' KEY_REFRESH_START
+. if ( KEY_REFRESH_START le 1 + dbtype(0) ) remove all OLD_KEY_LIST_1
+. if ( KEY_REFRESH_START le 2 + dbtype(0) ) remove all OLD_KEY_LIST_2
+. if ( KEY_REFRESH_START le 3 + dbtype(0) ) remove all OLD_KEY_LIST_3
+. if ( KEY_REFRESH_START le 4 + dbtype(0) ) remove all OLD_KEY_LIST_4
+
+cif eq 1,2
+. ifthen ( KEY_REFRESH_START EQ 1) KEY_FOCUS = OLD_KEY_LIST_1
+. elseif ( KEY_REFRESH_START EQ 2) KEY_FOCUS = OLD_KEY_LIST_2
+. elseif ( KEY_REFRESH_START EQ 3) KEY_FOCUS = OLD_KEY_LIST_3
+. elseif ( KEY_REFRESH_START EQ 4) KEY_FOCUS = OLD_KEY_LIST_4
+. endif
+cif end
+
 . for EACH_KEY = KEY_REFRESH_START , KEY_COUNT + dbtype(0)
 c for debug
-.       if(EACH_KEY eq 1 + dbtype(0) ) append item OLD_KEY_LIST_1, '-----------------'
-.       if(EACH_KEY eq 2 + dbtype(0) ) append item OLD_KEY_LIST_2, '-----------------'
-.       if(EACH_KEY eq 3 + dbtype(0) ) append item OLD_KEY_LIST_3, '-----------------'
-.       if(EACH_KEY eq 4 + dbtype(0) ) append item OLD_KEY_LIST_4, '-----------------'
+c . if(EACH_KEY eq 1 + dbtype(0) ) append item OLD_KEY_LIST_1, '-----------------'
+c . if(EACH_KEY eq 2 + dbtype(0) ) append item OLD_KEY_LIST_2, '-----------------'
+c . if(EACH_KEY eq 3 + dbtype(0) ) append item OLD_KEY_LIST_3, '-----------------'
+c . if(EACH_KEY eq 4 + dbtype(0) ) append item OLD_KEY_LIST_4, '-----------------'
 
 c write 'key ' EACH_KEY ' ( ' [REC_KEY_LIST_POINTER(EACH_KEY) - 1 ] ' values to update: '
 .   for each_row = 1, REC_KEY_LIST_POINTER(EACH_KEY) - 1
@@ -117,12 +145,7 @@ subprocedure SET_MATCH_VALUES
 . set MATCH_VALUE * (missing)
 . START_KEY = 1
 . if (gettxt(OLD_KEY_LIST_1) EQ 'No data' ) exit subprocedure | No data
-. if (exists(gettxt(OLD_KEY_LIST_1)) EQ 0 ) exit subprocedure | No text appended to OLD_KEY_LIST_1
-
-|
-C  . execute subprocedure GET_KEYS
-
-WRITE /// ' HOW ARE THE KEYS CALCULATED?????????????? ' ///
+C . if (exists(gettxt(OLD_KEY_LIST_1)) EQ 0 ) exit subprocedure | No text appended to OLD_KEY_LIST_1
 
 . ifthen( getfocus(0) eq OLD_KEY_LIST_1 )
 .  MATCH_VALUE (1) = KEY_VALUE_1
@@ -134,18 +157,11 @@ WRITE /// ' HOW ARE THE KEYS CALCULATED?????????????? ' ///
 . elseif( getfocus(0) eq OLD_KEY_LIST_3 )
 .   MATCH_VALUE (1) = KEY_VALUE_1
 .   MATCH_VALUE (2) = KEY_VALUE_2
-.   MATCH_VALUE (2) = KEY_VALUE_3
+.   MATCH_VALUE (3) = KEY_VALUE_3
 .   START_KEY = 4
 . endif
 . KEY_REFRESH_START = START_KEY + dbtype(0) | note CASEID is first key
-. write 5t 'key refresh starts at: ' KEY_REFRESH_START ' which is actually key: ' START_KEY
-. write 5t 'match values: ' MATCH_VALUE (1) MATCH_VALUE (2) MATCH_VALUE (3)  //
-end subprocedure
-|
-|
-subprocedure MASTER_REFRESH_KEYS
-. execute subprocedure SET_MATCH_VALUES
-. execute subprocedure CREATE_MATCHED_KEY_ARRAYS
-. execute subprocedure REFRESH_KEYS
+<comment> write 5t 'key refresh starts at: ' KEY_REFRESH_START ' which is actually key: ' START_KEY
+<comment> write 5t 'match values: ' MATCH_VALUE (1) MATCH_VALUE (2) MATCH_VALUE (3)  //
 end subprocedure
 END PROCEDURE
