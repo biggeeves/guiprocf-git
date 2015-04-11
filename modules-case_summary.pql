@@ -1,4 +1,4 @@
-PROCEDURE      MODULES.CASE_SUMMARY:T  (157661,40401)  |Last amended Jun 12, 2014,11:13:21
+PROCEDURE      MODULES.CASE_SUMMARY:T  (157964,40148)  |Last amended Apr 11, 2015,11:09:08
 SUBROUTINE UTIL.LIST_IT (CASE$V) NODATABASE REPLACE
 | File name: XXXX
 | Path:      XXXX
@@ -153,7 +153,7 @@ while (fileis(dsn('monkey95')) eq 1)
 . DUMB_N# = DUMB_N# + 1
 . wait 10
 . ifthen (DUMB_N# gt 20)
-.   display infobox "Taking too long.. stopping"
+.   display infobox "Sorry, it is taking too long... Stopping."
 .   exit while
 . endif
 end while
@@ -162,7 +162,7 @@ end while
 ifthen (fileis(dsn('monkey99')) eq 1)
 . DUMB_N# = help('file: "'+dsn('monkey99')+'"')
 else
-. display infobox "Sorry, could not create report"
+. display infobox "Sorry, the report could not be found."
 endif
 END SUBROUTINE
 END PROCEDURE
