@@ -1,4 +1,4 @@
-PROCEDURE      GUI_MAIN.OLD_KEY_PAGE_DISPLAY_LIBRARY:T  (157964,1069)  |Last amended Apr 11, 2015,00:17:49
+PROCEDURE      GUI_MAIN.OLD_KEY_PAGE_DISPLAY_LIBRARY:T  (157964,3566)  |Last amended Apr 11, 2015,00:59:26
 
 subprocedure OLD_KEY_PAGE_DISPLAY_LIBRARY
 <comment> write 'Sub: OLD_KEY_PAGE_DISPLAY_LIBRARY: case_value:' CASE_VALUE
@@ -32,6 +32,8 @@ C . if (validate(pack(CASE_VALUE)) eq 0) PROCEED = NO; display infobox 'case id 
 . execute subprocedure OLD_REC_COUNT
 
 C . execute subprocedure OLD_KEY_REFRESH
+
+. execute subprocedure ["get_rec_" + format(REC_TYPE_NUM)]
 
 . execute subprocedure MASTER_REFRESH_KEYS
 
