@@ -1,11 +1,14 @@
-PROCEDURE      GUI_MAIN.REC_TYPE_DATA_DISPLAY:T  (157964,2726)  |Last amended Apr 11, 2015,00:45:26
+PROCEDURE      GUI_MAIN.REC_TYPE_DATA_DISPLAY:T  (157965,53848)  |Last amended Apr 12, 2015,14:57:28
 | The data must already be in the referenced array
 | everything you need to refresh keys
 |
 subprocedure MASTER_REFRESH_KEYS
-. if( exists( REC_TYPE_NUM) eq 0) exit subprocedure
-. if( nkeys( REC_TYPE_NUM) eq 0)  exit subprocedure              | NO KEYS - NO REASON TO RUN
-. if( gettxt( OLD_KEY_LIST_1) eq 'No data') exit subprocedure    | No records with data
+. ifthen( exists( REC_TYPE_NUM) eq 0)
+.   write 'REC_TYPE_NUM is not set'
+.   exit subprocedure
+. endif
+c . if( nkeys( REC_TYPE_NUM) eq 0)  exit subprocedure              | NO KEYS - NO REASON TO RUN
+c . if( gettxt( OLD_KEY_LIST_1) eq 'No data') exit subprocedure    | No records with data
 . if( getfocus(0) eq OLD_KEY_LIST_4)   exit subprocedure        | LAST KEY, NO NEED TO GET MORE DATA
 . ifthen ( dbtype(0) eq 1)
 .   if ( 0 eq len(CASE_VALUE) OR exists(CASE_VALUE) ) WRITE 'ERROR NO CASE ID'; exit subprocedure
@@ -92,36 +95,26 @@ subprocedure IS_KEY_VALUE_UNIQUE
 end subprocedure
 |
 |
-subprocedure refresh_keys
+SUBPROCEDURE REFRESH_KEYS
 | here cycle through keys, start with first that needs to be updated. append list
 <comment> write '-----------   show values to update -----------'
+<comment> write 'Refresh Keys: DB_ROW = ' DB_ROW
 <comment> write 'These keys: ' KEY_REFRESH_START  ' - ' [KEY_COUNT + dbtype(0)]
+
 ifthen (DB_ROW eq 0 )
 . append item OLD_KEY_LIST_1, "No data"
 . exit subprocedure
 endif
 <comment> write 'refresh starts at ' KEY_REFRESH_START
-. if ( KEY_REFRESH_START le 1 + dbtype(0) ) remove all OLD_KEY_LIST_1
+. ifthen ( KEY_REFRESH_START le 1 + dbtype(0) )
+.   remove all OLD_KEY_LIST_1
+. endif
 . if ( KEY_REFRESH_START le 2 + dbtype(0) ) remove all OLD_KEY_LIST_2
 . if ( KEY_REFRESH_START le 3 + dbtype(0) ) remove all OLD_KEY_LIST_3
 . if ( KEY_REFRESH_START le 4 + dbtype(0) ) remove all OLD_KEY_LIST_4
 
-cif eq 1,2
-. ifthen ( KEY_REFRESH_START EQ 1) KEY_FOCUS = OLD_KEY_LIST_1
-. elseif ( KEY_REFRESH_START EQ 2) KEY_FOCUS = OLD_KEY_LIST_2
-. elseif ( KEY_REFRESH_START EQ 3) KEY_FOCUS = OLD_KEY_LIST_3
-. elseif ( KEY_REFRESH_START EQ 4) KEY_FOCUS = OLD_KEY_LIST_4
-. endif
-cif end
 
 . for EACH_KEY = KEY_REFRESH_START , KEY_COUNT + dbtype(0)
-c for debug
-c . if(EACH_KEY eq 1 + dbtype(0) ) append item OLD_KEY_LIST_1, '-----------------'
-c . if(EACH_KEY eq 2 + dbtype(0) ) append item OLD_KEY_LIST_2, '-----------------'
-c . if(EACH_KEY eq 3 + dbtype(0) ) append item OLD_KEY_LIST_3, '-----------------'
-c . if(EACH_KEY eq 4 + dbtype(0) ) append item OLD_KEY_LIST_4, '-----------------'
-
-c write 'key ' EACH_KEY ' ( ' [REC_KEY_LIST_POINTER(EACH_KEY) - 1 ] ' values to update: '
 .   for each_row = 1, REC_KEY_LIST_POINTER(EACH_KEY) - 1
 .       KEY_NAME = keyname( REC_TYPE_NUM, EACH_KEY )
 .       KEY_VALUE = REC_KEY_LIST( each_row, EACH_KEY )

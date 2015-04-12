@@ -1,0 +1,55 @@
+PROCEDURE      GUI_CUSTOM.MAKE_CASE_INFO:T  (157965,47355)  |Last amended Apr 12, 2015,13:09:15
+program crwarn
+. string  *     32   DB_PROC_FILE    | points to database procfile
+. integer *      1   FAMILY_EXISTS
+. string  *    123   FAMILY_NAME
+. STRING  *    256   MEMBER_NAME
+. string  *    256   COMSTR
+. INTEGER *      2   FILE_IOSTAT       | IOSTAT FOR OPENING MEMBER
+. INTEGER *      1   RESVAR
+
+. DB_PROC_FILE = 'SIR'+ pformat(system(39),'zz') +'4'
+. FAMILY_NAME = 'GUI_CUSTOM'
+. MEMBER_NAME = FAMILY_NAME  + '.CASE_INFO'
+
+. ifthen (0 eq len(DB_PROC_FILE) or exists(DB_PROC_FILE) )
+.   display infobox 'No DB_PROC_FILE defined.  EXITING.  CONTACT ADMIN.'
+.   exit program
+. endif
+
+
+. execute dbms ["set procfile " + DB_PROC_FILE ] | screens go into database procfile file, not the guiprocf
+
+c does the family screens already exists?  if not make it.
+FAMILY_EXISTS = 0
+FOR EACH_FAMILY = 1, SYSTEM(57)
+. IF ( FAMNAME(EACH_FAMILY) EQ FAMILY_NAME ) FAMILY_EXISTS = 1
+END FOR
+IFTHEN (FAMILY_EXISTS EQ 0 )
+<COMMENT> WRITE FAMILY_NAME ' FAMILY did not exist'
+.  COMPUTE COMSTR = 'CREATE FAMILY ' + FAMILY_NAME
+.  EXECUTE DBMS COMSTR
+ENDIF
+
+c check to see if the member exists already
+ifthen ( meminfo (DB_PROC_FILE + '.' + MEMBER_NAME + ':T', 1 )  > 0 ) | MEMBER ALREADY EXISTS
+.  DISPLAY YNBOX "THIS WILL RE-WRITE " + MEMBER_NAME + ". CONTINUE?" RESPONSE RESVAR
+.  IFTHEN (RESVAR EQ 0 )
+.    DISPLAY INFOBOX "CANCELED"
+.    EXIT PROGRAM
+.  ENDIF
+ENDIF
+
+| create the memeber and add the code.
+. open ( MEMBER_NAME ) dsnvar = MEMBER_NAME iostat = FILE_IOSTAT  write lrecl=200 REPLACE member
+. ifthen (FILE_IOSTAT NE 0)
+.   write 'unable to write to ' MEMBER_NAME '.  Exiting.  IOSTAT:' FILE_IOSTAT
+.   EXIT PROGRAM
+. endif
+
+.   write ( MEMBER_NAME ) 'CALL CALL GUIPROCF.GUI_CUSTOM.CASE_INFO' /
+
+. close MEMBER_NAME
+
+end program
+END PROCEDURE

@@ -1,9 +1,10 @@
-PROCEDURE      GUI_MAIN.REC_TYPE_DATA:T  (157963,81723)  |Last amended Apr 10, 2015,22:42:03
+PROCEDURE      GUI_MAIN.REC_TYPE_DATA:T  (157965,52050)  |Last amended Apr 12, 2015,14:27:30
 do repeat RECX = <GREC1>
                  <GREC2>
                  <GREC3>
                  <GREC4>
 . SUBPROCEDURE GET_REC_!RECX
+WRITE 'CASE= ' CASE_VALUE '  REC =  RECX '
 CIF EQ 1, 0<LOCAL_CASE_TYPE>    | STRING.  TREAT EVERYTHING ELSE AS NUMERIC
 .   OLD CASE IS CASE_VALUE lock=2 | HERE
 CIF FALSE
@@ -15,6 +16,7 @@ CIF END
 .       execute subprocedure MAKE_ROW_OF_ALL_KEYS
 .     END REC
 .   END CASE IS
+WRITE 'DB_ROW IS SET AT ' DB_ROW
 . END SUBPROCEDURE
 end repeat
 
@@ -27,7 +29,7 @@ C WRITE '-----------   Make ROW ADB Array     -----------'
 end subprocedure
 
 subprocedure view_all_keys
-WRITE '---------   ALL  VALUES in Array   --------'
+<comment> WRITE '---------   All Values In Array   --------'
 . GEN_STR1 = ""
 . for each_db_row = 1, db_row
 . GEN_STR1 = format (each_db_row ) + ': '
@@ -35,7 +37,7 @@ WRITE '---------   ALL  VALUES in Array   --------'
 .     GEN_STR1 = GEN_STR1 + db_rec_keys (each_db_row, each_key)
 .     if(each_key lt KEY_COUNT + dbtype(0)) GEN_STR1 = GEN_STR1 + " | "
 .   end for
-.   write GEN_STR1
+<comment>  write 'ROW: ' each_db_row GEN_STR1
 . end for
 end subprocedure
 END PROCEDURE
