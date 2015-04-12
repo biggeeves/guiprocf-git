@@ -1,15 +1,23 @@
-PROCEDURE      GUI_MAIN.ITEM_ENABLE:T  (157231,49579)  |Last amended Apr 08, 2013,13:46:19
+PROCEDURE      GUI_MAIN.ITEM_ENABLE:T  (157965,60688)  |Last amended Apr 12, 2015,16:51:28
 subprocedure ITEM_ENABLE
 | IF AN ITEM SHOULD BE ENABLED OR DISABLED BASED ON DATA IN THE DATABASE.
 | To control if a user can go there or not, use hide and show instead of enable disable.
 |
+c non-existsing rectype.
+. ifthen ( exists( REC_TYPE_NUM) eq 0 )
+.   disable item VIEW_FORM
+.   disable item PAGE_TABLE
+.   disable item PAGE_NEW_KEYS
+.   exit subprocedure
+. endif
+
 C OLD RECS
 . ifthen ( REC_ROW_COUNT > 0) enable item VIEW_FORM
-. else                      disable item VIEW_FORM
+. else                        disable item VIEW_FORM
 . endif
 C TABLE VIEW
 . ifthen ( REC_ROW_COUNT > 1) enable item PAGE_TABLE
-. else                      disable item PAGE_TABLE
+. else                        disable item PAGE_TABLE
 . endif
 C NEW RECS
 . ifthen ( REC_ROW_COUNT lt MAXRECS(REC_TYPE_NUM) )  enable item PAGE_NEW_KEYS

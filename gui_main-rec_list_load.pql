@@ -1,4 +1,4 @@
-PROCEDURE      GUI_MAIN.REC_LIST_LOAD:T  (157963,60694)  |Last amended Apr 10, 2015,16:51:34
+PROCEDURE      GUI_MAIN.REC_LIST_LOAD:T  (157965,54537)  |Last amended Apr 12, 2015,15:08:57
 C CREATE ARRAYS FOR RECORD TYPE INFORMATION AND LOAD SEVERAL LISTS AND DROP DOWNS
 
 subprocedure REC_LIST_LOAD
@@ -22,11 +22,6 @@ c   create exception for two memo records - CASE_MEMO  and  REC_MEMO
 .   REC_INFO_DISPLAY(CYCLE_NUM) = replace(REC_INFO_DISPLAY(CYCLE_NUM),char(9), '', 5, 0, 0) | Get rid of tabs in the DOCUMENT line.
 .   REC_INFO_DISPLAY(CYCLE_NUM) = ' ' + REC_INFO_DISPLAY(CYCLE_NUM)
 
-.   ifthen (amod(FORM_COUNT,5) eq 0)  | ADD blank line every 5 forms
-.     append item FORM_LIST, ''
-.     append item REC_TYPE_SELECTED, ''
-.     append item REC_FORM_SELECTED, ''
-.   endif
 .   append item FORM_LIST, '  ' +  REC_INFO_DISPLAY(CYCLE_NUM)
 .   append item REC_TYPE_SELECTED, REC_INFO_NAME(CYCLE_NUM)
 .   append item REC_FORM_SELECTED, REC_INFO_NAME(CYCLE_NUM)

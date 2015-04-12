@@ -1,4 +1,4 @@
-PROCEDURE      GUI_CUSTOM.MAKE_CASE_INFO:T  (157965,47355)  |Last amended Apr 12, 2015,13:09:15
+PROCEDURE      GUI_CUSTOM.MAKE_CASE_INFO:T  (157965,55272)  |Last amended Apr 12, 2015,15:21:12
 program crwarn
 . string  *     32   DB_PROC_FILE    | points to database procfile
 . integer *      1   FAMILY_EXISTS
@@ -7,10 +7,13 @@ program crwarn
 . string  *    256   COMSTR
 . INTEGER *      2   FILE_IOSTAT       | IOSTAT FOR OPENING MEMBER
 . INTEGER *      1   RESVAR
+. string  *    256   CALL_MEMBER
 
 . DB_PROC_FILE = 'SIR'+ pformat(system(39),'zz') +'4'
 . FAMILY_NAME = 'GUI_CUSTOM'
 . MEMBER_NAME = FAMILY_NAME  + '.CASE_INFO'
+. CALL_MEMBER = 'GUIPROCF.' + MEMBER_NAME
+
 
 . ifthen (0 eq len(DB_PROC_FILE) or exists(DB_PROC_FILE) )
 .   display infobox 'No DB_PROC_FILE defined.  EXITING.  CONTACT ADMIN.'
@@ -47,9 +50,11 @@ ENDIF
 .   EXIT PROGRAM
 . endif
 
-.   write ( MEMBER_NAME ) 'CALL CALL GUIPROCF.GUI_CUSTOM.CASE_INFO' /
+.   write ( MEMBER_NAME ) "CALL " CALL_MEMBER /
 
 . close MEMBER_NAME
+
+EXECUTE DBMS ["CALL " + CALL_MEMBER]
 
 end program
 END PROCEDURE

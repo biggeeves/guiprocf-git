@@ -1,7 +1,10 @@
-PROCEDURE      GUI_MAIN.OLD_REC_COUNT:T  (157963,82664)  |Last amended Apr 10, 2015,22:57:44
+PROCEDURE      GUI_MAIN.OLD_REC_COUNT:T  (157965,60233)  |Last amended Apr 12, 2015,16:43:53
 subprocedure OLD_REC_COUNT
 <comment> write 'Sub: OLD_REC_COUNT: Case:' CASE_VALUE'  Rec: ' REC_TYPE_NUM
-. if (exists(REC_TYPE_NUM) eq 0) exit subprocedure
+. ifthen (exists(REC_TYPE_NUM) eq 0)
+.   DUMMY = globaln("OLD_REC_COUNT", 0 )
+.   exit subprocedure
+. endif
 . REC_ROW_COUNT_INITIAL = fst(getint(OLD_REC_COUNTER),0)  | ALLOWS YOU TO COMPARE REC COUNTS.  IF THEY CHANGED REFRESH KEYS.
 |
 . BUFFER_NAME = 'OLD_REC_COUNT'                      ; execute subprocedure BUFFER_START

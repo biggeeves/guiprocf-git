@@ -1,4 +1,4 @@
-PROCEDURE      GUI_CUSTOM.CASE_INFO_DETAILS:T  (157693,33859)  |Last amended Jul 14, 2014,09:24:19
+PROCEDURE      GUI_CUSTOM.CASE_INFO_DETAILS:T  (157965,55137)  |Last amended Apr 12, 2015,15:18:57
 C LIST STATS FOR INDIVIDUAL CASE
 c Must be sure that Case Type Global is set or it will not work.
 C   TO INCLUDE THIS IN YOUR DATABASE
@@ -55,6 +55,10 @@ CIF END
 .   append line  GUI_ITEM_NUMBER, THIS_CASEID html
 .   append line  GUI_ITEM_NUMBER, '</B>' HTML
 .   append line  GUI_ITEM_NUMBER, ' Detailed Record Summary'
+.   append line  GUI_ITEM_NUMBER, '<p align="left">' html
+
+
+
 
 . DO REPEAT RECX = <GREC1>
                 <GREC2>

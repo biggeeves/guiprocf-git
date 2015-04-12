@@ -1,17 +1,18 @@
-PROCEDURE      GUI_MAIN.REC_TYPE_DATA_DISPLAY:T  (157965,53848)  |Last amended Apr 12, 2015,14:57:28
+PROCEDURE      GUI_MAIN.REC_TYPE_DATA_DISPLAY:T  (157965,57092)  |Last amended Apr 12, 2015,15:51:32
 | The data must already be in the referenced array
 | everything you need to refresh keys
 |
 subprocedure MASTER_REFRESH_KEYS
 . ifthen( exists( REC_TYPE_NUM) eq 0)
 .   write 'REC_TYPE_NUM is not set'
-.   exit subprocedure
+.   EXIT SUBPROCEDURE
 . endif
-c . if( nkeys( REC_TYPE_NUM) eq 0)  exit subprocedure              | NO KEYS - NO REASON TO RUN
-c . if( gettxt( OLD_KEY_LIST_1) eq 'No data') exit subprocedure    | No records with data
 . if( getfocus(0) eq OLD_KEY_LIST_4)   exit subprocedure        | LAST KEY, NO NEED TO GET MORE DATA
 . ifthen ( dbtype(0) eq 1)
-.   if ( 0 eq len(CASE_VALUE) OR exists(CASE_VALUE) ) WRITE 'ERROR NO CASE ID'; exit subprocedure
+.   ifthen ( 0 eq len(CASE_VALUE) OR exists(CASE_VALUE) )
+.     WRITE 'ERROR NO CASE ID'
+.     EXIT SUBPROCEDURE
+.   endif
 . endif
 . execute subprocedure SET_MATCH_VALUES
 . execute subprocedure CREATE_MATCHED_KEY_ARRAYS

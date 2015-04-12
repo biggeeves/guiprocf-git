@@ -1,6 +1,14 @@
-PROCEDURE      GUI_MAIN.OLD_KEY_VISIBLE:T  (157200,34277)  |Last amended Mar 08, 2013,09:31:17
+PROCEDURE      GUI_MAIN.OLD_KEY_VISIBLE:T  (157965,59867)  |Last amended Apr 12, 2015,16:37:47
 subprocedure OLD_KEY_VISIBLE
 <comment> write 'sub: OLD_KEY_VISIBLE: Nkeys: ' KEY_COUNT
+. ifthen (exists(REC_TYPE_NUM) eq 0)
+.   DO REPEAT REPX= 1 TO 4
+.     hide item OLD_KEY_LABEL_!REPX
+.     hide item OLD_KEY_LIST_!REPX
+.   END REPEAT
+.   EXIT SUBPROCEDURE
+. endif
+
 . DO REPEAT REPX= 1 TO 4
 .   ifthen (KEY_COUNT ge REPX )
 .     show item OLD_KEY_LABEL_!REPX
