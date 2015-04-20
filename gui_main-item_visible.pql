@@ -1,4 +1,4 @@
-PROCEDURE      GUI_MAIN.ITEM_VISIBLE:T  (157963,72110)  |Last amended Apr 10, 2015,20:01:50
+PROCEDURE      GUI_MAIN.ITEM_VISIBLE:T  (157966,57440)  |Last amended Apr 13, 2015,15:57:20
 subprocedure ITEM_VISIBLE
 | first section is the show/hide portion.
 | defaults for every page
@@ -21,8 +21,6 @@ subprocedure ITEM_VISIBLE
 . ifthen (dbtype(0) eq 1)
 .   show item PAGE_CASEIDS
 .   enable item PAGE_CASEIDS
-.   show item PAGE_NEWIDS
-.   enable item PAGE_NEWIDS
 . endif
 . show item PAGE_OLD_KEYS; ifnot(m_page = VIEW_OLD_KEYS ) enable item PAGE_OLD_KEYS
 
@@ -70,7 +68,6 @@ c page dependent items
 . ifthen (m_page = VIEW_HOME)
 .   focus item CASE_SEARCH
 .   disable item PAGE_CASEIDS
-.   show item PAGE_NEWIDS
 .   show item PAGE_OLD_KEYS
 .   disable item PAGE_OLD_KEYS
 .   ifthen(I_GUI_CASE_LIST EQ 1)
@@ -84,7 +81,6 @@ c page dependent items
 .   focus item CASE_NEW
 .   show item PAGE_CASEIDS
 .   disable item PAGE_OLD_KEYS
-.   disable item PAGE_NEWIDS
 
 | Main form page
 . elseif (m_page = VIEW_OLD_KEYS )  | Main page for speicific case ID

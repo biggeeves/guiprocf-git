@@ -1,15 +1,12 @@
-PROCEDURE      GUI_MAIN.OLD_KEY_PAGE_DISPLAY_LIBRARY:T  (157964,3566)  |Last amended Apr 11, 2015,00:59:26
+PROCEDURE      GUI_MAIN.OLD_KEY_PAGE_DISPLAY_LIBRARY:T  (157965,65551)  |Last amended Apr 12, 2015,18:12:31
 
 subprocedure OLD_KEY_PAGE_DISPLAY_LIBRARY
 <comment> write 'Sub: OLD_KEY_PAGE_DISPLAY_LIBRARY: case_value:' CASE_VALUE
-c . if (exists(CASE_VALUE) eq 0) PROCEED = NO; display infobox 'no case id selected'; exit subprocedure
-c . if (len(pack(CASE_VALUE)) eq 0) PROCEED = NO; display infobox 'case id is zero length string'; exit subprocedure
-C . if (validate(pack(CASE_VALUE)) eq 0) PROCEED = NO; display infobox 'case id is not valid: ' + CASE_VALUE; exit subprocedure
+c this page must work with caseless databases too
 . ifthen ( dbtype(0) eq 1)
 .   execute subprocedure CASE_VALIDATE
 .   if (proceed eq 0) exit subprocedure
 . endif
-
 
 . ifnotthen (m_page = VIEW_OLD_KEYS)
 .   m_page = VIEW_OLD_KEYS
@@ -19,7 +16,7 @@ C . if (validate(pack(CASE_VALUE)) eq 0) PROCEED = NO; display infobox 'case id 
 
 . REFRESH_START_KEYNUM = 1
 
-. EXECUTE SUBPROCEDURE ITEM_VISIBLE
+. execute subprocedure ITEM_VISIBLE
 
 . execute subprocedure CASE_INFO
 
@@ -30,8 +27,6 @@ C . if (validate(pack(CASE_VALUE)) eq 0) PROCEED = NO; display infobox 'case id 
 . execute subprocedure ALL_KEY_INI_DISPLAY
 
 . execute subprocedure OLD_REC_COUNT
-
-C . execute subprocedure OLD_KEY_REFRESH
 
 . execute subprocedure ["get_rec_" + format(REC_TYPE_NUM)]
 

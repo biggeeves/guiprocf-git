@@ -1,4 +1,4 @@
-PROCEDURE      GUI_MAIN.CASE_VALIDATE:T  (157964,40078)  |Last amended Apr 11, 2015,11:07:58
+PROCEDURE      GUI_MAIN.CASE_VALIDATE:T  (157965,65216)  |Last amended Apr 12, 2015,18:06:56
 subprocedure CASE_VALIDATE   |   CASE_TEMP_VALUE MUST BE PASSED IN
 C note, I'm not sure where the case id is going to be, either the new id field or the search field or a hidden field.  Who knows right now.
 <COMMENT> WRITE 'Sub: CASE_VALIDATE: ' CASE_TEMP_VALUE
@@ -7,30 +7,39 @@ C note, I'm not sure where the case id is going to be, either the new id field o
 .   PROCEED = YES  | caseless database must pass back proceed = 1
 .   EXIT SUBPROCEDURE
 . endif
-. PROCEED = NO
+. PROCEED = YES
 . if( exists( CASE_TEMP_VALUE ) EQ 0 ) display infobox 'Sorry, no ' + CASE_NAME + ' was specified.'; exit subprocedure
 . if( len( CASE_TEMP_VALUE ) EQ 0 ) display infobox 'Oops, ' + CASE_NAME + ' is blank.'; exit subprocedure
-. if ( CASE_TEMP_VALUE eq '' ) display infobox 'Cannot create a blank case'; exit subprocedure
+. if ( CASE_TEMP_VALUE eq '' ) display infobox 'Cannot create a blank case.'; exit subprocedure
 
-. ifthen (meminfo('NAVIGATE2.CXID:O',1) = MEM_O)
-.   execute subroutine SIR014.NAVIGATE2.CXID (CASE_TEMP_VALUE) returning (PROCEED) DYNAMIC
-.   ifthen (PROCEED <> 1)
-.     display infobox 'This ID is not valid'
-.     EXIT SUBPROCEDURE
-.   endif
+C Look for customizations.  Graceful fallback
+. ifthen( meminfo( 'GUI_CUSTOM.CXID:O',1) = MEM_O)
+.   execute subroutine DB_PROC_FILE.GUI_CUSTOM.CXID (CASE_TEMP_VALUE) returning (PROCEED) DYNAMIC
+. elseif ( meminfo( 'NAVIGATE.CXID:O',1) = MEM_O)
+.   execute subroutine DB_PROC_FILE.NAVIGATE.CXID (CASE_TEMP_VALUE) returning (PROCEED) DYNAMIC
 . endif
-. ifthen (meminfo('NAVIGATE2.IDACCESS:O',1) = MEM_O)
-.   execute subroutine SIR014.NAVIGATE2.IDACCESS (CASE_TEMP_VALUE) returning (PROCEED) DYNAMIC
-.   ifthen (PROCEED <> 1)
-.     display infobox 'Sorry, access is limited.'
-.     EXIT SUBPROCEDURE
-.   endif
+. ifthen (PROCEED <> 1)
+.   display infobox 'Can not continue with ' + CASE_TEMP_VALUE + '.'
+.   EXIT SUBPROCEDURE
 . endif
+
+C Look for customizations.  Graceful fallback
+. ifthen (meminfo('NAVIGATE.ID_ACCESS:O',1) = MEM_O)
+.   execute subroutine DB_PROC_FILE.NAVIGATE.ID_ACCESS (CASE_TEMP_VALUE) returning (PROCEED) DYNAMIC
+. elseif (meminfo('GUI_CUSTOM.ID_ACCESS:O',1) = MEM_O)
+.   execute subroutine DB_PROC_FILE.GUI_CUSTOM.ID_ACCESS (CASE_TEMP_VALUE) returning (PROCEED) DYNAMIC
+. endif
+. ifthen (PROCEED <> 1)
+.   display infobox 'Sorry, access is limited.'
+.   EXIT SUBPROCEDURE
+. endif
+
+c validate ID before continuing
 . VAL_VAR = validate(0,CASE_NAME, CASE_TEMP_VALUE)
-
 . ifthen (VAL_VAR eq 0) | valid value
 .   PROCEED = YES
 . else
+.   PROCEED = NO
 .   display infobox 'Sorry, ' + CASE_TEMP_VALUE +', is not a valid value for ' + CASE_NAME
 . endif
 end subprocedure

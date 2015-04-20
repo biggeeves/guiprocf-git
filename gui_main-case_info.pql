@@ -1,4 +1,4 @@
-PROCEDURE      GUI_MAIN.CASE_INFO:T  (157766,47945)  |Last amended Sep 25, 2014,13:19:05
+PROCEDURE      GUI_MAIN.CASE_INFO:T  (157965,66314)  |Last amended Apr 12, 2015,18:25:14
 c display case specific info
 
 subprocedure CASE_INFO
@@ -10,6 +10,10 @@ subprocedure CASE_INFO
 . endif
 
 . set item DELETE_CASE_LABEL, '  Delete ' + CASE_LABEL + ':   ' + CASE_VALUE + '?'
+
+. ifthen ( meminfo( DB_PROC_FILE + '.NAVIGATE.SUBJINFO:O',1) = MEM_O)
+.   execute subroutine [DB_PROC_FILE  + '.NAVIGATE.SUBJINFO'] (FORM_INFO CASE_VALUE )
+. endif
 
 end subprocedure
 END PROCEDURE
