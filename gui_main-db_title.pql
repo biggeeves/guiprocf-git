@@ -1,4 +1,4 @@
-PROCEDURE      GUI_MAIN.DB_TITLE:T  (157963,62530)  |Last amended Apr 10, 2015,17:22:10
+PROCEDURE      GUI_MAIN.DB_TITLE:T  (157977,56840)  |Last amended Apr 24, 2015,15:47:20
 subprocedure DB_TITLE
 . GEN_STR1 = ''
 . HTML_COLOR = HTML_COLUMBIA_BLUE  | DEFAULTS TO ASSUME LIVE
@@ -28,7 +28,12 @@ c . GEN_STR1 = '<body bgcolor="' + HTML_COLOR + '" readonly="true"><font color="
 .     GEN_STR1 = GEN_STR1 + ' ' + dbname( 0 )
 .   endif
 . elseif (system(40) GT 1)
-.   write "TWO DATABASES ATTACHED.  DEFAULT DATABASE IS:" [DBNAME(0)]
+.   write "More than 1 database have been connect at the same time.  " /
+          "The current default database is:" [DBNAME(0)]
+.   for EACH_DB = 1, SYSTEM(40)
+.     write 5t 'DB# ' EACH_DB '. Database name is: ' [dbname(EACH_DB)]
+.     write 10t 'Procfile: '  [dsn('SIR'+ PFORMAT(EACH_DB ,'zz' ) +'4')]
+.   end for
 . endif
 
 . set item DB_TITLE, GEN_STR1

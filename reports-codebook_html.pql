@@ -1,4 +1,4 @@
-PROCEDURE      REPORTS.CODEBOOK_HTML:T  (157655,30722)  |Last amended Jun 06, 2014,08:32:02
+PROCEDURE      REPORTS.CODEBOOK_HTML:T  (158004,43656)  |Last amended May 21, 2015,12:07:36
 | Make a nice looking HTML codebook to send to someone
 
 
@@ -312,7 +312,7 @@ c     add another class for keyvars and common vars
 .  ifthen ( MISS$ = '1')
 .    write ( HTM ) '<p class="indent3">Missing Values:</p>'
 .    write ( HTM ) '<ul>'
-.    ifthen ( exists( miss( EACH_REC, VAR_NAME, 2 ) ) = YES )
+.    ifthen ( exists( miss( EACH_REC, VAR_NAME, 1 ) ) = YES )
 .      MISS$ = trim( miss( EACH_REC, VAR_NAME, 1 ) )
 .      if ( MISS$ eq '')  MISS$ = 'BLANK'
 .      MISS$ = '( ' + MISS$ + ' )'
