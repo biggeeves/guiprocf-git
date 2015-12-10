@@ -1,0 +1,142 @@
+PROCEDURE      TRIGGERS.MK_PRINT:T  (158061,31176)  |Last amended Jul 17, 2015,08:39:36
+c
+c SubProcedure to be executed from within a PQLForm Screen
+c Written by Tom Shriver May 2015
+c
+c Two Actions Are initiated at each of several trigger points:
+c   a) when the data record is first read (upon opening the screen)
+c   b) when a new page is accessed
+c   c) when the record is deleted
+c   d) when the record is saved
+c
+c The Two Actions initated at each of the above trigger points are:
+c   1) Causes a Printable (i.e. text file) to be created with one line per varname
+c   2) Forces an automatic "Save" of the data record to the database
+c      (This auto-save to the database is not performed for DCC users; i.e. only for project users)
+c
+c To Implement this feature in a PQLForm screen definition using the SIR PQLForm Painter
+c In the Screen Properties Dialog user Must Add the Following Code
+c    Initial PQL: GLOBAL RECTPNUM = n               | where n is the record type number; don;t need any more 5/25/2015
+c    Title PQL:   EXECUTE SUBPROCEDURE MK_PRINT
+c    Read PQL:    EXECUTE SUBPROCEDURE MK_PRINT     | don't use Read PQL - it leaves case locked!
+c    Write PQL:   EXECUTE SUBPROCEDURE MK_PRINT
+c    Delete PQL:  EXECUTE SUBPROCEDURE MK_PRINT
+c
+c In the Form Properties "SubProcedures" specification add the following code
+c                 CALL GUIPROCF.TRIGGERS.MK_PRINT
+c
+subprocedure mk_print
+string *  250 oline$
+string *   32 var__$
+string *   80 varlab$
+integer *   4 v#      miss##
+string *    1 miss$$
+missing values miss##(blank,blank,blank)
+missing values miss$$(blank,blank,blank)
+
+. val__cnt=0
+cif eq 1,1
+. for v#=1,nvars(rec#)
+.   var__$=pack(varname(rec#,v#))
+c   write v#(i3) 1x var__$(a12) 1x [varget(var__$)]
+.   val__cnt=val__cnt+exists(varget(var__$))
+.   if(val__cnt gt (nkeys(rec#)+dbtype(0)))jump doit    | we have more values than just the keyfields
+. end for
+c write "JumpOut: " val__cnt v# var__$
+. jump outp | if we get here we don't have any non-key data on the screen; don't make copy !how about key-only rectypes?
+cif end
+c
+DOIT:
+c write "No_Jump: " val__cnt v# var__$
+
+c sysuser$=upper(pack(getenv("username")))
+. ifthen(0)
+. elseifnot(sglobal('USERA')=  "!*!dummy"          | do not do autosaves for DCC Folks
+                 or "TSHRIVER" or "TOMADMIN"
+                 or "HANDREWS"
+           or "MFENG"
+         or "DMERLE"
+         or "GNEILS"
+         or "TSHAH"
+                                           )
+c
+.   set FAILSCR (0) | this will insure the user doesn't get prompted to save for this auto-save
+c   write "SaveOp: " save_op
+c   ifnot(save_op="Write")write "ExecSave: " save_op
+.   ifnot(save_op="Write")execute subprocedure SCREENPUT_####1
+c   write "PostOp: " save_op
+
+. endif
+
+c write "PrintIt: " save_op
+
+. oline$ = dsn("PREFIX")+"users\"
+. xxxx#  = makedir(oline$)                                      | create a folder for users if it doesn't exist
+. oline$ = dsn("PREFIX")+"users\"+pack(lower(siruser("")))+"\"  | each user will have a folder for these copies
+. xxxx#  = makedir(oline$)                                      | create a folder for the user if it doesn't exist
+. oline$ = oline$+pack(dbname(0))+"_"+format(rec#)+"_"+pack(recname(rec#))
+
+. ifthen(dbtype(0)=1)
+.   var__$=pack(varname(0,1))
+.   oline$=oline$+"_"+pack(varget(var__$))
+. endif
+
+. for k#=1+dbtype(0),nkeys(rec#)+dbtype(0)
+.   oline$=oline$+"_"+varget(keyname(rec#,k#)) | add value of keyfield
+.   oline$=replace(oline$, " ","^",8,0,0)      | in case we have blanks in key value
+.   oline$=replace(oline$, "/","-",4,0,0)      | in case we have dates with slashes
+. end for
+. oline$ = oline$+"_"+pack(lower(siruser("")))+".txt"
+
+. ifnot(exists(oline$))jump outp | will be undefined if any keys are undefined
+
+. open txt write /dsnvar=oline$ /lrecl=200
+
+. write(txt) "Screen/Record Copy:  Rec#=" rec# ["("+trim(recname(rec#))+")"] "   by " [pack(lower(siruser("")))]
+                                        "  on " [today(0)](date'ddMMMyyyy') 1x
+                              [now(0)](time'hh:mm:ss')     /
+
+. var__$=pack(varname(0,1))   | Write Out CaseID stuff
+. varlab$=varlabsc(0,var__$)
+. write(txt) var__$ 1x "(CaseID)" 15t varlab$(a14) 1x [trim(varget(var__$))]
+
+. for v#=1,nvars(rec#)
+.   var__$=pack(varname(rec#,v#))
+.   varlab$=varlabsc(rec#,var__$)
+
+.   ifthen(exists(varget(var__$))=0)                         | Missing Value; Get the original missing value
+.     ifthen(vartype(var__$)=1)miss##=nget(var__$)           | number
+.       oline$=MISS(rec#,var__$,MISNUM(miss##))
+.       ifthen(misnum(miss##) =0)oline$=sbst("______________",1,10) + "  *"
+.       elseifnot(exists(oline$))oline$=sbst("______________",1,10)
+.       else                     oline$=sbst(oline$+"             ",1,10)
+.         if(nlabels(-1,var__$) gt 0)oline$=oline$+"  "+vallabsc(rec#,var__$,pack(oline$))
+.       endif
+.       write(txt) var__$(a14) 15t  varlab$(a60) 1x " | " 1x  oline$
+
+.     elseif(vartype(var__$)=0)miss$$=sget(var__$)           | string
+.       oline$=MISS(rec#,var__$,MISNUM(miss$$))
+.       ifthen(misnum(miss$$) =0)oline$=sbst("______________",1,10) + "  *"
+.       elseifnot(exists(oline$))oline$=sbst("______________",1,10) + "  *"
+.       else                     oline$=sbst(oline$+"             ",1,10)
+.         if(nlabels(-1,var__$) gt 0)oline$=oline$+vallabsc(-1,var__$,varget(miss$$))
+.       endif
+.       write(txt) var__$(a14) 15t  varlab$(a60) 1x " | " 1x  oline$
+
+.     else write(txt) var__$(a14) 15t  varlab$(a60) 1x " | " 1x [sbst("______________",1,10)] 2x "???" | shouldn't happen
+.     endif
+
+.   elseif(nlabels(-1,var__$) gt 0)
+.     write(txt) var__$(a14) 15t  varlab$(a60) 1x " | " 1x [trim(varget(var__$))](a10)
+                              2x [sbst(pack(vallabsc(-1,var__$,varget(var__$))),1,35)]
+.   else
+.     write(txt) var__$(a14) 15t  varlab$(a60) 1x " | " 1x [trim(varget(var__$))]
+.   endif
+
+. end for | variables
+
+close txt
+outp:
+c write "Out_SP: " save_op
+end subprocedure | mk_print
+END PROCEDURE

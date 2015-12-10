@@ -1,0 +1,15 @@
+PROCEDURE      GUI_MAIN.COMPILE_MEMBER:T  (158206,55201)  |Last amended Dec 09, 2015,15:20:01
+subprocedure COMPILE_MEMBER
+. ifthen ( 0 eq len( DB_PROC_FILE) or exists( DB_PROC_FILE) or fileis( dsn( 'DB_PROC_FILE' ) ) )
+.   display infobox 'No DB_PROC_FILE defined: ' + DB_PROC_FILE
+.   EXIT SUBPROCEDURE
+. endif
+. execute dbms 'set procfile ' + DB_PROC_FILE | make sure the screens go to the database procfile
+. ifthen( meminfo( DB_PROC_FILE + "." + FAMILY_NAME + "." + MEMBER_NAME, 1) = MEM_T)
+.   COMSTR = 'call ' + DB_PROC_FILE + "." + FAMILY_NAME + "." + MEMBER_NAME
+.   execute dbms COMSTR
+. else
+.   display infobox "Could not find " + FAMILY_NAME + "." + MEMBER_NAME
+. endif
+end subprocedure
+END PROCEDURE

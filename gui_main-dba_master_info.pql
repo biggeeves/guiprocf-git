@@ -1,0 +1,30 @@
+PROCEDURE      GUI_MAIN.DBA_MASTER_INFO:T  (158183,38147)  |Last amended Nov 16, 2015,10:35:47
+subprocedure MASTER_INFO
+. REMOVE ALL MASTER_DISPLAY
+. APPEND LINE MASTER_DISPLAY, 'MASTER: ' + sglobal('MASTER')
+C DBs attached to master
+. ifthen ( system(69) gt 0)
+.   GEN_STR1 = 'Master  is attached to ' + format(system(69)) + ' DBs: '
+.   for DUMB_NUM# = 1, system(69)
+.     GEN_STR1 = GEN_STR1 + char(13)+ getmdbn(DUMB_NUM#)
+.   end for
+.   APPEND LINE MASTER_DISPLAY, GEN_STR1
+. else
+.   APPEND LINE MASTER_DISPLAY, 'No Databases are currently attched to master'
+. endif
+
+. APPEND LINE MASTER_DISPLAY,''
+
+C Users attached to master
+. ifthen (system(68) gt 1)
+.   GEN_STR1 = 'Master has ' + format(system(68)) + ' Clients'
+.   for DUMB_NUM# = 1, system(68)
+.     GEN_STR1 = GEN_STR1 + char(13) + getmcadd(getmclid(DUMB_NUM#))
+.     if (getmclst(DUMB_NUM#) ne 0) GEN_STR1 = GEN_STR1 +  '  at  ' + timec(getmclst(DUMB_NUM#), 'hh:mm:ss')
+.   end for
+.   APPEND LINE MASTER_DISPLAY, GEN_STR1
+. else
+.   APPEND LINE MASTER_DISPLAY,  'No Clients/Users are currently attached to master'
+. endif
+end subprocedure
+END PROCEDURE

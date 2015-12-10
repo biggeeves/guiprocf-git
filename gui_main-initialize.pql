@@ -1,36 +1,5 @@
-PROCEDURE      GUI_MAIN.INITIALIZE:T  (157963,81990)  |Last amended Apr 10, 2015,22:46:30
-C if some globals already exist leave them alone.
-c if globals don't exist set value to "off" (or if set to zero length string)
-program
-
-. STRING  * 32  CASE_NAME
-. INTEGER *  1  CASE_TYPE
-. INTEGER *  1  TEMP_VAR
-. CASE_NAME  = trimr( varname( 0, 1 ) )
-. CASE_TYPE  = vtype( 0, CASE_NAME )
-. TEMP_VAR   = GLOBALN( 'LOCAL_CASE_TYPE', CASE_TYPE )
-
-. ifthen ( sglobal('COMMENT') eq '')
-.   TEMP_VAR = globals('COMMENT', '|')
-. elseif ( exists( sglobal('COMMENT') ) eq 0)
-.   TEMP_VAR = globals('COMMENT', '|')
-. endif
-. ifthen ( sglobal('DEBUG_MODE') eq '')
-.   TEMP_VAR = globals('DEBUG_MODE', '0')
-. elseif ( exists( sglobal('DEBUG_MODE') ) eq 0 )
-.   TEMP_VAR = globals('DEBUG_MODE', '0')
-. endif
-. ifthen ( sglobal('FUTURE_DEV') eq '')
-.   TEMP_VAR = globals('FUTURE_DEV', '|')
-. elseif ( exists( sglobal('FUTURE_DEV') ) eq 0 )
-.   TEMP_VAR = globals('FUTURE_DEV', '|')
-. endif
-. ifthen ( sglobal('SHOW_CUSTOM_INFO') eq '')
-.   TEMP_VAR = globals('SHOW_CUSTOM_INFO', '0')
-. elseif ( exists( sglobal('SHOW_CUSTOM_INFO') ) eq 0 )
-.   TEMP_VAR = globals('SHOW_CUSTOM_INFO', '0')
-. endif
-
-end program
-
+PROCEDURE      GUI_MAIN.INITIALIZE:T  (158155,38198)  |Last amended Oct 19, 2015,10:36:38
+CALL GUIPROCF.SYSTEM.DEL_FILE_ATT
+CALL GUIPROCF.SYSTEM.ALLRECS
+CALL GUIPROCF.SYSTEM.SET_GLOBALS
 END PROCEDURE

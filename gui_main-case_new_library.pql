@@ -1,6 +1,10 @@
-PROCEDURE      GUI_MAIN.CASE_NEW_LIBRARY:T  (157963,79763)  |Last amended Apr 10, 2015,22:09:23
+PROCEDURE      GUI_MAIN.CASE_NEW_LIBRARY:T  (158017,48565)  |Last amended Jun 03, 2015,13:29:25
 subprocedure CASE_NEW_LIBRARY
 <comment> write 'Sub: CASE_NEW_Library'
+. ifNOTthen ( I_GUI_CASE_NEW eq 1)
+.   display infobox 'You do not have permission to create a new ID'
+.   exit subprocedure
+. ENDIF
 . CASE_TEMP_VALUE = trimlr(gettxt(CASE_NEW))
 . execute subprocedure CASE_VALIDATE  | pass var CASE_TEMP_VALUE
 . if (PROCEED EQ NO) EXIT SUBPROCEDURE

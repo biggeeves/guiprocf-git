@@ -1,6 +1,6 @@
-PROCEDURE      GUI_MAIN.ALL_KEY_INI_DISPLAY:T  (157425,5636)  |Last amended Oct 19, 2013,01:33:56
+PROCEDURE      GUI_MAIN.ALL_KEY_INI_DISPLAY:T  (158026,58622)  |Last amended Jun 12, 2015,16:17:02
 subprocedure ALL_KEY_INI_DISPLAY
-<comment> write 'sub: ALL_KEY_INI_DISPLAY: Nkeys: ' KEY_COUNT
+<comment> write 'sub: ALL_KEY_INI_DISPLAY: REC_TYPE_NUM' REC_TYPE_NUM '  Nkeys: ' KEY_COUNT
 c old keys, GET AND DISPLAY STATIC  KEY INFORMATION
 . do repeat REPX = 1 TO 4
 |   old keys page
@@ -15,7 +15,7 @@ c old keys, GET AND DISPLAY STATIC  KEY INFORMATION
 |   table keys page
 .   set item   TABLE_KEY_LABEL_!REPX, KEY_LABEL_!REPX
 . end repeat
-. if (exists(REC_TYPE_NUM) eq 0) exit subprocedure
+. if (exists(REC_TYPE_NUM) eq 0) exit subprocedure |
 . if (KEY_COUNT eq 0) exit subprocedure
 
 | THIS IS FOR NEW KEY AREA ONLY.  It is broken out to keep things simpler to work on in the future

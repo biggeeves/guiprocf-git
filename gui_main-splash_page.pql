@@ -1,0 +1,63 @@
+PROCEDURE      GUI_MAIN.SPLASH_PAGE:T  (158207,45009)  |Last amended Dec 10, 2015,12:30:09
+C EVERYTHING THAT IS DISPLAYED ON THE INITIAL PAGE
+
+SUBPROCEDURE SPLASH_PAGE
+
+| Text
+. HIPPA_TEXT_1  = 'The information contained in this database is confidential.' +
+                  ' All database use is logged and monitored.'
+. HIPPA_TEXT_2  = '      Unauthorized or improper use of this system,' +
+                  ' or the information it contains, is prohibited.'
+. SPLASH_TEXT_1 = 'Welcome to the '
+. ifthen(  ( exists( recdoc( 0,0 ) ) eq 1 ) and ( len( TRIM( recdoc( 0,0 ) ) ) gt 0) )
+.   SPLASH_TEXT_1 = SPLASH_TEXT_1  + TRIM( recdoc( 0,0 ) )
+. elseif( system( 40 ) gt 0 )
+.   SPLASH_TEXT_1 = SPLASH_TEXT_1  + dbname( 0 )
+. else
+.   SPLASH_TEXT_1 = SPLASH_TEXT_1 + 'D.C.C.'
+. endif
+.   SPLASH_TEXT_1 = SPLASH_TEXT_1 + ' Data System'
+. set SPLASH_TEXT_2 ('') |('<p> - The information contained in this database is confidential.</p><p> - All database use is logged and monitored.</p><p> - Unauthorized or improper use of this system, or the information it contains, is prohibited.</p>' )
+
+. GEN_STR1 = '<body bgcolor="' + HTML_YELLOW1 + '" readonly="true">'
+           + '<font color="' + HTML_BLACK6 + '" size="+5" face="Arial"><p align="center" > <br>'
+           + SPLASH_TEXT_1  + '</font></p>'
+. append line SPLASH_TEXT, GEN_STR1 html
+
+. GEN_STR1 = '<p align="left"><font color=""' + HTML_BLACK6 + '" size="+1">'
+           +  SPLASH_TEXT_2 + '</font></p>'
+|.  append line SPLASH_TEXT, GEN_STR1 html
+
+| Images
+| Columbia University
+. ifthen( fileis( DB_FOLDER + 'images\splahs_header.bmp' ) eq 1)
+.   set image CU_IMGAGE DB_FOLDER + 'images\splahs_header.bmp' 2 | se the image if it can be found.  Otherwise show a empty spot.
+. elseif( fileis( GUI_PROC_DIR + 'images\columbia_university_logo.bmp' ) eq 1)
+.   set image CU_IMGAGE GUI_PROC_DIR + 'images\columbia_university_logo.bmp'  | se the image if it can be found.  Otherwise show a empty spot.
+. else
+.   hide item CU_IMGAGE
+. endif
+| Optional User Defined Images
+| intialially hide all user set images
+
+cif eq 1,2
+. hide item splash_header
+. hide item splash_footer
+
+. ifthen (fileis(DB_FOLDER + 'images\' ) = -1) | It is a directory
+.   FILE_COUNT = filecnt(DB_FOLDER +  'images\*.bmp')
+.   for EACH_FILE = 1, FILE_COUNT
+.     NAME_FILE = filen(DB_FOLDER  + 'images\*.bmp', EACH_FILE)
+.     FULL_FILE = DB_FOLDER + 'images\' + NAME_FILE
+.     ifthen (NAME_FILE = 'splash_header.bmp')
+.       set image splash_header, FULL_FILE 2  | 2= centered
+.       show item splash_header
+.     elseif (NAME_FILE = 'splash_footer.bmp')
+.       set image splash_footer, FULL_FILE 2  | 2= centered
+.       show item splash_footer
+.     endif
+.   end for
+. endif
+cif end
+END SUBPROCEDURE
+END PROCEDURE

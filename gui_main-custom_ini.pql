@@ -1,13 +1,13 @@
-PROCEDURE      GUI_MAIN.CUSTOM_INI:T  (157627,36820)  |Last amended May 09, 2014,10:13:40
-c CHECK FOR LOCAL DB MEMBERS AND IF THEY ARE THRE MAKE A GLOBAL REFERENCE FOR THEM
+PROCEDURE      GUI_MAIN.CUSTOM_INI:T  (158155,38459)  |Last amended Oct 19, 2015,10:40:59
+c Make global references local DB members
 
 global GUI_CUSTOM_PERMISSIONS = 0
 global GUI_CUSTOM_GUI_SETTINGS = 0
 
 PROGRAM
-. string  *     32   DB_PROC_FILE
-. integer * 1 MEM_T
-. integer * 1 ANYX
+. string  * 32   DB_PROC_FILE
+. integer * 1   MEM_T
+. integer * 1   ANYX
 . set MEM_T (1)
 . DB_PROC_FILE = 'SIR'+ pformat( SYSTEM(39), 'zz' ) + '4'
 . ANYX = GLOBALS( 'DB_PROC_FILE', DB_PROC_FILE )

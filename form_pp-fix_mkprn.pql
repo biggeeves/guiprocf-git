@@ -1,0 +1,259 @@
+PROCEDURE      FORM_PP.FIX_MKPRN:T  (158019,60552)  |Last amended Jun 05, 2015,16:49:12
+c
+c Add code to PQL Form definitions to enable MK_PRINT (save data periodically & create a printable paper form)
+c
+. DELETE ATTRIBUTE PQL
+. DELETE ATTRIBUTE SRC
+. global wr = $c $ |  $. $ |  $c $ |
+c
+. TASK Fix Screen for MK_PRINT
+c
+c call * (2,$screens.cklist_mk_print$) |1=file; 2=member | CALL for testing
+c call * (2,$screens.cklist$)          |1=file; 2=member | CALL for testing
+c call * (2,$screens.dr1$)             |1=file; 2=member | CALL for testing - DR1 in AAA has no END FORM
+c call * (1,$cklist.pql$)              |1=file; 2=member | CALL for testing
+c
+program
+string * 512 fn$ iline uline tline
+string *  20 word1 to word6
+string *  20 curr_cmd prev_cmd save_op
+integer *  1 gotpage  gotread gotwrite gotdel gotcall gotdec | flags to track whether we've dealt with various items
+integer *  1 got_es   got_ef                                 | flags for end scree & end form
+integer *  1 src_type | source type | 1=file; 2=member; first call parameter
+integer *  2 openstat
+integer *  1 currop
+value labels currop (0)"No Op" (1)"Page" (2)"Read" (3)"Write" (4)"Delete"
+
+<wr> window clear
+
+. if(narg(0) lt 2)display infobox "Too Few Parameters/Arguments supplied on CALL/Run";STOP
+
+src_type= narg(1)    | 1=file; 2=member
+.    fn$= sarg(2)    | filename is second parameter on call
+set gotpage gotread gotwrite gotdel gotcall got_es got_ef currop gotdec (0)
+
+. execute subprocedure open_src
+. execute subprocedure read_src
+c
+subprocedure open_src
+.   x=globals("FixFile","")
+
+CIF NB <1>
+c write "Open:  " src_type 1x fn$
+CIF eq <1>,1
+.    open src read  /dsnvar=fn$ /lrecl=255 /iostat=openstat
+<wr> write "OpenF: " openstat 1x fn$
+CIF END
+CIF eq <1>,2
+.    open src read member /dsnvar=fn$ /lrecl=255 /iostat=openstat
+<wr> write "OpenM: " openstat 1x fn$
+CIF END
+CIF END
+c
+.   fn$="fixed_for_mk_print.pql"
+.   open pql write /dsnvar=fn$ /lrecl=255 /iostat=openstat
+.   x=globals("FixFile",fn$)
+c
+end subprocedure
+c
+subprocedure read_src
+loop
+.   read(src,err=err)iline(a255)
+. reread(src,err=err)word1 word2 word3 word4 word5 word6
+. iline=trim(iline)
+. uline=upper(iline)
+
+. ifthen(sbst(iline,1,1)=" " or char(9))continue
+. elseif(word1="." or ","              )prev_cmd=curr_cmd;curr_cmd=upper(word2)
+. else                                  prev_cmd=curr_cmd;curr_cmd=upper(word1)
+. endif
+
+c if(pattern(uline,'@READ@(@SAVE_OP@'))write "ReadOp: " uline | skip read triggers for mk_print
+. if(pattern(uline,'@READ@(@SAVE_OP=@READ@EXECUTE@MK_PRINT@)@'))next loop | skip read triggers for mk_print
+
+c     READ    (SAVE_OP="Read";execute subprocedure mk_print)
+
+
+. ifthen(0)
+. elseif(curr_cmd="SCREEN")
+.   ifthen(pattern(uline,'@ TITLE@(@') )gotpage =1;currop=1;execute subprocedure get_pql;currop=0
+c   elseif(pattern(uline,'@ READ@(@')  )gotread =1;currop=2;execute subprocedure get_pql;currop=0 | don't use read (lock issue)
+.   elseif(pattern(uline,'@ WRITE@(@') )gotwrite=1;currop=3;execute subprocedure get_pql;currop=0
+.   elseif(pattern(uline,'@ DELETE@(@'))gotdel  =1;currop=4;execute subprocedure get_pql;currop=0
+.   endif
+. elseif(prev_cmd="SCREEN") | we're done with the SCREEN command; make sure we have all our mk_print things
+.   if(gotpage =0)tline='    TITLE   (SAVE_OP="Page";execute subprocedure mk_print)';  write(pql)tline |;write "9 " curr_cmd(a15) 1x currop 1x tline
+c   if(gotread =0)tline='    READ    (SAVE_OP="Read";execute subprocedure mk_print)';  write(pql)tline |;write "9 " curr_cmd(a15) 1x currop 1x tline
+.   if(gotwrite=0)tline='    WRITE   (SAVE_OP="Write";execute subprocedure mk_print)'; write(pql)tline |;write "9 " curr_cmd(a15) 1x currop 1x tline
+.   if(gotdel  =0)tline='    DELETE  (SAVE_OP="Delete";execute subprocedure mk_print)';write(pql)tline |;write "9 " curr_cmd(a15) 1x currop 1x tline
+. prev_cmd=curr_cmd
+
+<wr> if(gotpage =0)write "9 " curr_cmd(a15) 1x currop 1x tline
+<wr> if(gotread =0)write "9 " curr_cmd(a15) 1x currop 1x tline
+<wr> if(gotwrite=0)write "9 " curr_cmd(a15) 1x currop 1x tline
+<wr> if(gotdel  =0)write "9 " curr_cmd(a15) 1x currop 1x tline
+
+. elseif(curr_cmd="CALL" and (word2="SCREEN" or word3="SCREEN"))
+.   if(gotdec=1)exit if         | we already have the var declaration
+.   tline="STRING * 10 save_op"
+<wr>write "2 " curr_cmd(a15) 1x currop 1x tline
+.   write(pql)tline
+
+. elseif(curr_cmd="END" and (word2="SCREEN" or word3="SCREEN"))got_es=1
+. elseif(curr_cmd="END" and (word2="FORM"   or word3="FORM"  ))got_ef=1
+.   ifnotthen(gotcall=1)
+.     iline="CALL GUIPROCF.TRIGGERS.MK_PRINT"
+<wr>  write "6 " curr_cmd(a15) 1x currop 1x iline
+.     write(pql)iline
+.     iline=uline
+.   endif
+
+. elseif(pattern(uline,'@STRING@SAVE_OP@')=1               )gotdec=1 | found our var declaration
+. elseif(curr_cmd="CALL" and pattern(uline,'@.MK_PRINT@')=1)
+.   if(got_es=0)next loop | we haven't reached END SCREEN; undo PQLForms Painter bug
+.   gotcall=1
+. endif
+
+<wr> write "1 " curr_cmd(a15) 1x currop 1x iline
+.    write(pql)iline
+end loop
+err:
+.   ifthen(got_ef=0) | there was no END FORM command in file; add the call for MK_PRINT
+.     iline="CALL GUIPROCF.TRIGGERS.MK_PRINT"
+<wr>  write "6 " curr_cmd(a15) 1x currop 1x iline
+.     write(pql)iline
+.     write(pql)"END FORM"
+.     iline=uline
+.   endif
+
+end subprocedure
+c
+subprocedure get_pql  | get the PQL code for options; iline has the first line
+set lp# rp# (0)       | counters for left & right parentheses encountered
+c
+. ifthen(pattern(uline,'@SAVE_OP=@EXECUTE SUBPROCEDURE MK_PRINT@')) | if current line has our mk_print stuff
+.   ifthen(currop=1)gotpage =2
+c   elseif(currop=2)gotread =2
+.   elseif(currop=3)gotwrite=2
+.   elseif(currop=4)gotdel  =2
+.   endif
+.   jump err | we need no more; get out
+. endif
+. execute subprocedure count_parens
+. if(lp#=rp#)execute subprocedure insert_prn_code;jump err
+
+loop                              | our mk_print stuff wasn't on the first line; see if it's further along
+. read(src,err=err)iline(a255)
+. iline=trimr(iline);uline=upper(iline)
+. ifthen(pattern(uline,'@SAVE_OP=@EXECUTE SUBPROCEDURE MK_PRINT@')) | if current line has our mk_print stuff
+.   ifthen(currop=1)gotpage =2
+c   elseif(currop=2)gotread =2
+.   elseif(currop=3)gotwrite=2
+.   elseif(currop=4)gotdel  =2
+.   endif
+c write "3 " curr_cmd(a15) 1x currop 1x iline | don't write iline here; handled back in read_file
+.   jump err | we need no more; get out
+. endif
+
+. execute subprocedure count_parens
+. ifthen(lp#=rp#)
+.   execute subprocedure insert_prn_code
+c   write "3 " curr_cmd(a15) 1x currop 1x iline | don't write iline here; handled back in read_file
+.   jump err
+. endif
+
+end loop
+err:
+end subprocedure | get_pql
+c
+subprocedure insert_prn_code
+. ifthen(sbst(reverse(iline),1,1)=")")
+.   iline=sbst(iline,1,len(iline)-1)+";"
+<wr>write "5 " curr_cmd(a15) 1x currop 1x iline
+.   write(pql)iline
+.   iline="    "+'SAVE_OP="'+vallab(currop)+'";execute subprocedure mk_print)'
+. else
+.   write "Ooops... Option doesn't end with a right parenthesis: " iline
+. endif
+end subprocedure | insert_prn_code
+c
+subprocedure count_parens
+. for c#=1,len(iline)
+.   ch$=sbst(iline,c#,1)
+.   ifthen(ch$="(")lp#=lp#+1
+.   elseif(ch$=")")rp#=rp#+1
+.   endif
+. end for
+<wr> ifnot(lp#=rp#)write "4 " curr_cmd(a15) 1x currop 1x iline
+.    ifnot(lp#=rp#)write(pql)iline
+
+end subprocedure
+c
+end program
+c
+cif eq <terror>,0
+
+TASK Compile Fixed
+c
+. include file "<FixFile>"
+c
+cif eq <terror>,0
+program
+string * 512 fn$ iline
+integer *  1 src_type
+
+src_type= narg(1)    | 1=file; 2=member
+.    fn$= sarg(2)    | filename/membername is second parameter on call
+
+
+. display yesnobox ["Save Fixed Form to Replace "+upper(dsn("SRC"))+"?"+char(13)+char(13)+
+                 |  "(Fixed PQL is in file '"+curdir(0)+upper(dsn("PQL"))+"')"
+                    ""] response yn
+
+ifthen(yn=1)write "Saving Fixed PQL"
+CIF NB <1>
+c write "Open:  " src_type 1x fn$
+CIF eq <1>,1
+.    fn$=dsn("src")
+.    open src write  /dsnvar=fn$ /lrecl=250 /iostat=openstat
+<wr> write "OpenF_w: " openstat 1x fn$
+CIF END
+CIF eq <1>,2
+.    open src write member replace /dsnvar=fn$ /lrecl=250 /iostat=openstat
+<wr> write "OpenM_w: " openstat 1x fn$
+CIF END
+CIF END
+c
+.   fn$="<FixFile>"
+.   open pql read /dsnvar=fn$ /lrecl=255 /iostat=openstat | open the fixed file we just created
+
+.   ifnot(openstat=0)display infobox ["Problem Opening "+fn$+char(13)+char(13)+
+                                      "Fixed PQL not Saved to Original Source"   ]; stop
+c
+.   execute subprocedure copy_fixed
+c
+else        write "Not Saving Fixed PQL";stop
+endif
+c
+subprocedure copy_fixed
+loop
+. read(pql,err=err)iline(a250)
+. iline=trimr(iline)
+. write(src)iline
+end loop
+err:
+end subprocedure
+end program
+c
+cif false
+program
+. display infobox ["There were Compilation errors for Form: "+char(13)+char(9)+
+                    dsn("SRC")+char(13)+char(13)+
+          "Please Investigate"
+          ]
+cif end
+
+end program
+
+cif end
+END PROCEDURE

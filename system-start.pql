@@ -1,18 +1,27 @@
-PROCEDURE      SYSTEM.START:T  (157693,36186)  |Last amended Jul 14, 2014,10:03:06
+PROCEDURE      SYSTEM.START:T  (158205,47836)  |Last amended Dec 08, 2015,13:17:16
 GLOBAL GO_ON = 1   | THIS GLOBAL IS ONLY USED HERE.  VERY IMPORTANT GLOBAL IN THE BEGINNING
 
-PROGRAM
-integer * 1 T
-ifthen ( exists(dsn('GUIPROCF')) EQ 1 )
-. T = globaln( 'GO_ON', 1)
-else
-. T = globaln( 'GO_ON', 0)
-endif
+c check if the guiprocf is defined, if so use it
+CIF EQ 0<GO_ON>, 1
+. program
+.   integer * 1 T
+.   ifthen( exists( dsn( 'GUIPROCF' ) ) EQ 1 )
+.     ifthen( fileis( dsn( 'GUIPROCF' ) ) eq 1 )
+.       T = globaln( 'GO_ON', 1)
+.     else
+.       write 'dsn of GUIPROCF was not a file'
+.       T = globaln( 'GO_ON', 0)
+.     endif
+.   else
+.     T = globaln( 'GO_ON', 0)
+.   endif
+. end program
+CIF END
 
 CIF EQ 0<GO_ON>, 1
-program
-. CALL GUIPROCF.GUI_MAIN.START
-end program
+. program
+.   CALL GUIPROCF.GUI_MAIN.START
+. end program
 CIF FALSE
 . CALL GUI_MAIN.START
 CIF END

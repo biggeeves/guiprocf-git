@@ -1,0 +1,46 @@
+PROCEDURE      FORM_PP.FIX_MKPRN_ALLCALL:T  (158011,37872)  |Last amended May 28, 2015,10:31:12
+c
+c Fix All Form Definitions (Screens) in family SCREENS for MK_PRINT
+c Written by Tom Shriver; May 2015
+c
+c This Produces a PQL file ("fam_fix_mkprn.pql")
+c      - PQL file "fam_fix_mkprn.pql" has one command per Form to fix each form in family SCREENS
+c        > each command line CALLs GUIPROCF.FORM_PP.FIX_MKPRN with parameters defining member to fix
+c
+c      - When this completes, file "fam_fix_mkprn.pql" is automatically run
+c        > for each form, the generated form subroutine is compiled & saved (as a :O object code)
+c        > the user is prompted after each form compilation whether to save the fixed PQL back to the source PQL
+c
+. TASK Fix SCREENS.ALLCALL screens for MK_PRINT
+c
+program
+string * 250 mn$ oline
+integer *  2 memtype
+c
+c window clear
+c
+. oline="fam_fix_mkprn.pql"
+. open pql write /dsnvar=oline /lrecl=250
+
+for m#=1,memcount("SCREENS")
+. mn$=memname("SCREENS",m#)
+. ifnot(pattern(mn$,'@:T@')  )next for  | only text members
+. if(pattern(mn$,'@ALLCALL@'))next for  | skip the ALLCALL recompile routine
+
+c Check to see if there's object code (a compiled subroutine) with the same name; skip if no matching :O member
+. oline="SCREENS."+mn$
+. memtype=meminfo(replace(oline,":T",":O",1,1,0),1)
+. ifnot(memtype=4)next for
+
+. oline=". call GUIPROCF.form_pp.fix_mkprn (2,$SCREENS."+pack(mn$)+"$)"
+. write(pql)oline
+. write     oline
+
+end for
+end program
+c
+cif eq <terror>,0                   | if no errors above
+. include file "fam_fix_mkprn.pql"  | run the file created above; will prompt to save each screen
+cif end
+
+END PROCEDURE

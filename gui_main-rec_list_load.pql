@@ -1,8 +1,31 @@
-PROCEDURE      GUI_MAIN.REC_LIST_LOAD:T  (157965,54537)  |Last amended Apr 12, 2015,15:08:57
+PROCEDURE      GUI_MAIN.REC_LIST_LOAD:T  (158026,59831)  |Last amended Jun 12, 2015,16:37:11
 C CREATE ARRAYS FOR RECORD TYPE INFORMATION AND LOAD SEVERAL LISTS AND DROP DOWNS
 
 subprocedure REC_LIST_LOAD
 <comment> write 'Sub: REC_LIST_LOAD'
+. DB_PROC_MEMBER = DB_PROC_FILE +'.GUI_CUSTOM.REC_LIST_LOAD:T'
+. ifthen( meminfo( DB_PROC_MEMBER, 1 ) eq 1  ) |
+.   DB_PROC_MEMBER = DB_PROC_FILE + '.GUI_CUSTOM.REC_LIST_LOAD:O'
+.   ifthen( meminfo( DB_PROC_MEMBER, 1 ) eq MEM_O )
+.      ifthen( meminfo( DB_PROC_MEMBER , 8 ) eq 0 )
+<COMMENT> WRITE 'CALLING ' DB_PROC_FILE  DB_PROC_MEMBER
+.        execute subroutine [DB_PROC_MEMBER ] ( FORM_LIST REC_FORM_SELECTED REC_TYPE_SELECTED ) RETURNING ( PROCEED ) DYNAMIC
+.        EXIT SUBPROCEDURE
+.      else
+.        display infobox 'Please e-mail or call your DBA.  REC_LIST_LOAD needs to be recompiled. (461)'
+.        append item FORM_LIST, ' Please ask the DBA for the latest form list!'
+.        EXIT SUBPROCEDURE
+.      endif
+.   else
+.     display infobox 'Please e-mail or call your DBA.  REC_LIST_LOAD needs to be recompiled. (462)'
+.     append item FORM_LIST, ' Please ask the DBA for the latest form list!'
+.     EXIT SUBPROCEDURE
+.   endif
+. endif
+
+
+
+
 . FORM_COUNT = 0
 . for CYCLE_NUM = 1, nrecs(0)
 .   REC_INFO_NAME(CYCLE_NUM) = trimlr(recname(CYCLE_NUM))

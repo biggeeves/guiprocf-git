@@ -1,4 +1,4 @@
-PROCEDURE      GUI_MAIN.DB_TITLE:T  (157977,56840)  |Last amended Apr 24, 2015,15:47:20
+PROCEDURE      GUI_MAIN.DB_TITLE:T  (158165,52567)  |Last amended Oct 29, 2015,14:36:07
 subprocedure DB_TITLE
 . GEN_STR1 = ''
 . HTML_COLOR = HTML_COLUMBIA_BLUE  | DEFAULTS TO ASSUME LIVE
@@ -37,7 +37,8 @@ c . GEN_STR1 = '<body bgcolor="' + HTML_COLOR + '" readonly="true"><font color="
 . endif
 
 . set item DB_TITLE, GEN_STR1
-. SET ITEM FONT DB_TITLE ,1,0,0, 1,HTML_COLOR
+c removed:  Setting the font color makes it display on the splash page
+c . SET ITEM FONT DB_TITLE ,1,0,0, 1,HTML_COLOR
 
 end subprocedure
 END PROCEDURE

@@ -1,0 +1,921 @@
+PROCEDURE      FORM_PP.HLT_ALO:T  (158037,43472)  |Last amended Jun 23, 2015,12:04:32
+c
+c Fix the PQLFile code to handle Hiliting & Wrapping  | hilite implemented for DCC April 2015; no wrap as of this date
+c This is called with the name of the PQLForm file or member name
+c Call Parameters are:
+c                      (1) Number; 1=file; 2=member
+c                      (2) String; Filename; Maxlen 250 in SIRxs Rev 19; 512 in Rev 20 & Later
+c
+c call * (1,$D:\Clients\ColU\Ming\CTI\IntForms\SD_14_E_form_test.pql$)  | CTI screen for testing
+c call * (1,$D:\Clients\OSU\CALGBxs\SIRxsDB8461_17\scrn_FISH_test.pql$) | OSU
+c call * (1,$D:\Clients\ColU\Ming\CTI\IntForms\QL_form.pql$)            | CTI file from member screens.ql
+c call * (2,$screens.ql$)                                               | CTI Member
+c call * (2,$screens.CKLIST$)                                           | AAA Member
+c call * (2,$tools.edit_ini$)                                           | AAA Member | to test a non-form
+c
+c global hilite = 0 | for testing
+
+. call DCCPROCF.util.isbatch | check to see if running in batch mode; global isbatch=1 if batch; isbatch=0 if interactive
+
+c print back noremarks
+. TASK FIX PQL with Wrap and Hilite | hilite implemented for DCC April 2015; no wrap as of this date
+c
+. global esw      = $execute subprocedure write$
+. global eswl     = $execute subprocedure writel$
+c
+retrieval noautocase
+string * 300 fn$ dir$ upqlfile
+string * 512 iline oline patt$ TLINE
+string * 500 eline sline pline    | for english, spanish & portuguese
+string *  99 vline mline pad$
+integer *  1 lang# msg# maxmsg#
+value labels lang# (1)"English" (2)"Spanish" (3)"Portuguese"
+integer *  2 rt#
+string *  32 rt$ i$
+string *  32 word1 word2 word3 word4 word5 word6 word7
+string *  64 array msg$ (3,50) | the PQLForms messages in three languages
+integer *  4 did#
+string *  16 did$
+integer *  4 maxw2 pmax init##
+string *   8 array butt_ids(2,100) | to keep track of ID's assigned to buttons; 1=original; 2=new id
+integer *  2 butt#                 | index pointer for butt_ids
+c
+integer *  2 form## upql##         | upql## is a flag indicating whether there's a PQLFILE= in source form
+integer *  1 isform##              | flag indicating we've found a FORM command
+c
+c Variables for Hilighting
+string *   7 currscrn | f##color b##color now in generate.frm_defs | current screen, foreground & background colors
+c
+integer *  4 array pgfirst  (50,50)   | first field on page indexed by (screen#,page#) | max 50 screens with 50 pages
+integer *  4 array pglast   (50,50)   | last  field on page indexed by (screen#,page#) | max 50 screens with 50 pages
+integer *  4 array ditem#   (50,1000) | fields in screens; in execution order
+integer *  1 array itempg#  (50,1000) | field page
+
+integer *  4 array fon_flds (50,3000) | sets a limit of 50 screens in a form
+string *  64 array fon_sets (50,3000)
+integer *  2 array font#    (50)      | counter of "set font" statements in each screen
+integer *  4 f# pg# currpg#           | counter of "set font" statements; index for fon_flds & fon_sets
+
+c Variables for Wrapping
+string *512 long$
+string * 80 chunk
+string * 32 var$   next$
+integer * 4 maxv#
+integer * 2 pmt__w maxqline row# wid# col# inc# ctl# knum# rnum# pmt# lastrow#
+
+string * 80 array wrap_p   (30,3,250,15) | prompt line: (rectype#,language,variable#,line of text)
+integer * 1 array max_p    (30,250)      | max prompt lines per variable in any language
+integer * 1 array child    (30,250)      | does this field have a child field that immediately follows it
+string * 10 array qid$     (30,250)      | question id: (rectype#,variable#)
+integer * 1 array wrap_#   (11000:11999) | how many text labels did we create for the index prompt label
+
+c
+CIF EQ 1,2               | From CTI...
+. call generate.frm_defs | data declarations & settings for various parameters in CTI; same vars as in CIF FALSE below
+CIF FALSE                                    | data declarations for Generic DCC Hilite & Wrap; very few used for Hilite
+integer * 2 page1row firstrow lastrow        | row of first data field on page one; first & last rows used other pages
+            datacol  labelcol pmtcol
+            datawid  labelwid pmtwid
+      secpad   seckeep                 | secpad=blank rows before a sec header; seckeep=min number of fields to keep on same pg as sec header
+      secinc   fldinc                  | rows for increment to next element following section, field
+            seccol   secwid   secpage        | column & width for section label; secpage: 1=New Page for each section; 0=No Page
+      numwid   strwid                  | width for numeric vars without vallabs; width for string vars
+      questcol questwid                | question number placement & width
+            textcol  textwid  textht textinc | text control column & width
+            listcol  listwid  listht listinc | list control column & width
+      subqtab                          | indent for subquestions (eq Specification variables)
+      hilite   pmtwrap  wrapwid        | Hilight Fields?; Wrap Long Prompts? Width (in characters) to wrap prompts
+string *  8 f##color b##color                | foreground & background hilite colors
+.       set f##color b##color ("#000000","#FFFF00") | black (foreground) on yellow (background) for prompt hiliting
+CIF END
+c
+c Auto Logout Variables
+c
+integer * 2 idle_lo  tod_lo   rem_lo        | AutoLogOut Flagss: idle time, time of day, remote
+integer * 2 idle_min                        | Number of idle minutes allowed before auto log out
+integer * 4 idle_ini idle_mms               | start time (in system(1) units) for idle timing; idle minutes in milliseconds
+date        tod_date lo_date ('MMiDDiYYYY') | Date to initiate Time of Day auto logout; Date logout will occur
+time        tod_time lo_time ('HHiMMiSS')   | Clock Time to initiate Time of Day auto logout; time logout will occur
+real    * 8 tod_dttm lo_dttm                | absolute date/times; seconds since Gregorian Calendar (10/15/1582)
+real    * 8 min_chk                         | minute checker; reset about once a minute to system(1)
+real    * 8 remlo_tm                        | time that the remote logout was initiated
+string *250 rem_file                        | Name of remote file that triggers a remote logout
+integer * 4 rem_dur tod_dur                 | Duration of remotely initiated auto logout sequence in minutes
+string *100 lo_sets                         | Name of member containing auto logout settings
+integer * 1 lo_type#                        | coded logout type
+string * 32 lo_type                         | string of logout type
+value labels lo_type# (0)"Unspecified" (1)"System Remote" (2)"DB Remote" (3)"User Remote" (4)"Idle Time" (5)"Time of Day" (9)"Emergency"
+c
+c window clear
+c
+. set hilite (1)     | the only thing this does is HiLite for now (March 2014)
+. cif nb <hilite>    | compile if global HILITE has a value
+.   hilite=<hilite>  | set hilite to the value of the global
+. cif end
+
+c For Auto Logouts      | These set auto logout defaults; most may be overwritten by GUIPROCF or SIR014 settings
+. set idle_lo(1)        | Flag: Enforcing idle time   Auto LogOut?
+. set tod_lo (1)        | Flag: Enforcing time of day Auto LogOut?
+. set rem_lo (1)        | Flag: Enforcing remote      Auto LogOut? | remote logout can be system wide,db or user specific
+c
+. set idle_min (30)           | Initiate Auto Logout after this many idle minutes
+. idle_mms = idle_min*60*1000 | idle_mms is idle_min in milliseconds
+. tod_time = "23:40:00"       | Initiate Time of Day Auto logout at this time
+. lo_time  = "24:00:00"       | Time when Logout will Occur; use for Time of Day & Remote Log Outs
+. tod_dur  = 120              | Duration of Time of Day logaout -- i.e. duration of backups
+. rem_dur  =  60              | Duration of Remote logout       -- i.e. how long do we expect this stoppage to last
+c
+. lo_dttm  = ((today(0)*86400)+ lo_time) | date/time to execute  time-of-day auto logout
+. tod_dttm = (lo_dttm-(tod_dur*60))      | date/time to initiate time-of-day auto logout
+
+. rem_file = "remote_dcc_logout.txt"     | name of file that will trigger a remote logout at the dcc
+. lo_sets  = "TRIGGERS.LO_SETS"          | AutoLogout Facility will check db procfile & DCCPROCF
+
+c For General Settings
+. set inc#(12)                  | row# increment between Prompt Labels on screen when wrapping prompts
+
+. set maxw2 pmax font# f# (0)
+. execute subprocedure load_msg | load message text for MultiLingual Form translations; does nothing in Generic DCC
+
+. pad$=center(80,' ')
+. i$  =sbst(pad$,1,10)
+. dir$=dsn("PREFIX")+"PQLForms\" | in CTI forms go to this folder
+. dir$=dsn("PREFIX")+"Form_PP\"  | in Generic forms go to this folder; a subfolder of db folder
+. msg#=makedir(dir$)             | create the folder if it doesn't exist
+
+c Make a copy of the PQLForm input file; will also find the screen name, rectype number & rectype name
+. execute subprocedure copy_form_file
+
+c
+cif eq 1,2
+. call generate.frm_def_spec     | CTI data settings specific to some screens; modifies settings in FRM_DEFS
+cif false
+. pmtwrap=0                      | no wrapping
+cif end
+
+. if(pmtwrap gt 0)execute subprocedure calc_wrap
+
+. set lastrow# f# pg# currpg# (missing)
+. set pgfirst  pglast ditem# itempg# fon_flds fon_sets font# * (missing) | arrays; some for hiliting; some for wrap
+
+. fn$=dir$+"PQL_FILE.pql";open pql read  /dsnvar=fn$ /lrecl=512 /iostat=msg# | open the PQLFile created wi 1st Compile
+c write "OpenFon:  " fn$
+. ifnot(msg#=0)write "Problem Opening " fn$ 2x "Stopping Now ";STOP
+
+. execute subprocedure get_set_fonts | have to get font settings before generating timer blocks
+. close pql
+
+c Now Generate the PQL for the Form
+. fn$=dir$+"PQL_FILE.pql";open pql read  /dsnvar=fn$ /lrecl=512 /iostat=msg# | open the PQLFile created wi 1st Compile
+c write "OpenPQLr: "  fn$
+. ifnot(msg#=0)write "Problem Opening " fn$ 2x "Stopping Now ";STOP
+
+. fn$=dir$+"fixed"+".pql";    open fin write /dsnvar=fn$ /lrecl=250 /iostat=msg#
+c write "OpenFINw: " fn$
+. ifnot(msg#=0)write "Problem Opening " fn$ 2x "Stopping Now ";STOP
+
+. ifthen(upql##=1)              | if there's a user specified PQLFILE, create the file so we can copy generated PQL to it
+.   open upql write /dsnvar=upqlfile /lrecl=512 /iostat=msg#
+.   ifnot(msg#=0)write "STOPPING: Problem with User PQLFile: " msg# 2x upqlfile;STOP
+c   write "OpenUPQL: " [dsn("UPQL")]
+. endif
+
+. execute subprocedure read_file
+. close fin
+
+c Compile the Fixed PQL
+. tline='include file "'+dir$+'fixed.pql"'
+. execute dbms tline
+
+
+subprocedure read_file
+c
+
+set butt# maxw2 pmax init##(0)
+set butt# maxw2 pmax init## line# (0)
+set butt_ids * (missing)
+
+c
+c write "ReadFile: " [dsn("pql")]
+loop
+.   read(pql,err=err)iline(a250)
+. reread(pql,err=err)word1 word2 word3 word4 word5 word6 word7
+. iline=trimr(iline)
+
+. line#=line#+1
+
+. if(upql##=1)write(upql)iline | this updates the file the user expects
+
+. if(word1="SUBPROCEDURE")subpname=word2           | keep track of the subprocedure we're working on
+
+. ifthen(word1="INITIAL"                 )init##=1   | are we in an initial block  | keep here even though replicated below
+. elseif(word1="END" and word2="INITIAL" )init##=0   | we're out of the initial block
+. endif
+
+. ifthen(0)
+. elseif(pattern(iline,'SUBPROCEDURE SCREEN_#@'))  | if multiple screens in PQLForm, keep track of which one we're on
+.   currscrn=sbst(iline,abs(srst(iline,'#')),5)
+.   currscr#=numbr(pack(replace(currscrn,'#','',5,0,0)))
+. endif
+
+. maxw2=max(maxw2,numbr(word2))
+. pmax =maxw2
+
+c If Wrapping add labels with text of prompts; text labels will be 21000+fld#, 22000_fld#, etc
+. ifthen(pmtwrap gt 0 and word1="LABEL" and aint(numbr(word2)/1000)=11) | if a prompt label & we're wrapping
+.   write(fin)iline
+
+c   write "MkPrompts: " word1 word2 word3 word4 word5(a6) 5x "6: " word6(a25) 1x var$ 90t iline;next loop
+.   ctl#=numbr(word2);knum#=aint(ctl#/1000);rnum#=amod(ctl#,1000)
+.   row#=numbr(word3)-3
+.   col#=numbr(word4)
+.   wid#=numbr(word5)
+.   var$=replace(word6,"TRIM(VARLAB(","",1,1,0)
+.   var$=replace(var$ ,"))","",1,1,0)
+.   lastvar$=var$
+
+.   pmt#=20000 | labels for prompts will be 21000-31000 (we increment in for loop
+.   wrap_#(ctl#)=max(0,max_p(rt#,varposit(rt#,var$)))
+.   for wrap#=1,max_p(rt#,varposit(rt#,var$))
+.     if(wrap# gt 1)row#=row#+inc#
+.     lastrow#=row#  | we'll make the following edit and choice be the same as the last row of prompt
+.     pmt#=ctl#+10000+(1000*(wrap#-1))
+.     tline=wrap_p(rt#,lang#,varposit(rt#,var$),wrap#)
+
+.     ifnot(exists(tline))tline=sbst(replace(pad$," ",char(133),wrapwid,2,0),1,wrapwid*(.75)) | if blank line, fill wi dots
+c     ifnot(exists(tline))tline=sbst(replace(pad$," ",char(133),wrapwid,1,0),1,wrapwid*(.5)) | if blank line, fill wi dots
+c     ifnot(exists(tline))tline=sbst(replace(pad$," ",char(133),80,4,0),1,pmtwid) | if blank line, fill with dots
+c 186 º;c 126 ~;c 133 …;c 215 ×;c 149 •;c 150 –;c 151 —;c 152 ˜
+.     iline="LABEL "+format(pmt#,5)+" "+
+                     format(row#,4)+","+
+                     format(col#,4)+","+
+                     format(wid#,4)+", "+
+             sbst('"'+tline+pad$,1,wrapwid+5)+'"'+
+          || sbst('"'+tline+'"'+pad$,1,wrapwid+5)+
+         |   sbst('"'+wrap_p(rt#,lang#,varposit(rt#,var$),wrap#)+'"'+pad$,1,wrapwid+5)+
+           " | added by Wrap PP"
+c     ifnot(exists(wrap_p(rt#,lang#,varposit(rt#,var$),wrap#)))exit for | oline="Blank...Line...Intentional"
+.     write(fin)iline
+c     write "WrapPmt: " wrap# 1x var$(a10) 1x row#(i4) 1x col#(i3) 1x wid#(i3) 5x iline
+.   end for
+.   next loop
+. endif
+
+c From HLT; added stuff from Wrapping
+. ifthen(0)
+. elseif(word1="END" and word2="INITIAL"        )init##=0 | we're out of the initial block
+.   oline=iline;<esw>;iline=""                            | end initial not processed by wrapping stuff so this is OK
+
+.   if(sum(hilite,idle_lo,tod_lo,rem_lo) gt 0)execute subprocedure make_timer  | if hilite or auto logout; add timer block
+
+. elseif(word1="INITIAL"                        )init##=1 | are we in an initial block
+.   write(fin)iline
+
+c   oline=iline;<esw>                              | INITIAL line written above; don't do here
+.   ifthen(sum(hilite,idle_lo,tod_lo,rem_lo) gt 0) | if we're highlighting or doing any auto logout
+.     oline=". enable timer 1          | added by HPP  post processor";<esw>
+.     oline=". set currpg# prevpg# (0) | added by HPP  post processor";<esw>
+.     oline=". min_chk=system(1)       | added by LOPP post processor";<esw> | initialize the minute checker
+
+.     currscr#=numbr(replace(currscrn,"#","",9,0,0))
+.     for pg#=1,50
+.       ifnot(exists(pgfirst(currscr#,pg#)))exit for
+.       oline=". pg_fst#("+format(pg#)+")="+format(pgfirst(currscr#,pg#))+
+               ";pg_lst#("+format(pg#)+")="+format(pglast(currscr#,pg#)) +" | added by HPP";<esw>
+.     end for
+.     oline="";<esw>
+.   endif             | if we're hiliting
+c
+.   ifthen(pmtwrap gt 0) | if we're wrapping prompt lines
+.     tline="for n=1,4 | added by WPP";write(fin)tline
+.     for ctl#=11000,11999
+.       ifnot(wrap_#(ctl#) gt 0)next for
+.         for wrap#=1,wrap_#(ctl#)
+.           pmt# =ctl#+10000+(1000*(wrap#-1))
+.           tline=".  set item font "+format(pmt#)+" 0,0,0,1 'Georgia'";write(fin)tline
+c           tline=".  set item font "+format(pmt#)+" 0,0,0,1 'Times New Roman'";write(fin)tline
+.         end for
+.     end for
+.     tline="end for | added by WPP";write(fin)tline
+.   endif | if we're wrapping
+
+.   next loop | we've written the INITIAL line & added what we need; continue with next input line
+
+. elseif(pattern(iline,'@INTEGER@*@FFOC@__@')) | insert our data declarations here
+.   oline="integer * 4 pfocus# focus# knum# rnum# lstrnum#                                      | added by HPP ";<esw>
+.   oline="integer * 4 prnum#  currpos sir_rev#   currpg#  prevpg#                              | added by HPP ";<esw>
+.   oline="integer * 4 array pg_fst# pg_lst# (50)                                               | added by HPP ";<esw>
+
+.   oline="integer * 2 idle_lo tod_lo rem_lo  | LofOut Flags: idle tm, tm of day, remote        | added by LOPP";<esw>
+.   oline="integer * 2 idle_min               | N of idle minutes allowed before auto log out   | added by LOPP";<esw>
+.   oline="integer * 4 idle_ini idle_mms      | idle timer start; in millisecs                  | added by LOPP";<esw>
+.   oline="real    * 8 min_chk                | Start Time (as system(1) ) for idle timer       | added by LOPP";<esw>
+.   oline="real    * 8 remlo_tm               | Start Time (as system(1) ) for remote logout    | added by LOPP";<esw>
+.   oline="integer * 4 rem_dur                | Duration of remote auto logout in minutes       | added by LOPP";<esw>
+.   oline="string *250 rem_file               | Name of remote file that triggers remote logout | added by LOPP";<esw>
+.   oline="integer * 4 tod_dur                | Duration of time of day auto logout in minutes  | added by LOPP";<esw>
+.   oline="time        tod_time ('HHiMMiSS')  | Time to Initiate Time of Day auto logout        | added by LOPP";<esw>
+.   oline="time        lo_time  ('HHiMMiSS')  | Time for Time of Day auto logout Actual LogOut  | added by LOPP";<esw>
+.   oline="date        tod_date ('MMiDDiYYYY')| Date to initiate Time of Day auto logout        | added by LOPP";<esw>
+.   oline="date        lo_date  ('MMiDDiYYYY')| Date logout will occur                          | added by LOPP";<esw>
+.   oline="real    * 8 tod_dttm lo_dttm       | Date/Time in seconds since Oct 15 1582          | added by LOPP";<esw>
+
+.   oline="integer * 1 t_stat#  t_type        | for TIMEROK subroutine                          | added by LOPP";<esw>
+.   oline="time        touttime ('HHiMMiSS')  | for TIMEROK subroutine                          | added by LOPP";<esw>
+.   oline="integer * 1 lo_type#               | coded logout type                               | added by LOPP";<esw>
+.   oline="string * 32 lo_type                | string of logout type                           | added by LOPP";<esw>
+.   oline="value labels lo_type# (0)'Unspecified' (1)'System Remote' (2)'DB Remote' "+
+                                "(3)'User Remote' (4)'Idle Time' (5)'Time of Day' (9)'Emergency' | added by LOPP";<esw>
+
+c var labels   touttime "Time of Auto LogOut Execution"
+c var labels   t_stat#  "Timer Status"
+c value labels t_stat#  (0)"User Has not Acknowledged Time-Out Warning" (1)"User Acknowledged Warning"
+c var labels   t_type   "Timer Warning Type"
+c value labels t_type   (0)"Generic Timer Warning" (1)"Auto Logout Warning"
+
+. endif
+c
+. ifthen(word1="BUTTON" and lang# gt 1)execute subprocedure button_text
+. elseif(word1="END" and word2="DIALOG")
+. elseif(word1="DIALOG" )          | stuff that has to go before getting into dialog goes here
+
+.   oline="c Found DIALOG";<esw>
+c   For Auto Logouts               | These set auto logout defaults; most may be overwritten by GUIPROCF or SIR014 settings
+.   oline=". hilite   ="+format(max(0,hilite))      +" | added by LOPP";<esw>
+.   oline=". idle_lo  ="+format(max(0,idle_lo))     +" | added by LOPP";<esw>
+.   oline=". tod_lo   ="+format(max(0,tod_lo))      +" | added by LOPP";<esw>
+.   oline=". rem_lo   ="+format(max(0,rem_lo))      +" | added by LOPP";<esw>
+c
+.   oline=". idle_min =  30   | limit of idle minutes  | added by LOPP";<esw>
+c   oline=". idle_min =   1   | limit of idle minutes  | added by LOPP";<esw> | set to 1 minute for testing
+
+.   oline=". tod_time ='"+fst(tod_time,"23:40:00")   +"' | added by LOPP";<esw> | sets default from this program
+.   oline=". lo_time  ='"+fst(lo_time, "24:00:00")   +"' | added by LOPP";<esw> | sets default from this program
+.   oline=". rem_file ='remote_dcc_logout.txt'     "+" | added by LOPP";<esw>
+
+c   Following Commented out for SIR bug with IFNOTMEMBER
+c   oline="IFNOTMEMBER DCCPROCF.TRIGGERS.LO_SETS SKIP NODCCMEM"+" | added by LOPP";<esw> | for a dcc member to set defaults (at compile time)
+c   oline="CALL DCCPROCF.TRIGGERS.LO_SETS                     "+" | added by LOPP";<esw>
+c   oline="{NODCCMEM}                                         "+" | added by LOPP";<esw>
+c   oline="c                                                  "+" | added by LOPP";<esw>
+c   oline="IFNOTMEMBER PROCFILE.TRIGGERS.LO_SETS SKIP NOLOCMEM"+" | added by LOPP";<esw> | for a db  member to set defaults
+c   oline="CALL PROCFILE.TRIGGERS.LO_SETS                     "+" | added by LOPP";<esw>
+c   oline="{NOLOCMEM}                                         "+" | added by LOPP";<esw>
+.   oline="c                                                  "+" | added by LOPP";<esw>
+.   oline=". idle_min = min(1440,idle_min)         "+" | added by LOPP";<esw> | at least 24 hours (1440 minutes)
+.   oline=". idle_mms = idle_min*60*1000           "+" | added by LOPP";<esw> | convert to milliseconds
+.   oline=". tod_time = fst(tod_time,'23:40:00')   "+" | added by LOPP";<esw> | may have been reset in procfile LO_SETS
+.   oline=". lo_time  = fst(lo_time, '24:00:00')   "+" | added by LOPP";<esw> | may have been reset in procfile LO_SETS
+
+.   oline=". tod_date = fst(tod_date,today(0))     +" | added by LOPP";<esw> | sets default from this program
+.   oline=". lo_date  = fst(lo_date, today(0))     +" | added by LOPP";<esw> | sets default from this program
+
+.   oline=". tod_dur  = 120 | Duration of Time of Day logout; duration of backups           | added by LOPP";<esw>
+.   oline=". rem_dur  =  60 | Duration of Remote logout     ; duration of expected stoppage | added by LOPP";<esw>
+c
+.   oline=". ifthen(lo_time LT now(0))lo_dttm=(( today(0)   *86400)+lo_time) | added by LOPP";<esw> | if currtime before lo_time
+.   oline=". else                     lo_dttm=(((today(0)+1)*86400)+lo_time) | added by LOPP";<esw> | if currtime after  lo_time
+.   oline=". endif                                                           | added by LOPP";<esw>
+.   oline=". tod_dttm = (lo_dttm-(20*60)) | added by LOPP";<esw> | date/time to initiate time-of-day auto logout; 20m before forced logout
+
+. elseif(pattern(upper(iline),'REC#@=@RECNUM@')=1)
+.   iline="REC# = "+format(rt#)
+
+. elseif(word1="EDIT" and numbr(word2) gt 10000)
+.   ifthen(pmtwrap gt 0)
+.     if(lastvar$="FIN_DATA")exit if
+.     ifnot(exists(lastrow#))exit if
+.     tline="EDIT "+word2+","+format(lastrow#)+","+word4+","+word5+","+word6+","+word7+" "
+.     iline=tline
+.   endif
+. elseif(word1="CHOICE" and numbr(word2) gt 10000) | we have a field choice
+.   ifthen(pmtwrap gt 0)
+.     if(lastvar$="FIN_DATA")exit if
+.     ifnot(exists(lastrow#))exit if
+.     tline="CHOICE "+word2+","+format(lastrow#)+","+word4+","+word5+" "
+.     iline=tline
+.   endif
+
+. elseif(word1="INITIAL")
+.    write(fin)iline
+
+. elseif(word1="HIDE" and word2="ITEM")
+
+c   Handle Prompt Wrapping
+.   tline=""
+.   ifthen(pmtwrap gt 0) | if wrapping
+.     tline=iline
+.     ctl#=numbr(word3);knum#=aint(ctl#/1000);rnum#=amod(ctl#,1000)
+.     ifnot(knum# eq 11)exit if
+.     ifnot(wrap_#(ctl#) gt 0)exit if
+
+.     for wrap#=1,wrap_#(ctl#)
+.       pmt#=ctl#+10000+(1000*(wrap#-1))
+.       iline=iline+";HIDE ITEM "+format(pmt#)
+.     end for
+.     iline=iline+" | mod by WPP"
+.     write(fin)iline
+.     iline=tline
+.   endif | if doing wrapping
+
+. elseif(word2="SHOW" and word3="ITEM")  | . SHOW ITEM 5010 | line starts with period
+
+c   Handle Prompt Wrapping
+.   tline=""
+.   ifthen(pmtwrap gt 0) | if wrapping
+.     tline=iline
+.     ctl#=numbr(word4);knum#=aint(ctl#/1000);rnum#=amod(ctl#,1000)
+.     ifnot(knum# eq 11)exit if
+.     ifnot(wrap_#(ctl#) gt 0)exit if
+
+.     for wrap#=1,wrap_#(ctl#)
+.       pmt#=ctl#+10000+(1000*(wrap#-1))
+.       iline=iline+";SHOW ITEM "+format(pmt#)
+.     end for
+.     iline=iline+" | Mod by WPP"
+.     write(fin)iline
+.     iline=tline
+.   endif | if doing wrapping
+
+. elseif(upper(iline)="END PROGRAM" or "END SUBROUTINE")
+. elseif(pattern(iline,'@EXECUTE SUBROUTINE SYSPROC.TOOLS.VARINFO@'))
+. elseif(pattern(iline,'@DISPLAY YESNOBOX FAILMESS@')) | need translations for error messages
+
+cif eq 1,2 | below for using local vars as in CTI
+. elseif(pattern(iline,'@VALLABSV(0,@'))iline=replace(iline,'VALLABSV(0,','VALLABSV(-1,',1,1,0)
+. elseif(pattern(iline,'@VALLABSV(2,@'))iline=replace(iline,'VALLABSV(2,','VALLABSV(-1,',1,1,0)
+. elseif(pattern(iline,'@VALLABSV(@')  )iline=replace(iline,'('+format(rt#)+",","(-1,",1,1,0)
+. elseif(pattern(iline,'@NLABELS(0,@') )iline=replace(iline,'NLABELS(0,','NLABELS(-1,',1,1,0)
+. elseif(pattern(iline,'@NLABELS(2,@') )iline=replace(iline,'NLABELS(2,','NLABELS(-1,',1,1,0)
+. elseif(pattern(iline,'@NLABELS(@')   )iline=replace(iline,'('+format(rt#)+",","(-1,",1,1,0)
+. elseif(pattern(iline,'@VALLABSN(0,@'))iline=replace(iline,'VALLABSN(0,','VALLABSN(-1,',1,1,0)
+. elseif(pattern(iline,'@VALLABSN(2,@'))iline=replace(iline,'VALLABSN(2,','VALLABSN(-1,',1,1,0)
+. elseif(pattern(iline,'@VALLABSN(@')  )iline=replace(iline,'('+format(rt#)+",","(-1,",1,1,0)
+. elseif(pattern(iline,'@VALLABSP(0,@'))iline=replace(iline,'VALLABSP(0,','VALLABSP(-1,',1,1,0)
+. elseif(pattern(iline,'@VALLABSP(2,@'))iline=replace(iline,'VALLABSP(2,','VALLABSP(-1,',1,1,0)
+. elseif(pattern(iline,'@VALLABSP(@')  )iline=replace(iline,'('+format(rt#)+",","(-1,",1,1,0)
+. elseif(pattern(iline,'@VARINFO(@')   )iline=replace(iline,'(2'+",","(-1,",1,1,0)
+cif end
+
+. endif
+c
+. write(fin)iline
+c
+end loop
+err:
+c
+end subprocedure | read_file
+c
+subprocedure get_set_fonts              | load arrays fon_gflds fon_sets
+c
+line#=0
+sp#=0
+ddef#=0 | are we in dialog definition? start with postype; end with
+
+c write "ReadFont: " [dsn("pql")]
+loop
+.   read(pql,err=err)iline(a250)
+. reread(pql,err=err)word1 word2 word3 word4 word5 word6 word7
+. iline=trimr(iline)
+. line#=line#+1
+
+. ifthen(0)
+. elseif(pattern(iline,'SUBPROCEDURE SCREEN_#@'))
+.   currscrn=sbst(iline,abs(srst(iline,'#')),5)
+.   currscr#=numbr(pack(replace(currscrn,'#','',5,0,0)))
+.   font#(currscr#)=0;f#=0
+
+. elseif(pattern(iline,'@SET ITEM FONT@'))
+.   f#=f#+1;font#(currscr#)=f#
+.   fon_flds(currscr#,f#)=numbr(word5)
+.   fon_sets(currscr#,f#)=replace(iline,'. ',';',1,1,0)
+c   write "ShoFonts: " line#(i7) 1x currscrn 1x currscr#(i3)3x f#(i4) 1x font#(currscr#)
+                                 3x fon_flds(currscr#,f#)(i5) 1x fon_sets(currscr#,f#)
+
+. elseif(pattern(iline,'SUBPROCEDURE SCREENPAGE_#@')       )sp#=currscr#;currpg#=0
+. elseif(pattern(iline,'END SUBPROCEDURE@')=1  and sp# gt 0)sp#=0
+
+.   prevpg=0
+.   for n=1,1000
+.     thispg=itempg#(currscr#,n)
+.     ifnot(exists(thispg))exit for
+
+.     ifthen(exists(pgfirst(currscr#,thispg))=0)
+.       pgfirst(currscr#,thispg)=ditem#(currscr#,n)
+.       pglast (currscr#,thispg)=ditem#(currscr#,n)
+.     endif
+.   end for
+
+c   for pg#=1,10 | display first & last fields on each page
+c     write "PgFields: " lang# 3x currscr#(i3) 1x pg#(i3) 1x  pgfirst(currscr#,pg#)(i5) 1x pglast(currscr#,pg#)
+c   end for
+
+. elseif(pattern(iline,'@IFTHEN (CP@__ EQ@')=1 and sp# gt 0)
+.   currpg#=numbr(sbst(word4,1,len(word4)-1))
+
+. elseif(sp# gt 0 and word2="SHOW" and word3="ITEM" and numbr(word4) gt 10000)
+.   item#=numbr(word4)
+.   ifnot(aint(item#/1000)=10)exit if
+.   for n=1,1000
+.     ifnot(exists(ditem#(currscr#,n)))exit for
+.     if(ditem#(currscr#,n)=item#)itempg#(currscr#,n)=currpg#;exit for
+.   end for
+c   write "GetPg1: " currscr# item# currpg# 3x itempg#(currscr#,n)
+
+. elseif(word1="POSTYPE")ddef#=1
+. elseif(word1="INITIAL")ddef#=0
+
+. elseif(ddef# gt 0 and word1="EDIT" and numbr(word2) gt 10000) | we have a field data edit
+.   ditem#(currscr#,ddef#)=numbr(word2)
+c   write "DItem#: " lang# 1x currscr# ddef# 3x ditem#(currscr#,ddef#) 3x [dsn("pql")]
+.   ddef#=ddef#+1
+
+. endif
+
+end loop
+err:
+c
+end subprocedure | get_set_fonts
+cc
+subprocedure button_text
+cif eq 1,2
+cif end
+c
+outp:
+end subprocedure
+c
+subprocedure load_msg                   | Message translations for MultiLingual Forms; not implemented in Generic DCC
+end subprocedure load_msg
+c
+subprocedure translate_msg              | to translate message text (CTI)
+end subprocedure | translate_msg
+c
+subprocedure add_hlt_prompt             | earlier version; no longer used for hiliting
+end subprocedure | add_hlt_prompt
+c
+subprocedure make_timer
+. oline="message timer | message timer block added by highlight post processor";<esw>
+
+. ifnotthen(sum(hilite,idle_lo,tod_lo,rem_lo) gt 0) | if no need for timer, disable it
+.   oline=". disable timer | added by HPP & LOPP; no hilighting or auto logouts; timer disabled";<esw>
+.   jump ENDTIMER | don't generate any of the timer code
+. endif
+
+. oline="c FOCUS#  is this program's tracker of current focus; set only in this message timer";<esw>
+. oline="c PFOCUS# is the control that PREVIOUSly had focus (i.e. the focus last time thru this message timer)";<esw>
+. oline="c KNUM#   indicates type of control (ID/1000); 10=EDIT data value; 11=LABEL prompt; 12=CHOICE picklist";<esw>
+. oline="c         could use new function GETITYPE(id); returns type of control; set codes as in DEDIT";<esw>
+. oline="c RNUM#   indicates field ordinal, last 3 digits of ID; amod(ID,1000)";<esw>
+. oline="";<esw>
+. oline=". focus# =getfocus(0) | get the current focus";<esw>
+. oline="";<esw>
+. oline=". ifthen(currpg# ne CP@__ and (focus#= 11 or 12))";<esw>        | if pressed PgUp or PgDn
+c oline=".   write 'NewPg1: ' currpg# CP@__ 3x FFOC@__ NFOC@__  ";<esw>
+. oline=".   currpg#=CP@__";<esw>
+. oline=".   focus#=pg_fst#(currpg#)";<esw>
+. oline=".   ffoc@__=focus#";<esw>
+. oline=".   focus item focus#";<esw>
+
+. ifthen(currscr# lt 10)
+.   oline=".   ifnotthen(idstatus(focus#)=1)";<esw>
+.   oline=".     NFOC@__=focus#;execute subprocedure NEXTFOCUS_####"+format(currscr#)+";focus#=ffoc@__";<esw>
+c   oline=".     write 'DisabFoc: ' NFOC@__ ffoc@__ focus# [getfocus(0)]";<esw>
+.   oline=".     if(idstatus(focus#) ge 0)focus item focus# ";<esw>
+.   oline=".   endif";<esw>
+. else
+.   oline=".   ifnotthen(idstatus(focus#)=1)";<esw>
+.   oline=".     NFOC@__=focus#;execute subprocedure NEXTFOCUS_###"+format(currscr#)+";focus#=ffoc@__";<esw>
+c   oline=".     write 'DisabFoc: ' NFOC@__ ffoc@__ focus# [getfocus(0)]";<esw>
+.   oline=".     if(idstatus(focus#) ge 0)focus item focus# ";<esw>
+.   oline=".   endif";<esw>
+. endif
+c oline=".   write 'NewPg2: ' currpg# CP@__ 3x pfocus# focus#";<esw>
+. oline=". endif";<esw>
+
+. oline="";<esw>
+. oline=". ifnotthen(pfocus#=focus#) | if FOCUS has CHANGED";<esw>
+
+. oline=".   idle_ini=system(1)      | reset idle timer";<esw> | resets idle timer to current whenever focus changes
+. oline=".   if(hilite=0)exit if     | if not hiliting; get out";<esw>
+. oline="";<esw>
+c oline="";<esw>
+
+. oline=".   knum#=aint(focus#/1000)";<esw>
+. oline=".   rnum#=amod(focus#,1000)";<esw>
+. oline="";<esw>
+. oline="c   Set the previously highlighted field controls back to 'normal' coloration";<esw>
+. oline=".   if(idstatus(10000+prnum#)=1)set item font [10000+prnum#] 0,0,0,0,'#000000/' | set previous edit   to default colors";<esw>
+. oline=".   if(idstatus(11000+prnum#)=1)set item font [11000+prnum#] 0,0,0,0,'#000000/' | set previous promt  to default colors";<esw>
+
+. ifthen(pmtwrap=1)
+.   oline=".   if(idstatus(21000+prnum#)=1)set item font [21000+prnum#] 0,0,0,0,'#000000/'";<esw>
+.   oline=".   if(idstatus(22000+prnum#)=1)set item font [22000+prnum#] 0,0,0,0,'#000000/'";<esw>
+.   oline=".   if(idstatus(23000+prnum#)=1)set item font [23000+prnum#] 0,0,0,0,'#000000/'";<esw>
+.   oline=".   if(idstatus(24000+prnum#)=1)set item font [24000+prnum#] 0,0,0,0,'#000000/'";<esw>
+.   oline=".   if(idstatus(25000+prnum#)=1)set item font [25000+prnum#] 0,0,0,0,'#000000/'";<esw>
+.   oline=".   if(idstatus(26000+prnum#)=1)set item font [26000+prnum#] 0,0,0,0,'#000000/'";<esw>
+.   oline=".   if(idstatus(27000+prnum#)=1)set item font [27000+prnum#] 0,0,0,0,'#000000/'";<esw>
+.   oline=".   if(idstatus(28000+prnum#)=1)set item font [28000+prnum#] 0,0,0,0,'#000000/'";<esw>
+.   oline=".   if(idstatus(29000+prnum#)=1)set item font [29000+prnum#] 0,0,0,0,'#000000/'";<esw>
+.   oline=".   if(idstatus(30000+prnum#)=1)set item font [30000+prnum#] 0,0,0,0,'#000000/'";<esw>
+. endif
+
+. oline="";<esw>
+. oline=".   ifthen(knum# ne 12 or (rnum# ne prnum#)) | if not on a choice or came from a different field, clear choice hilite";<esw>
+. oline=".     if(idstatus(12000+prnum#)=1)set item font [12000+prnum#] 0,0,0,0,'#000000/' | set previous choice to default colors";<esw>
+. oline=".   endif";<esw>
+c
+c write "MkTimer Fonts: " currscr# font#(currscr#)
+
+. for f#=1,font#(currscr#)
+.   tline=pack(replace(fon_sets(currscr#,f#),";SET ITEM FONT","",1,1,0))
+.   tline=sbst(tline,1,abs(srst(tline,','))-1)
+.   tnum#=numbr(tline)
+.   if(tnum# ge 5000 and le 5999)next for
+.   oline=".   if(prnum#  eq "+format(amod(fon_flds(currscr#,f#),1000),5)+")"+fon_sets(currscr#,f#);<esw>
+. end for
+
+. oline="";<esw>
+. oline="c   Set field with current focus to specified hilite colors: "+f##color+" on "+b##color;<esw>
+. oline=".   currpg#=CP@__";<esw>
+. oline=".   knum#=aint(focus#/1000)";<esw>
+. oline=".   rnum#=amod(focus#,1000)";<esw>
+. oline=".   ifnot(focus# ge 10000 and le 13999)set rnum# prnum#(missing);exit if | if control is not field related";<esw>
+. oline=".   if(idstatus(10000+rnum#)=1)set item font [10000+rnum#] 0,0,0,0,'"+f##color+"/"+b##color+"'";<esw>
+. oline=".   if(idstatus(11000+rnum#)=1)set item font [11000+rnum#] 0,0,0,0,'"+f##color+"/"+b##color+"'";<esw>
+
+. ifthen(pmtwrap=1)
+.   oline=".   if(idstatus(21000+rnum#)=1)set item font [21000+rnum#] 0,0,0,0,'"+f##color+"/"+b##color+"'";<esw>
+.   oline=".   if(idstatus(22000+rnum#)=1)set item font [22000+rnum#] 0,0,0,0,'"+f##color+"/"+b##color+"'";<esw>
+.   oline=".   if(idstatus(23000+rnum#)=1)set item font [23000+rnum#] 0,0,0,0,'"+f##color+"/"+b##color+"'";<esw>
+.   oline=".   if(idstatus(24000+rnum#)=1)set item font [24000+rnum#] 0,0,0,0,'"+f##color+"/"+b##color+"'";<esw>
+.   oline=".   if(idstatus(25000+rnum#)=1)set item font [25000+rnum#] 0,0,0,0,'"+f##color+"/"+b##color+"'";<esw>
+.   oline=".   if(idstatus(26000+rnum#)=1)set item font [26000+rnum#] 0,0,0,0,'"+f##color+"/"+b##color+"'";<esw>
+.   oline=".   if(idstatus(27000+rnum#)=1)set item font [27000+rnum#] 0,0,0,0,'"+f##color+"/"+b##color+"'";<esw>
+.   oline=".   if(idstatus(28000+rnum#)=1)set item font [28000+rnum#] 0,0,0,0,'"+f##color+"/"+b##color+"'";<esw>
+.   oline=".   if(idstatus(29000+rnum#)=1)set item font [29000+rnum#] 0,0,0,0,'"+f##color+"/"+b##color+"'";<esw>
+.   oline=".   if(idstatus(30000+rnum#)=1)set item font [30000+rnum#] 0,0,0,0,'"+f##color+"/"+b##color+"'";<esw>
+. endif
+
+. oline="";<esw>
+. oline="c   Following IFTHEN needed only if not using CHECK ITEM to open choice (available in Rev 20)";<esw>
+. oline=".   ifthen(knum# ne 12 or sir_rev# ge 20) | if focus not on choice (or if rev 20) then hilite; otherwise leave be";<esw>
+. oline=".     if(idstatus(12000+rnum#)=1)set item font [12000+rnum#] 0,0,0,0,'"+f##color+"/"+b##color+"'";<esw>
+. oline=".   endif";<esw>
+. oline="";<esw>
+. oline=".   prnum#=rnum#";<esw>
+. oline="c";<esw>
+. oline=".   ifthen(knum#=12)";<esw>
+. oline=".     pfocus#=focus#";<esw>
+. oline=".     currpos=getpos(focus#)";<esw>
+. oline=".     if(sir_rev# ge 20)CHECK ITEM   focus#           | only for Rev_20";<esw>
+. oline=".   endif";<esw>
+. oline="c";<esw>
+. oline=". else  | if focus has not changed";<esw>
+. oline=". endif | if focus has changed";<esw>
+. oline="";<esw>
+
+c
+. ifthen(tod_lo=1 or rem_lo=1) | if time of day or remote logouts are enabled; check once a minute
+c oline=". ifthen(system(1)-min_chk gt 60000) | only check once a minute";<esw>
+. oline=". ifthen(system(1)-min_chk gt 15000) | check every 15 seconds for testing";<esw>
+. ifthen(idle_lo=1) | if idle time logouts are enabled
+.   oline=". ifthen((system(1)-idle_ini) gt (idle_mms)) | if idle time has been exceeded";<esw>
+.   oline=".   execute subroutine dccprocf.triggers.timerok (1,lo_time) returning (t_stat#)";<esw>
+.   oline=".   ifnot(t_stat#=1)lo_type#=4;lo_type=pack(vallab(lo_type#))";<esw>
+.   oline=".   ifnot(t_stat#=1)execute subroutine dccprocf.triggers.auto_lo (lo_type) returning (lo_stat)";<esw> | records logout
+.   oline=".   ifnot(t_stat#=1)execute subroutine dccprocf.triggers.exit_sir";<esw> | performs clean exit of SIR session
+c   oline=".   ifnot(t_stat#=1)exit retrieval";<esw> | this only exits the GUI; stays in SIR session
+.   oline=".   idle_ini=system(1)";<esw>
+.   oline=". endif | if exceeded idle time limit";<esw>
+. endif
+. ifthen(tod_lo=1) | if time of day logouts are enabled; check once a minute
+.   oline=". ifthen(tod_lo=1) | if time of day logouts are enabled";<esw>
+.   oline="c   execute subroutine dccprocf.triggers.cktodlo (1,lo_time) returning (t_stat#)";<esw>
+.   oline="c   if(t_stat#=1)idle_ini=system(1)";<esw>
+.   oline=". endif";<esw>
+. endif
+c value labels lo_type# (0)"Unspecified" (1)"System Remote" (2)"DB Remote" (3)"User Remote"
+                        (4)"Idle Time" (5)"Time of Day" (9)"Emergency"
+
+. ifthen(rem_lo=1) | if remote logouts are enabled; check once a minute
+.   oline=". ifthen(rem_lo=1) | if remote logouts enabled but not yet detected";<esw>
+.   oline=".   ifthen(fileis(dsn('PREFIX')+rem_file)                                              =1)lo_type#=2";<esw> | db remote
+.   oline=".   elseif(fileis(dsn('PREFIX')+'users\'+pack(getenv('USERNAME'))+'\'+rem_file)        =1)lo_type#=3";<esw> | user
+.   oline=".   elseif(fileis(replace(upper(dsn('DCCPROCF')),'DCCPROCF.SRP',rem_file,1,1,0))       =1)lo_type#=1";<esw> | system
+.   oline=".   elseif(fileis(dsn('PREFIX')+'sos_'+rem_file)                                       =1)lo_type#=9";<esw> | db remote
+.   oline=".   elseif(fileis(dsn('PREFIX')+'users\'+pack(getenv('USERNAME'))+'\'+'sos_'+rem_file) =1)lo_type#=9";<esw> | user
+.   oline=".   elseif(fileis(replace(upper(dsn('DCCPROCF')),'DCCPROCF.SRP','sos_'+rem_file,1,1,0))=1)lo_type#=9";<esw> | system
+.   oline=".   endif";<esw>
+
+.   oline=".   ifthen(lo_type# eq 1 or 2 or 3 or 9) | if we've detected a remote LogOut File";<esw>
+.   oline=".     remlo_tm=system(1);rem_lo=2;touttime=now(0)+(15*60)";<esw> | fifteen minutes to get out
+.   oline=".     if(lo_type#=9)touttime=now(0)+(2*60)";<esw>                | two minutes to get out if an emergency
+.   oline=".     disable timer | because TIMEROK has its own timer";<esw>
+.   oline=".     execute subroutine dccprocf.triggers.timerok (2,touttime) returning (t_stat#)";<esw> | gives a warning
+.   oline=".     enable timer 1";<esw>
+.   oline=".     if(t_stat#=1)idle_ini=system(1)";<esw>
+.   oline=".     set item font 10 1,0,0,1, '#FF0000,#FFFF00'";<esw>
+.   oline=".     set item 10 ['Forced LogOut in '+timec(touttime-now(0),'HH:MM:SS')+' at '+timec(touttime,'HH:MM:SS') ] ";<esw>
+.   oline=".   endif | rem_lo=1";<esw>
+
+.   oline=". elseif(rem_lo gt 1) | if warning has been issued";<esw>
+.   oline=".   lo_type=pack(vallab(lo_type#))";<esw>
+.   oline=".   set item 10 ['Forced LogOut in '+timec(touttime-now(0),'HH:MM:SS')+' at '+timec(touttime,'HH:MM:SS') ] ";<esw>
+.   oline=".   ifthen(system(1)-remlo_tm gt (15*60*1000))";<esw> | it's been more than 15 minutes
+.   oline=".     execute subroutine dccprocf.triggers.auto_lo (lo_type) returning (lo_stat)";<esw> | record the logout
+.   oline=".     execute subroutine dccprocf.triggers.exit_sir";<esw>                              | clean exit of SIR session
+.   oline=".   elseif(system(1)-remlo_tm gt ( 2*60*1000))";<esw>                     | it's been > 2 minutes
+.   oline=".     ifnot(lo_type# =9)exit if";<esw>                                                  | if not emergency; skip
+.   oline=".     execute subroutine dccprocf.triggers.auto_lo (lo_type) returning (lo_stat)";<esw> | record the logout
+.   oline=".     execute subroutine dccprocf.triggers.exit_sir";<esw>                              | clean exit of SIR session
+.   oline=".   endif";<esw> | it's been more than  2 minutes
+.   oline=". endif";<esw>
+. endif
+. oline=".   min_chk=system(1) | reset for the once a minute check";<esw>
+. oline=". endif | for the once a minute check";<esw>
+. endif | if either tod_lo=1 or rem_lo=1
+. oline="";<esw>
+
+. oline=". pfocus#=focus# | set previous focus before exiting this message";<esw>
+
+. ENDTIMER:
+. oline="end message | timer";<esw>
+c
+end subprocedure | make_timer
+c
+subprocedure copy_form_file
+
+. fn$  ="<2>"
+. oline=dir$+"form.pql"
+
+c write "FormFile: " fn$
+c write "CopyFile: " oline
+
+. ifthen(0)
+. elseif(narg(0)=1 or 0)
+.   display ERRORBOX "Two Parameters Expected but Not Given; First=File/Member(1,2); Second=File/Member Name"
+.   msg#=globals("CONTINUE","FINISH");STOP
+. elseif(len(fn$)=0 or exists(fn$)=0)
+.   display ERRORBOX "Parameter #2 Not Specified; Need File/Member Name"
+.   msg#=globals("CONTINUE","FINISH");STOP
+
+. elseif(<1>=1) | if a file
+.   CIF eq <1>,1
+.   open frm read   /dsnvar=fn$   / lrecl=512 /IOSTAT=msg#
+.   ifthen(msg#=        0)jump MAKECOPY
+.   elseif(msg#=       -5)tline="Form File in Use; Stopping Now"
+.   elseif(msg#=       -6)tline="Form File Not Found; Stopping Now"
+.   else                  tline="Form File Problem; Stopping Now"
+.   endif
+.   ifnot(msg#=0)display errorbox ["File: "+fn$+char(13)+tline]
+.   msg#=globals("CONTINUE","FINISH");STOP
+.   CIF END
+
+. elseif(<1>=2) | if a member
+.   CIF eq <1>,2
+.   open frm read member /dsnvar=fn$ / lrecl=512 /IOSTAT=msg#
+.   ifthen(msg#=        0)jump MAKECOPY
+.   elseif(msg#=       -5)tline="Form Member in Use; Stopping Now"
+.   elseif(msg#=       -6)tline="Form Member Not Found; Stopping Now"
+.   else                  tline="Form Member Problem; Stopping Now"
+.   endif
+.   display errorbox ["File: "+fn$+char(13)+tline]
+.   msg#=globals("CONTINUE","FINISH");STOP
+.   CIF END
+. else
+.   display ERRORBOX "Parameter #1 Not Specified or Incorrectly Specified (1=file;2=member)"
+.   msg#=globals("CONTINUE","FINISH");STOP
+. endif
+c
+c Copy file & figure out rectype
+c   RECORD name [/database.record][ INDEXED BY indexname ] | screen record & options
+c
+MAKECOPY:
+c write "OpenFrm:  " [dsn("frm")]
+. msg#=globals("CONTINUE","c")
+. oline=dir$+"form.pql"                      | all copies will be named the same
+. open copy write /dsnvar=oline / lrecl=512
+c write "OpenCopy: " [dsn("copy")]
+
+c
+set form## upql## isform## (0)
+
+loop
+.   read(frm,err=err)iline(a512)
+. reread(frm,err=err)word1 word2 word3 word4 word5 word6 word7
+. char1$=sbst(iline,1,1)
+
+. ifthen(char1$="."           )cmd$=upper(word2)
+. elseif(ichar(char1$)=9 or 32)continue
+. else                         cmd$=upper(word1)
+. endif
+
+. for msg#=1,7 | turn them all to upper case
+.   word1 to word7(msg#)=upper(word1 to word7(msg#))
+. end for
+
+. ifthen(form##=1 and not(ichar(char1$)=9 or 32))form##=0 | we're done handling the FORM command; check for PQLFile
+.   ifnotthen(exists(upqlfile))                           | if no user PQLFile; insert ours; otherwise handled below
+.     tline='  PQLFile="'+dir$+'PQL_FILE.pql"'
+.     upqlfile=dir$+'PQL_FILE.pql'
+.     write(copy)tline
+.   endif
+. endif
+
+. ifthen(0)
+. elseif(word1="C" or "CC" or "CCC" or "CCCCC" or "COMMENT")jump copyline | if comment
+. elseif(word1="|"                                         )jump copyline | if entire line is an inline comment
+
+. elseif(pattern(upper(iline),'@SCREEN@RECORD@'))
+.   ifthen(pattern(upper(iline),'@/@'))                             | if we have a database and/or recname
+.     tline=upper(pack(sbst(iline,abs(srst(iline,"/"))+1,500)))+" "
+.     ifthen(pattern(tline,'@.@'))                                  | we have database and recnames
+.       tline=pack(sbst(tline,abs(srst(tline,"."))+1,500))+" "
+.       tline=pack(sbst(tline,1,abs(srst(tline," "))-1))
+.       rt$=tline;rt#=recnum(rt$)
+.     else                                                          | no db name; just a record name
+.       tline=pack(tline)
+.       rt$=tline;rt#=recnum(rt$)
+.     endif
+.   else                                                            | no db or rectype name
+.     tline=replace(upper(iline),"RECORD","",1,1,0)
+.     tline=replace(upper(tline),"SCREEN","",1,1,0)
+.     tline=pack(replace(upper(tline),".","",1,1,0))
+.     rt$=tline;rt#=recnum(rt$)
+.   endif
+. elseif(word1 ="FORM" or (word1="." and word2="FORM"))form##=1;isform##=1   | started the FORM cmd;
+. elseif(form##=1 and pattern(word1,"@PQLFILE@=@"))
+.   upqlfile=sbst(iline,abs(srst(iline,"="))+1,500)
+.                             upqlfile=replace(upqlfile,'"',"",4,1,0) | remove double quotes
+.   if(sbst(upqlfile,1,1)="'")upqlfile=replace(upqlfile,"'","",4,1,0) | remove single quotes
+.   upql##  =1
+c   write "PQLFile: " upqlfile                      | the user specified PQL file
+.   iline='  PQLFile="'+dir$+'PQL_FILE.pql"'        | this will be where the generated
+. endif
+
+COPYLINE:
+. write(copy)iline
+end loop
+err:
+close frm
+close copy
+c
+. ifthen(isform##=0)   | if we don't have a FORM command in the PQL
+.   CIF eq <isbatch>,0 | if interactive run
+.   display infobox ["Input Source for Run is not a FORM Definition:"+char(13)+char(13)+
+                     fn$+char(13)+char(13)+char(13)+
+           "PQL not Compiled or Executed"+char(13)+
+                    ""]
+c   x=globals("CONTINUE","FINISH") | no need to execute a FINISH later; just STOP this run
+
+.   CIF FALSE          | if running in batch mode
+.     Write "*** >>> "
+.     Write "*** >>> Input Source for Run is not a FORM Definition:"
+.     Write "*** >>> "
+.     Write "*** >>> " fn$
+.     Write "*** >>> "
+.     Write "*** >>> PQL not Compiled or Executed"
+.     Write "*** >>> "
+.   CIF END
+
+.   STOP              | not a PQLForm; don't do anything else; get out
+. endif
+
+c Compile the copy we've made; This will produce the PQLFile that we'll Process & Fix
+. tline='include file "'+dir$+'form.pql"'
+. execute dbms "PRINT BACK SAVE"
+. execute dbms "PRINT BACK NOREMARKS"
+. execute dbms tline                     | compile the original form
+. execute dbms "PRINT BACK RESTORE"
+
+end subprocedure | copy_form_file
+c
+cif eq 1,2                 | only for wrapping
+. call GENERATE.CALCWRAP
+cif false
+subprocedure calc_wrap     | placeholder for wrapping stuff to come later
+end subprocedure
+cif end
+c
+subprocedure write
+c if(pattern(oline,'@idle_@'))write "ESW: " oline
+. write(fin)
+        oline
+end subprocedure
+c
+end program
+c
+cif nb <hilite>
+. global hilite = 1
+cif end
+
+c
+. <CONTINUE> | will be set to FINISH if run is cancelled during interactive execution
+c
+print back remarks
+c
+c FINISH | for testing April 2015; Go Live April 18 2015
+c
+print back remarks
+END PROCEDURE

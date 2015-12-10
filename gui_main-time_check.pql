@@ -1,11 +1,18 @@
-PROCEDURE      GUI_MAIN.TIME_CHECK:T  (157529,44973)  |Last amended Jan 31, 2014,12:29:33
+PROCEDURE      GUI_MAIN.TIME_CHECK:T  (158156,46870)  |Last amended Oct 20, 2015,13:01:10
 subprocedure TIME_CHECK
 <comment> write 'Sub: TIME_CHECK: ' TIME_LEFT
 . TIME_LEFT = TIME_LEFT - 1
 . set item TIME_LABEL 'Minutes until time out: ' + format(TIME_LEFT)
 . ifthen (TIME_LEFT ge 5) hide item TIME_LABEL
 . elseif (TIME_LEFT eq 4) show item TIME_LABEL
-. elseif (TIME_LEFT eq 0) execute dbms "CALL DCCPROCF.EXIT.MAIN"
+. elseif (TIME_LEFT eq 1)
+.   set item TIME_LABEL 'One minute left before auto log out!'
+. elseif (TIME_LEFT eq 0)
+.   ifthen( meminfo( "DCCPROCF.EXIT.MAIN", 1) = MEM_T)
+.     execute dbms "CALL DCCPROCF.EXIT.MAIN"
+.   else
+.     write 'Opps!  Missing EXIT.MAIN'
+.   endif
 . endif
 end subprocedure
 END PROCEDURE

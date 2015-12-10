@@ -1,5 +1,7 @@
-PROCEDURE      GUI_MAIN.START:T  (157963,59365)  |Last amended Apr 10, 2015,16:29:25
-C CALL THIS MEMBER TO STAR THE GUIPROCF!!!!
+PROCEDURE      GUI_MAIN.START:T  (158207,47232)  |Last amended Dec 10, 2015,13:07:12
+C It's best to call GUIPROCF.SYSTEM.START
+c but if the file attribute for the GUI_PROCF is defined you can start from this file
+C CALL this member to start the guiprocf from a database.
 
 C IF GUI_PROCF_RC = 1, USE THE RELEASE CANIDATE.  IF NOT PROCEED WITH THE USUAL GUI.
 
@@ -22,30 +24,59 @@ ifthen ( fileis(dsn('GUIPROCF')) ne 1 )
 endif
 end program
 
-c must exit program to set attribute
+c must exit program to set guiprocf attribute
 
 program
-C CHECK RESULTS
+C Check to see if GUIPROCF is defined
 ifthen ( exists(dsn('GUIPROCF')) EQ 0 )
 . T = globaln( 'GO_ON', 0)
-. display infobox "The attribute 'GUIPROCF' must be defined"
+. write "The attribute 'GUIPROCF' must be defined."
 endif
 ifthen ( fileis(dsn('GUIPROCF')) ne 1 )
 . T = globaln( 'GO_ON', 0)
-. display infobox "The attribute 'GUIPROCF' must be point to a real file"
+. write "The attribute 'GUIPROCF' must be point to a real file."
 endif
 end program
 
+c There are two versions: The live version and the Release Canidate.
+c Set attritute to Release canidate if the global GUI_PROCF_RC=1
 call GUIPROCF.TOOLS.CHECK_VERSION
 
-C COMMENT TO MAKE SURE ATTRIBUTE HAS TIME TO TAKE EFFECT.
+C This comment makes sure attribute has time to take effect.
+
+C A DATABASE MUST BE ATTACHED OR THIS WON'T WORK
+PROGRAM
+. integer * 1 T
+. ifthen ( system(39) lt 1 )
+.   T = globaln( 'GO_ON', 0)
+.   write // 'You must connect a database before you continue.'//
+. endif
+end program
+
+CIF EQ 0<GO_ON>, 1
+c User must agree to the terms
+PROGRAM
+. integer * 1 T
+. ifNOTthen ( sglobal('USER_AGREEMENT' ) = 'Y' ) | NO USER AGREEMENT
+write 'debug: <USER_AGREEMENT'
+.   EXECUTE DBMS "CALL GUI_CUSTOM.USER_AGREEMENT" | SHOW USER AGREEMENT
+|     CHECK UPDATED USER_AGREEMENT GLOBAL
+.   ifNOTthen ( sglobal('USER_AGREEMENT' ) EQ 'Y' )
+.     T = globaln( 'GO_ON', 0)
+.     write // 'You must confirm the user agreement before continuing.'//
+.   endif
+. endif
+end program
+cif end
+
+
 C START THE GUI
 
 CIF EQ 0<GO_ON>, 1
 . CALL GUIPROCF.GUI_MAIN.ALL_COMMANDS
 CIF FALSE
 . PROGRAM
-.   WRITE // 'CAN NOT START MAIN GUI.   GUIPROCF FILE ATTRIBUTE IS NOT DEFINED' //
+.   WRITE // 'CAN NOT START MAIN GUI.' //
 . END PROGRAM
 CIF END
 END PROCEDURE

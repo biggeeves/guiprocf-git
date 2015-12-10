@@ -1,4 +1,4 @@
-PROCEDURE      SCREENS.INC_HEADER:T  (158003,46294)  |Last amended May 20, 2015,12:51:34
+PROCEDURE      SCREENS.INC_HEADER:T  (158003,46254)  |Last amended May 20, 2015,12:50:54
 c execute subroutine SYSPROC.TOOLS.FILENAME (dsn('sir014')) RETURNING (PATH$,NAME$,EXT$)
 PATH$ = dsn('PREFIX')
 DELFILE$ = PATH$ + 'deletion_reasons.txt'

@@ -1,0 +1,33 @@
+PROCEDURE      SYSTEM.SET_GLOBALS:T  (158155,38349)  |Last amended Oct 19, 2015,10:39:09
+C if some globals already exist leave them alone.
+c if globals don't exist set value to "off" (or if set to zero length string)
+C Defaults: Comments: Off, Debug_mode: Off, Future Dev Coments: Off, Custome Info: Off
+program
+. STRING  * 32  CASE_NAME
+. INTEGER *  1  CASE_TYPE
+. INTEGER *  1  TEMP_VAR
+. CASE_NAME  = trimr( varname( 0, 1 ) )
+. CASE_TYPE  = vtype( 0, CASE_NAME )
+. TEMP_VAR   = GLOBALN( 'LOCAL_CASE_TYPE', CASE_TYPE )
+
+. ifthen ( sglobal('COMMENT') eq '')
+.   TEMP_VAR = globals('COMMENT', '|')
+. elseif ( exists( sglobal('COMMENT') ) eq 0)
+.   TEMP_VAR = globals('COMMENT', '|')
+. endif
+
+. ifthen ( sglobal('DEBUG_MODE') eq '')
+.   TEMP_VAR = globals('DEBUG_MODE', '0')
+. elseif ( exists( sglobal('DEBUG_MODE') ) eq 0 )
+.   TEMP_VAR = globals('DEBUG_MODE', '0')
+. endif
+
+. ifthen ( sglobal('FUTURE_DEV') eq '')
+.   TEMP_VAR = globals('FUTURE_DEV', '|')
+. elseif ( exists( sglobal('FUTURE_DEV') ) eq 0 )
+.   TEMP_VAR = globals('FUTURE_DEV', '|')
+. endif
+
+end program
+
+END PROCEDURE

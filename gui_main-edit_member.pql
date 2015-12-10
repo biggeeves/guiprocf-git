@@ -1,0 +1,11 @@
+PROCEDURE      GUI_MAIN.EDIT_MEMBER:T  (158206,56422)  |Last amended Dec 09, 2015,15:40:22
+subprocedure EDIT_MEMBER
+. COMPUTE FULL_PATH_MEMBER = DB_PROC_FILE + '.' + FAMILY_NAME + '.' + MEMBER_NAME
+. ifthen( meminfo( FULL_PATH_MEMBER + ':T', 1) = MEM_T)
+.   COMSTR = 'editmember ' + FULL_PATH_MEMBER
+.   execute dbms COMSTR
+. else
+.   display infobox "Member not found:" + FULL_PATH_MEMBER
+. endif
+end subprocedure
+END PROCEDURE

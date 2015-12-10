@@ -1,4 +1,4 @@
-PROCEDURE      GUI_MAIN.ITEM_VISIBLE:T  (157966,57440)  |Last amended Apr 13, 2015,15:57:20
+PROCEDURE      GUI_MAIN.ITEM_VISIBLE:T  (158017,49004)  |Last amended Jun 03, 2015,13:36:44
 subprocedure ITEM_VISIBLE
 | first section is the show/hide portion.
 | defaults for every page
@@ -72,8 +72,17 @@ c page dependent items
 .   disable item PAGE_OLD_KEYS
 .   ifthen(I_GUI_CASE_LIST EQ 1)
 .     show item CASE_LIST
+.     show item CASE_LISTLABEL
+.     show item CASE_LISTBOX
 .   else
 .     hide item CASE_LIST
+.     hide item CASE_LISTLABEL
+.     hide item CASE_LISTBOX
+.   endif
+.   ifthen(I_GUI_CASE_NEW EQ 1)
+.     show item PAGE_NEWIDS
+.   else
+.     hide item PAGE_NEWIDS
 .   endif
 
 | Create a new case ID
@@ -112,6 +121,14 @@ C   Case Memo Button
 .     hide item GOTO_CASE_MEMO
 .   endif
 
+c   Report Button
+.   ifthen ( I_GUI_REPORTS eq 1 )
+.     show item PAGE_CASE_SUMMARY
+.   else
+.     hide item PAGE_CASE_SUMMARY
+.   endif
+
+
 | Choose keys for a new form
 . elseif (m_page = VIEW_NEW_KEYS)
 .   ifthen (dbtype(0) eq 1)
@@ -145,6 +162,11 @@ C   Case Memo Button
 . elseif (m_page = VIEW_CASE_DELETE)
 .   hide item CASE_BREAD_CRUMB
 .   hide item CASE_LABEL_BREAD_CRUMB
+. endif
+
+c pemission based visibility
+. ifNOTthen (I_GUI_REC_NEW EQ 1)
+.   hide item PAGE_NEW_KEYS
 . endif
 
 end subprocedure
