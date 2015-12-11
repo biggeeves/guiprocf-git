@@ -1,60 +1,50 @@
-PROCEDURE      GUI_CUSTOM.MAKE_CASE_INFO:T  (157965,55272)  |Last amended Apr 12, 2015,15:21:12
+PROCEDURE      GUI_CUSTOM.MAKE_CASE_INFO:T  (158208,45665)  |Last amended Dec 11, 2015,12:41:05
 program crwarn
-. string  *     32   DB_PROC_FILE    | points to database procfile
-. integer *      1   FAMILY_EXISTS
-. string  *    123   FAMILY_NAME
-. STRING  *    256   MEMBER_NAME
-. string  *    256   COMSTR
-. INTEGER *      2   FILE_IOSTAT       | IOSTAT FOR OPENING MEMBER
-. INTEGER *      1   RESVAR
-. string  *    256   CALL_MEMBER
+. CALL GUIPROCF.GUI_MAIN.DECLARE_VARIABLES
 
-. DB_PROC_FILE = 'SIR'+ pformat(system(39),'zz') +'4'
+. execute subprocedure SET_PROCFILE_VARS
+
 . FAMILY_NAME = 'GUI_CUSTOM'
-. MEMBER_NAME = FAMILY_NAME  + '.CASE_INFO'
-. CALL_MEMBER = 'GUIPROCF.' + MEMBER_NAME
+. MEMBER_NAME = 'CASE_INFO'
+. FULL_PATH_MEMBER = DB_PROC_FILE + "." + FAMILY_NAME  + "." +  MEMBER_NAME
+. GUIPROCF_MEMBER = 'GUIPROCF.' + FAMILY_NAME  + "." + MEMBER_NAME
 
-
-. ifthen (0 eq len(DB_PROC_FILE) or exists(DB_PROC_FILE) )
+. ifthen ( 0 eq len( DB_PROC_FILE ) or exists( DB_PROC_FILE ) )
 .   display infobox 'No DB_PROC_FILE defined.  EXITING.  CONTACT ADMIN.'
 .   exit program
 . endif
 
+. COMSTR = "set procfile " + DB_PROC_FILE
+. execute dbms COMSTR | set DB procfile as default
 
-. execute dbms ["set procfile " + DB_PROC_FILE ] | screens go into database procfile file, not the guiprocf
-
-c does the family screens already exists?  if not make it.
-FAMILY_EXISTS = 0
-FOR EACH_FAMILY = 1, SYSTEM(57)
-. IF ( FAMNAME(EACH_FAMILY) EQ FAMILY_NAME ) FAMILY_EXISTS = 1
-END FOR
-IFTHEN (FAMILY_EXISTS EQ 0 )
-<COMMENT> WRITE FAMILY_NAME ' FAMILY did not exist'
-.  COMPUTE COMSTR = 'CREATE FAMILY ' + FAMILY_NAME
-.  EXECUTE DBMS COMSTR
-ENDIF
+. EXECUTE SUBPROCEDURE MAKE_FAMILY | RECIEVES FAMILY_NAME
 
 c check to see if the member exists already
-ifthen ( meminfo (DB_PROC_FILE + '.' + MEMBER_NAME + ':T', 1 )  > 0 ) | MEMBER ALREADY EXISTS
-.  DISPLAY YNBOX "THIS WILL RE-WRITE " + MEMBER_NAME + ". CONTINUE?" RESPONSE RESVAR
-.  IFTHEN (RESVAR EQ 0 )
-.    DISPLAY INFOBOX "CANCELED"
-.    EXIT PROGRAM
-.  ENDIF
-ENDIF
+. ifthen ( meminfo (FULL_PATH_MEMBER + ':T', 1 )  > 0 ) | MEMBER ALREADY EXISTS
+.    display YNBOX "THIS WILL RE-WRITE " + FULL_PATH_MEMBER + ". CONTINUE?" RESPONSE RESVAR
+.    ifthen (RESVAR EQ 0 )
+.      display infobox "CANCELED"
+.      EXIT PROGRAM
+.    endif
+. endif
 
 | create the memeber and add the code.
-. open ( MEMBER_NAME ) dsnvar = MEMBER_NAME iostat = FILE_IOSTAT  write lrecl=200 REPLACE member
+. open ( MEMBER_NAME ) dsnvar = FULL_PATH_MEMBER iostat = FILE_IOSTAT  write lrecl=200 REPLACE member
 . ifthen (FILE_IOSTAT NE 0)
-.   write 'unable to write to ' MEMBER_NAME '.  Exiting.  IOSTAT:' FILE_IOSTAT
+.   write 'unable to write to ' FULL_PATH_MEMBER '.  Exiting.  IOSTAT:' FILE_IOSTAT
 .   EXIT PROGRAM
 . endif
 
-.   write ( MEMBER_NAME ) "CALL " CALL_MEMBER /
+. write ( MEMBER_NAME ) "CALL " GUIPROCF_MEMBER /
 
 . close MEMBER_NAME
 
-EXECUTE DBMS ["CALL " + CALL_MEMBER]
+. COMSTR = "CALL " + FULL_PATH_MEMBER
+. EXECUTE DBMS COMSTR
+
+| INCLUDE NECESSARY SUBPROCEDURES
+. call GUIPROCF.GUI_MAIN.SET_PROCFILE_VARS
+. call GRUIPROF.GUI_MAIN.MAKE_FAMILY
 
 end program
 END PROCEDURE

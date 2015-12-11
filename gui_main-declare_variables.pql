@@ -1,4 +1,4 @@
-PROCEDURE      GUI_MAIN.DECLARE_VARIABLES:T  (158207,59806)  |Last amended Dec 10, 2015,16:36:46
+PROCEDURE      GUI_MAIN.DECLARE_VARIABLES:T  (158208,45506)  |Last amended Dec 11, 2015,12:38:26
 <comment> write "initialize DCC vars"
 . string  *    600   GEN_STR1               | Generic/General String
 . integer *      1   CASE_TYPE              | What variable type is the case id
@@ -98,8 +98,11 @@ PROCEDURE      GUI_MAIN.DECLARE_VARIABLES:T  (158207,59806)  |Last amended Dec 1
 . string  *    300   SCREEN_MEMBER          | Fully qualified Name for PQL Painter Screen
 . string  *    300   DVP_MEMBER             | Fully qualified Name for DVPainter Screen
 . string  *     80   MEMBER_NAME            | Member name
+. string  *    600   MEMBER_LINE            | Line to either add to member or read from member
 . string  *     80   FAMILY_NAME            | Family name
+. integer *      1   FAMILY_EXISTS          | 0=No, 1=Yes
 . string  *    300   FULL_PATH_MEMBER       | Procfile, Family and Member
+. string  *    300   GUIPROCF_MEMBER        | GUIPROCF + Family + Member
 . integer *      1   EXIT__#                | How did they exit the screen?
 . integer *      4   DEBUG_LINE
 . integer *      2   FORM_LIST_LAST_LINE    | Last line that the user clicked.  Reloading the keys is a problem for the user.  Do NOT reload if user is clicking on same form again.

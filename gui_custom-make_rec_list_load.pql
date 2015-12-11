@@ -1,23 +1,10 @@
-PROCEDURE      GUI_CUSTOM.MAKE_REC_LIST_LOAD:T  (158207,60717)  |Last amended Dec 10, 2015,16:51:57
+PROCEDURE      GUI_CUSTOM.MAKE_REC_LIST_LOAD:T  (158208,45044)  |Last amended Dec 11, 2015,12:30:44
 C Create a complete list of screens.  Creates 1 screen per record type
 
 PROGRAM crwarn
-. STRING  *    256   MEMBER_LINE     | LINE TO WRITE TO THE MEMBER
-. INTEGER *      2   MY_IOSTAT       | IOSTAT FOR OPENING MEMBER
-. INTEGER *      1   YES NO
-. string  *     32   DB_PROC_FILE    | points to database procfile
-. integer *      1   FAMILY_EXISTS
-. string  *    256   COMSTR
-. INTEGER *      1   RESVAR
-. string  *     80   MEMBER_NAME            | Member name
-. string  *     80   FAMILY_NAME            | Family name
-. string  *    300   FULL_PATH_MEMBER       | Procfile, Family and Member
-. integer *      1   MEM_O MEM_T            | No need to remember compile or text value.
+. call GUIPROCF.GUI_MAIN.DECLARE_VARIABLES
+. execute subprocedure SET_PROCFILE_VARS
 
-. set MEM_T (1) MEM_O (4)
-. set NO (0) YES (1)
-
-. DB_PROC_FILE = 'SIR'+ pformat( system( 39 ), 'zz' ) + '4'
 . FAMILY_NAME = 'GUI_CUSTOM'
 . MEMBER_NAME = 'REC_LIST_LOAD'
 . FULL_PATH_MEMBER = DB_PROC_FILE + '.' + FAMILY_NAME + '.' + MEMBER_NAME
@@ -30,20 +17,7 @@ PROGRAM crwarn
 . COMSTR = "set procfile " + DB_PROC_FILE
 . execute dbms  COMSTR | gui_custom goes into database procfile file, not the guiprocf
 
-C DOES THE FAMILY GUI_CUSTOM ALREADY EXIST?  IF NOT MAKE IT.
-. FAMILY_EXISTS = 0
-. for EACH_FAMILY = 1, system(57)
-.  ifthen ( famname(EACH_FAMILY) EQ FAMILY_NAME)
-.    FAMILY_EXISTS = 1
-.    EXIT FOR
-.  endif
-. end for
-
-c create the non-existent family
-. IFTHEN (FAMILY_EXISTS EQ 0 )
-.  COMPUTE COMSTR = 'CREATE FAMILY ' + FAMILY_NAME
-.  EXECUTE DBMS COMSTR
-. ENDIF
+. execute subprocedure MAKE_FAMILY
 
 . ifthen ( meminfo (FULL_PATH_MEMBER + ':T', 1 )  > 0 ) | MEMBER ALREADY EXISTS
 .    display YNBOX 'THIS  WILL  OVERWRITE   "' + FULL_PATH_MEMBER + '".' + CHAR(13) + 'OVER WRITE IT?' RESPONSE RESVAR
@@ -88,18 +62,16 @@ c
 .   MEMBER_LINE = ". append item GUI_FORM_REC_TYPE, '" + recname(EACH_RECORD_TYPE) + "'"; execute subprocedure MEMBER_WRITE
 .   write ( MEMBER_NAME ) /
 . end for
-c . write ( MEMBER_NAME ) ". append item GUI_FORM_LABEL, 'PTRACK  (PTRACK) Patient Tracking'   ; append item GUI_FORM_NAME, 'PTRACK' ;    append item GUI_FORM_REC_TYPE, 'PTRACK' ;"
-c . write ( MEMBER_NAME ) ". append item GUI_FORM_LABEL, 'AAFORM  (AA) APO-E Form'             ; append item GUI_FORM_NAME, 'AAFORM' ;    append item GUI_FORM_REC_TYPE, 'AAFORM' ;"
-c . write ( MEMBER_NAME ) ". append item GUI_FORM_LABEL, 'BFORM   (B)  Demographics'           ; append item GUI_FORM_NAME, 'BFORM' ;     append item GUI_FORM_REC_TYPE, 'BFORM'"
-c . write ( MEMBER_NAME ) ". append item GUI_FORM_LABEL, 'BFORM   (B)  Demographics - SPANISH' ; append item GUI_FORM_NAME, 'BFORM_SP' ;  append item GUI_FORM_REC_TYPE, 'BFORM'"
 . write ( MEMBER_NAME ) "end subroutine"
 . close MEMBER_NAME
 
 C compile the new member
 execute subprocedure COMPILE_MEMBER
 
-C include the appropriate subprocedure
+C include the appropriate subprocedures
 call GUIPROCF.GUI_MAIN.COMPILE_MEMBER
+CALL GUIPROCF.GUI_MAIN.SET_PROCFILE_VARS
+CALL GUIPROCF.GUI_MAIN.MAKE_FAMILY
 
 subprocedure MEMBER_WRITE
 . if (exists(MEMBER_LINE) EQ 0) MEMBER_LINE = '| WARNING SYSTEM MISSING MEMBERLINE!'

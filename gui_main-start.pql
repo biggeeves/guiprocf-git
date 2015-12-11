@@ -1,4 +1,4 @@
-PROCEDURE      GUI_MAIN.START:T  (158207,67491)  |Last amended Dec 10, 2015,18:44:51
+PROCEDURE      GUI_MAIN.START:T  (158208,39586)  |Last amended Dec 11, 2015,10:59:46
 C It's best to call GUIPROCF.SYSTEM.START
 c but if the file attribute for the GUI_PROCF is defined you can start from this file
 C CALL this member to start the guiprocf from a database.
@@ -13,29 +13,30 @@ GLOBAL GO_ON = 1   | THIS GLOBAL IS ONLY USED HERE.  VERY IMPORTANT GLOBAL IN TH
 
 c check to see that GUIPROCF is defined
 program
-integer * 1 T
-ifthen ( exists(dsn('GUIPROCF')) EQ 0 )
-. execute dbms "call TOOLS.SET_GUIPROCF_ATTRIBUTE"
-. WRITE 'ATTRIBUTE NOT SET CALL SET ATTRIBUTE'
-endif
-ifthen ( fileis(dsn('GUIPROCF')) ne 1 )
-. execute dbms "call TOOLS.SET_GUIPROCF_ATTRIBUTE"
-. WRITE 'FILE DOES NOT EXISTS. CALL SET ATTRIBUTE'
-endif
+. integer * 1 DUMMY
+. ifthen( exists( dsn( 'GUIPROCF' ) ) EQ 0 )
+.   execute dbms "call TOOLS.SET_GUIPROCF_ATTRIBUTE"
+.   write 'ATTRIBUTE NOT SET CALL SET ATTRIBUTE'
+. endif
+. ifthen( fileis( dsn( 'GUIPROCF' ) ) ne 1 )
+.   execute dbms "call TOOLS.SET_GUIPROCF_ATTRIBUTE"
+.   write 'FILE DOES NOT EXISTS. CALL SET ATTRIBUTE'
+. endif
 end program
 
 c must exit program to set guiprocf attribute
 
 program
+. integer * 1 DUMMY
 C Check to see if GUIPROCF is defined
-ifthen ( exists(dsn('GUIPROCF')) EQ 0 )
-. T = globaln( 'GO_ON', 0)
-. write "The attribute 'GUIPROCF' must be defined."
-endif
-ifthen ( fileis(dsn('GUIPROCF')) ne 1 )
-. T = globaln( 'GO_ON', 0)
-. write "The attribute 'GUIPROCF' must be point to a real file."
-endif
+. ifthen( exists( dsn( 'GUIPROCF' ) ) EQ 0 )
+.   DUMMY = globaln( 'GO_ON', 0)
+.   write "The attribute 'GUIPROCF' must be defined."
+. endif
+. ifthen( fileis( dsn( 'GUIPROCF' ) ) ne 1 )
+.   DUMMY = globaln( 'GO_ON', 0)
+.   write "The attribute 'GUIPROCF' must be point to a real file."
+. endif
 end program
 
 c There are two versions: The live version and the Release Canidate.
@@ -46,27 +47,32 @@ C This comment makes sure attribute has time to take effect.
 
 C A DATABASE MUST BE ATTACHED OR THIS WON'T WORK
 PROGRAM
-. integer * 1 T
-. ifthen ( system(39) lt 1 )
-.   T = globaln( 'GO_ON', 0)
+. integer * 1 DUMMY
+. ifthen ( system( 39 ) lt 1 )
+.   DUMMY = globaln( 'GO_ON', 0)
 .   write // 'You must connect a database before you continue.'//
 . endif
 end program
 
 CIF EQ 0<GO_ON>, 1
 c User must agree to the terms
-PROGRAM
-. integer * 1 T
+PROGRAM CRWARN
+. CALL GUIPROCF.GUI_MAIN.DECLARE_VARIABLES
+. EXECUTE SUBPROCEDURE SET_PROCFILE_VARS
 . ifNOTthen ( sglobal('USER_AGREEMENT' ) = 'Y' ) | NO USER AGREEMENT
-display infobox 'Check for local CUSTOM.USER_AGREEMENT and run it'
-
-.   EXECUTE DBMS "CALL GUI_CUSTOM.USER_AGREEMENT" | SHOW USER AGREEMENT
+.   ifthen( meminfo( DB_PROC_FILE + '.GUI_CUSTOM.USER_AGREEMENT:T', 1 ) = MEM_T )
+.     COMSTR = "CALL " + DB_PROC_FILE + ".GUI_CUSTOM.USER_AGREEMENT"
+.   else
+.     COMSTR = "CALL GUIPROCF.GUI_CUSTOM.USER_AGREEMENT"
+.   ENDIF
+.   EXECUTE DBMS COMSTR | SHOW USER AGREEMENT
 |     CHECK UPDATED USER_AGREEMENT GLOBAL
-.   ifNOTthen ( sglobal('USER_AGREEMENT' ) EQ 'Y' )
-.     T = globaln( 'GO_ON', 0)
+.   ifNOTthen( sglobal( 'USER_AGREEMENT' ) EQ 'Y' )
+.     DUMMY = globaln( 'GO_ON', 0)
 .     write // 'You must confirm the user agreement before continuing.'//
 .   endif
 . endif
+CALL GUIPROCF.GUI_MAIN.SET_PROCFILE_VARS
 end program
 cif end
 

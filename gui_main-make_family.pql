@@ -1,0 +1,19 @@
+PROCEDURE      GUI_MAIN.MAKE_FAMILY:T  (158208,40616)  |Last amended Dec 11, 2015,11:16:56
+SUBPROCEDURE MAKE_FAMILY | recieves FAMILY_NAME
+c does the family screens already exists?  if not make it.
+
+. FAMILY_EXISTS = 0
+. if( 0 = exists(FAMILY_NAME) or len(FAMILY_NAME) ) exit subprocedure
+. for EACH_FAMILY = 1, system(57)
+.   ifthen ( famname( EACH_FAMILY ) EQ FAMILY_NAME )
+.     EXIT SUBPROCEDURE
+.   endif
+. end for
+
+<COMMENT> WRITE FAMILY_NAME ' FAMILY did not exist'
+
+. compute COMSTR = 'CREATE FAMILY ' + FAMILY_NAME
+. EXECUTE DBMS COMSTR
+
+END SUBPROCEDURE
+END PROCEDURE

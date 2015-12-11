@@ -1,4 +1,4 @@
-PROCEDURE      TOOLS.CONNECT_DB:T  (157437,48907)  |Last amended Oct 31, 2013,13:35:07
+PROCEDURE      TOOLS.CONNECT_DB:T  (158208,38535)  |Last amended Dec 11, 2015,10:42:15
 subroutine CONNECT_DB ( DB_NAME, DB_PATH ) RETURNING ( CONNECTION_STATUS )
 . STRING  *     32   DB_NAME               | database name to verify
 . STRING  *    600   DB_PATH               | database file path
@@ -26,11 +26,11 @@ subroutine CONNECT_DB ( DB_NAME, DB_PATH ) RETURNING ( CONNECTION_STATUS )
 .   endif
 . end while
 |
-. pql connect database DB$N(DB#)
+. pql connect database DB$N( DB# )
               security "RIPTIDE","",""
               prefix   DIR$(DB#)
               iostat   CONNSTAT
-. DUMB_NUM# = globals('GDBNAME',DB$N(DB#))
+. DUMB_NUM# = globals( 'GDBNAME', DB$N( DB# ) )
 end subroutine
 
 END PROCEDURE

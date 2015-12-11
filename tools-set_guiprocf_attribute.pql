@@ -1,27 +1,26 @@
-PROCEDURE      TOOLS.SET_GUIPROCF_ATTRIBUTE:T  (157693,35797)  |Last amended Jul 14, 2014,09:56:37
+PROCEDURE      TOOLS.SET_GUIPROCF_ATTRIBUTE:T  (158208,38457)  |Last amended Dec 11, 2015,10:40:57
 program
 . integer *      2   RESVAR               | Response Variable
-. string  *    300   PATH$                    | File: Path
-. string  *    300   FILE_PATH                    | File: Path
-. string  *    100   FILE_NAME                    | File: Name
-. string  *      6   FILE_EXT                     | File: Ext
-. STRING  *    300   STR$1
+. string  *    300   PATH$                | File: Path
+. string  *    300   FILE_PATH            | File: Path
+. string  *    100   FILE_NAME            | File: Name
+. string  *      6   FILE_EXT             | File: Ext
+. STRING  *    300   COMSTR
 
-PATH$ = DSN(PROCFILE(0))
-DISPLAY OPENBOX "Locate the GUIPROCF" , "*.srp|*.SRP", "srp|SRP", 1 RESPONSE RESVAR, PATH$
+PATH$ = dsn( procfile( 0 ) )
+display openbox "Locate the GUIPROCF" , "*.srp|*.SRP", "srp|SRP", 1 RESPONSE RESVAR, PATH$
 ifthen (RESVAR gt 0)
-.  execute SUBROUTINE SYSPROC.TOOLS.FILENAME (PATH$) RETURNING (FILE_PATH, FILE_NAME, FILE_EXT)
+.  execute subroutine SYSPROC.TOOLS.FILENAME (PATH$) RETURNING (FILE_PATH, FILE_NAME, FILE_EXT)
 |  DEFINE GUIPROCF
-.  STR$1 = 'attribute GUIPROCF = "' + PATH$ + '"'
-.  EXECUTE DBMS STR$1
+.  COMSTR = 'attribute GUIPROCF = "' + PATH$ + '"'
+.  EXECUTE DBMS COMSTR
 
 |  DEFINE GUIPROCF RELEASE CANIDATE
-.  STR$1 = 'attribute GUIPROCF_RC = "' + FILE_PATH + FILE_NAME + '-rc.' + FILE_EXT + '"'
-.  EXECUTE DBMS STR$1
+.  COMSTR = 'attribute GUIPROCF_RC = "' + FILE_PATH + FILE_NAME + '-rc.' + FILE_EXT + '"'
+.  EXECUTE DBMS COMSTR
 else
 . display infobox "The Main GUI Procfile attribute must be defined to run the main gui!"
 endif
-
 
 end program
 END PROCEDURE

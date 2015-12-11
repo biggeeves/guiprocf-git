@@ -1,0 +1,13 @@
+PROCEDURE      GUI_MAIN.SET_PROCFILE_VARS:T  (158208,46414)  |Last amended Dec 11, 2015,12:53:34
+subprocedure SET_PROCFILE_VARS
+| Database Files
+. DB_PROC_FILE = 'SIR'+ pformat( system( 39 ), 'zz' ) +'4'
+write DB_PROC_FILE 'debug debug'
+. DB_SR1_FILE = dsn( 'SIR'+ pformat( system( 39 ),'zz' ) +'1' )
+. execute subroutine SYSPROC.TOOLS.FILENAME ( DB_SR1_FILE ) returning ( PATH_FILE, NAME_FILE, EXT_FILE )
+. DB_FOLDER = PATH_FILE
+| GuiProcF Location
+. execute subroutine SYSPROC.TOOLS.FILENAME ( dsn(  'GUIPROCF'  ) ) returning ( PATH_FILE, NAME_FILE, EXT_FILE )
+. GUI_PROC_DIR = PATH_FILE
+end subprocedure
+END PROCEDURE
