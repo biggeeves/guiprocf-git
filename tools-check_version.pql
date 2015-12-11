@@ -1,8 +1,8 @@
-PROCEDURE      TOOLS.CHECK_VERSION:T  (158155,36590)  |Last amended Oct 19, 2015,10:09:50
+PROCEDURE      TOOLS.CHECK_VERSION:T  (158207,64527)  |Last amended Dec 10, 2015,17:55:27
 C SET THE GUIPROCF ATTRIBUTE TO POINT TO LIVE VERSION OR RELEASE CANIDATE
 C If the global GUI_PROCF_RC is set to 1, use the Release Canidate Procfile.
 
-program
+program CRWARN
 . string  *    300   PATH$                    | File: Path
 . STRING  *    300   EXE_STRING
 . ifthen ( SGLOBAL ( 'GUI_PROCF_RC' ) EQ '1' ) | use development version

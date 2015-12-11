@@ -1,4 +1,4 @@
-PROCEDURE      GUI_MAIN.START:T  (158207,47232)  |Last amended Dec 10, 2015,13:07:12
+PROCEDURE      GUI_MAIN.START:T  (158207,67491)  |Last amended Dec 10, 2015,18:44:51
 C It's best to call GUIPROCF.SYSTEM.START
 c but if the file attribute for the GUI_PROCF is defined you can start from this file
 C CALL this member to start the guiprocf from a database.
@@ -58,7 +58,8 @@ c User must agree to the terms
 PROGRAM
 . integer * 1 T
 . ifNOTthen ( sglobal('USER_AGREEMENT' ) = 'Y' ) | NO USER AGREEMENT
-write 'debug: <USER_AGREEMENT'
+display infobox 'Check for local CUSTOM.USER_AGREEMENT and run it'
+
 .   EXECUTE DBMS "CALL GUI_CUSTOM.USER_AGREEMENT" | SHOW USER AGREEMENT
 |     CHECK UPDATED USER_AGREEMENT GLOBAL
 .   ifNOTthen ( sglobal('USER_AGREEMENT' ) EQ 'Y' )

@@ -1,0 +1,13 @@
+PROCEDURE      GUI_MAIN.FIRST_PAGE:T  (158207,57557)  |Last amended Dec 10, 2015,15:59:17
+subprocedure FIRST_PAGE
+. ifthen( dbtype( 0 ) eq 1 )
+.   m_page = VIEW_HOME
+.   FOCUS ITEM CASE_SEARCH
+. else
+.   m_page = VIEW_OLD_KEYS
+. endif
+. execute subprocedure PAGE
+. execute subprocedure ITEM_VISIBLE
+. execute subprocedure ITEM_ENABLE
+end subprocedure
+END PROCEDURE

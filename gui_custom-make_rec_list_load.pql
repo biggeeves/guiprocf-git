@@ -1,11 +1,7 @@
-PROCEDURE      GUI_CUSTOM.MAKE_REC_LIST_LOAD:T  (157627,36903)  |Last amended May 09, 2014,10:15:03
-C MAKE ONE DATA ENTRY SCREEN THAT WORKS WITH THE MAIN DATA ENTRY GUI
-C PASS THE SCREEN NUMBER YOU WANT TO MAKE
+PROCEDURE      GUI_CUSTOM.MAKE_REC_LIST_LOAD:T  (158207,60717)  |Last amended Dec 10, 2015,16:51:57
+C Create a complete list of screens.  Creates 1 screen per record type
 
-PROGRAM
-. INTEGER *      2   REC_TYPE_NUM    | RECORD_TYPE NUMBER
-. STRING  *    256   MEMBER_NAME
-. string  *    256   RECORD_NAME
+PROGRAM crwarn
 . STRING  *    256   MEMBER_LINE     | LINE TO WRITE TO THE MEMBER
 . INTEGER *      2   MY_IOSTAT       | IOSTAT FOR OPENING MEMBER
 . INTEGER *      1   YES NO
@@ -13,66 +9,72 @@ PROGRAM
 . integer *      1   FAMILY_EXISTS
 . string  *    256   COMSTR
 . INTEGER *      1   RESVAR
+. string  *     80   MEMBER_NAME            | Member name
+. string  *     80   FAMILY_NAME            | Family name
+. string  *    300   FULL_PATH_MEMBER       | Procfile, Family and Member
+. integer *      1   MEM_O MEM_T            | No need to remember compile or text value.
 
-. DB_PROC_FILE = 'SIR'+ PFORMAT(SYSTEM(39),'zz') +'4'
+. set MEM_T (1) MEM_O (4)
+. set NO (0) YES (1)
 
-. if(0 eq len(DB_PROC_FILE) or exists(DB_PROC_FILE) ) display infobox 'No DB_PROC_FILE defined.  EXITING.  CONTACT ADMIN.'; EXIT PROGRAM
+. DB_PROC_FILE = 'SIR'+ pformat( system( 39 ), 'zz' ) + '4'
+. FAMILY_NAME = 'GUI_CUSTOM'
+. MEMBER_NAME = 'REC_LIST_LOAD'
+. FULL_PATH_MEMBER = DB_PROC_FILE + '.' + FAMILY_NAME + '.' + MEMBER_NAME
 
-. execute dbms ["set procfile " + DB_PROC_FILE ] | gui_custom goes into database procfile file, not the guiprocf
 
-set NO (0) YES (1)
+. ifthen( 0 eq len( DB_PROC_FILE ) or exists( DB_PROC_FILE ) )
+.   display infobox 'No DB_PROC_FILE defined.  EXITING.  CONTACT ADMIN.'
+.   EXIT PROGRAM
+. endif
+. COMSTR = "set procfile " + DB_PROC_FILE
+. execute dbms  COMSTR | gui_custom goes into database procfile file, not the guiprocf
 
 C DOES THE FAMILY GUI_CUSTOM ALREADY EXIST?  IF NOT MAKE IT.
-FAMILY_EXISTS = 0
-FOR EACH_FAMILY = 1, SYSTEM(57)
-. IF ( FAMNAME(EACH_FAMILY) EQ 'GUI_CUSTOM') FAMILY_EXISTS = 1
-END FOR
+. FAMILY_EXISTS = 0
+. for EACH_FAMILY = 1, system(57)
+.  ifthen ( famname(EACH_FAMILY) EQ FAMILY_NAME)
+.    FAMILY_EXISTS = 1
+.    EXIT FOR
+.  endif
+. end for
 
 c create the non-existent family
-IFTHEN (FAMILY_EXISTS EQ 0 )
-<COMMENT> WRITE 'GUI_CUSTOM FAMILY DID NOT EXIST'
-.  COMPUTE COMSTR = 'CREATE FAMILY GUI_CUSTOM'
+. IFTHEN (FAMILY_EXISTS EQ 0 )
+.  COMPUTE COMSTR = 'CREATE FAMILY ' + FAMILY_NAME
 .  EXECUTE DBMS COMSTR
-ENDIF
+. ENDIF
 
-. ifthen ( nvarsc( REC_TYPE_NUM ) EQ 0 )
-.   write 'no variables to create screen with '
-.   EXIT PROGRAM
+. ifthen ( meminfo (FULL_PATH_MEMBER + ':T', 1 )  > 0 ) | MEMBER ALREADY EXISTS
+.    display YNBOX 'THIS  WILL  OVERWRITE   "' + FULL_PATH_MEMBER + '".' + CHAR(13) + 'OVER WRITE IT?' RESPONSE RESVAR
+.    ifthen (RESVAR EQ 0 )
+.      display infobox "CANCELED"
+.      EXIT PROGRAM
+.    endif
 . endif
 
-. RECORD_NAME = trimlr( recname( REC_TYPE_NUM ) )
-. MEMBER_NAME = 'GUI_CUSTOM.REC_LIST_LOAD'
-
-ifthen ( meminfo (DB_PROC_FILE + '.' + MEMBER_NAME + ':T', 1 )  > 0 ) | MEMBER ALREADY EXISTS
-.  DISPLAY YNBOX 'THIS  WILL  OVERWRITE   "' + MEMBER_NAME + '".' + CHAR(13) + 'OVER WRITE IT?' RESPONSE RESVAR
-.  IFTHEN (RESVAR EQ 0 )
-.    DISPLAY INFOBOX "CANCELED"
-.    EXIT PROGRAM
-.  ENDIF
-ENDIF
-
-. open ( MEMBER_NAME ) dsnvar = MEMBER_NAME iostat = MY_IOSTAT  write lrecl=200 REPLACE member
+. open ( MEMBER_NAME ) dsnvar = FULL_PATH_MEMBER iostat = MY_IOSTAT  write lrecl=200 REPLACE member
 . ifthen (MY_IOSTAT NE 0)
-.   write 'unable to write to member.  exiting.  GUI_CUSTOM.REC_LIST_LOAD was NOT made.  IOSTAT:' MY_IOSTAT
+.   write 'unable to write to member: ' FULL_PATH_MEMBER ' .  exiting.  Them member was NOT made.  IOSTAT:' MY_IOSTAT
 .   EXIT PROGRAM
 . endif
 
-. write ( MEMBER_NAME ) "c Originally created by the GUIPROCF"
-. write ( MEMBER_NAME ) "c Template for creating your own custom record type list"
-. write ( MEMBER_NAME ) "c Three different list must be appended using the same order"
-. write ( MEMBER_NAME ) "c 1) What the user see.  2) What is the member name   3) What is the record type name"
-. write ( MEMBER_NAME ) "c The code is prepopulated with all record type names in the schema numeric order."
-. write ( MEMBER_NAME ) "c Customize as you see fit and test."
-. write ( MEMBER_NAME ) "c Returns pass or fail.  Pass, the list is loaded.  Fail the list is not loaed."
+. write( MEMBER_NAME ) "c Originally created by the GUIPROCF"
+. write( MEMBER_NAME ) "c Template for creating your own custom record type list"
+. write( MEMBER_NAME ) "c Three different lists must be appended to the GUI item using the exact same order"
+. write( MEMBER_NAME ) "c 1) What the user sees  2) The member name   3) The record type name"
+. write( MEMBER_NAME ) "c The code is prepopulated with all record type names in schema numeric order."
+. write( MEMBER_NAME ) "c Customize as you see fit. Of course test it."
+. write( MEMBER_NAME ) "c Returns pass or fail.  Pass, the list is loaded.  Fail the list is not loaded."
+c
+. write( MEMBER_NAME ) "subroutine GUI_CUSTOM.REC_LIST_LOAD (GUI_FORM_LABEL  GUI_FORM_NAME  GUI_FORM_REC_TYPE ) returning (PROCEED) replace"
+. write( MEMBER_NAME ) "integer * 2 GUI_FORM_LABEL  GUI_FORM_NAME  GUI_FORM_REC_TYPE"
+. write( MEMBER_NAME ) "integer * 1 PROCEED"
+. write( MEMBER_NAME ) "PROCEED = 1"
+. write( MEMBER_NAME ) "if(sglobal('comment') eq '.') write 'in SAMPLE.DBPROC.GUI_CUSTOM.REC_LIST_LOAD'"
 
-. write ( MEMBER_NAME ) "subroutine GUI_CUSTOM.REC_LIST_LOAD (GUI_FORM_LABEL  GUI_FORM_NAME  GUI_FORM_REC_TYPE ) returning (PROCEED) replace"
-. write ( MEMBER_NAME ) "integer * 2 GUI_FORM_LABEL  GUI_FORM_NAME  GUI_FORM_REC_TYPE"
-. write ( MEMBER_NAME ) "integer * 1 PROCEED"
-. write ( MEMBER_NAME ) "PROCEED = 1"
-. write ( MEMBER_NAME ) "if(sglobal('comment') eq '.') write 'in SAMPLE.DBPROC.GUI_CUSTOM.REC_LIST_LOAD'"
-
-. for EACH_RECORD_TYPE = 1, NRECS(0)
-.   IF (NVARSC(EACH_RECORD_TYPE) EQ 0) NEXT FOR
+. for EACH_RECORD_TYPE = 1, nrecs(0)
+.   IF (nvarsc(EACH_RECORD_TYPE) EQ 0) NEXT FOR
 .   MEMBER_LINE = ". append item GUI_FORM_LABEL, '"
 .   ifthen( len( recdoc( EACH_RECORD_TYPE, 0 ) ) gt 0 )
 .     MEMBER_LINE = MEMBER_LINE + trim(recdoc(EACH_RECORD_TYPE, 0 ) )
@@ -91,11 +93,13 @@ c . write ( MEMBER_NAME ) ". append item GUI_FORM_LABEL, 'AAFORM  (AA) APO-E For
 c . write ( MEMBER_NAME ) ". append item GUI_FORM_LABEL, 'BFORM   (B)  Demographics'           ; append item GUI_FORM_NAME, 'BFORM' ;     append item GUI_FORM_REC_TYPE, 'BFORM'"
 c . write ( MEMBER_NAME ) ". append item GUI_FORM_LABEL, 'BFORM   (B)  Demographics - SPANISH' ; append item GUI_FORM_NAME, 'BFORM_SP' ;  append item GUI_FORM_REC_TYPE, 'BFORM'"
 . write ( MEMBER_NAME ) "end subroutine"
-
-
 . close MEMBER_NAME
 
-C COMPILE THE NEW MEMBER
+C compile the new member
+execute subprocedure COMPILE_MEMBER
+
+C include the appropriate subprocedure
+call GUIPROCF.GUI_MAIN.COMPILE_MEMBER
 
 subprocedure MEMBER_WRITE
 . if (exists(MEMBER_LINE) EQ 0) MEMBER_LINE = '| WARNING SYSTEM MISSING MEMBERLINE!'
@@ -103,9 +107,6 @@ subprocedure MEMBER_WRITE
 end subprocedure
 
 END PROGRAM
-
-CALL GUI_CUSTOM.REC_LIST_LOAD
-
 
 
 END PROCEDURE

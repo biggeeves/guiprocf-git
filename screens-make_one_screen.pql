@@ -1,4 +1,4 @@
-PROCEDURE      SCREENS.MAKE_ONE_SCREEN:T  (157619,48764)  |Last amended May 01, 2014,13:32:44
+PROCEDURE      SCREENS.MAKE_ONE_SCREEN:T  (158207,67079)  |Last amended Dec 10, 2015,18:37:59
 C MAKE ONE DATA ENTRY SCREEN THAT WORKS WITH THE MAIN DATA ENTRY GUI
 C PASS THE SCREEN NUMBER YOU WANT TO MAKE
 
@@ -25,25 +25,31 @@ C PASS THE SCREEN NUMBER YOU WANT TO MAKE
 
 . DB_PROC_FILE = 'SIR'+ PFORMAT(SYSTEM(39),'zz') +'4'
 
-. if(0 eq len(DB_PROC_FILE) or exists(DB_PROC_FILE) ) display infobox 'No DB_PROC_FILE defined.  EXITING.  CONTACT ADMIN.'; RETURN
+. ifthen( 0 eq len(DB_PROC_FILE) or exists(DB_PROC_FILE) )
+.   display infobox 'No DB_PROC_FILE defined.  EXITING.  CONTACT ADMIN.'
+.   RETURN
+. endif
 
 
 . execute dbms ["set procfile " + DB_PROC_FILE ] | screens go into database procfile file, not the guiprocf
 
-set NO (0) YES (1)
+. set NO (0) YES (1)
 
 C DOES THE FAMILY SCREENS ALREADY EXISTS?  IF NOT MAKE IT.
-SCREENS_EXIST = 0
-FOR EACH_FAMILY = 1, SYSTEM(57)
-. IF ( FAMNAME(EACH_FAMILY) EQ 'SCREENS') SCREENS_EXIST = 1
-END FOR
+. SCREENS_EXIST = 0
+. for EACH_FAMILY = 1, SYSTEM(57)
+.   ifthen( famname( EACH_FAMILY ) EQ 'SCREENS' )
+.     SCREENS_EXIST = 1
+.     exit for
+.   endif
+. end for
 
 c create the non-existent family
-IFTHEN (SCREENS_EXIST EQ 0 )
+. ifthen (SCREENS_EXIST EQ 0 )
 <COMMENT> WRITE 'SCREENS FAMILY DID NOT EXIST'
-.  COMPUTE COMSTR = 'CREATE FAMILY SCREENS'
-.  EXECUTE DBMS COMSTR
-ENDIF
+.  compute COMSTR = 'CREATE FAMILY SCREENS'
+.  execute dbms COMSTR
+. endif
 
 C DOUBLE CHECK FOR FAMILY NAME
 
@@ -145,9 +151,9 @@ ENDIF
                          '      AT 2, 4 WIDTH 83' /
                          '      FONT (BOLD ) '/
                          'FDISPLAY       TEXT (' /
-			 '      MESSTEXT$' /
-			 '      )' /
-			 '      AT 2,90 WIDTH 42' /
+       '      MESSTEXT$' /
+       '      )' /
+       '      AT 2,90 WIDTH 42' /
                          '      FONT (BOLD ) ' / /
 
 . DO REPEAT REP_VAR = DWHO   DSTAMP    DCCDATE  DCCWHO  DCCTIME  DCCEDITS /

@@ -1,4 +1,4 @@
-PROCEDURE      GUI_MAIN.DECLARE_VARIABLES:T  (158207,45849)  |Last amended Dec 10, 2015,12:44:09
+PROCEDURE      GUI_MAIN.DECLARE_VARIABLES:T  (158207,59806)  |Last amended Dec 10, 2015,16:36:46
 <comment> write "initialize DCC vars"
 . string  *    600   GEN_STR1               | Generic/General String
 . integer *      1   CASE_TYPE              | What variable type is the case id
@@ -99,7 +99,7 @@ PROCEDURE      GUI_MAIN.DECLARE_VARIABLES:T  (158207,45849)  |Last amended Dec 1
 . string  *    300   DVP_MEMBER             | Fully qualified Name for DVPainter Screen
 . string  *     80   MEMBER_NAME            | Member name
 . string  *     80   FAMILY_NAME            | Family name
-. string  *    300   FULL_PATH_MEMBER     | Procfile, Family and Member
+. string  *    300   FULL_PATH_MEMBER       | Procfile, Family and Member
 . integer *      1   EXIT__#                | How did they exit the screen?
 . integer *      4   DEBUG_LINE
 . integer *      2   FORM_LIST_LAST_LINE    | Last line that the user clicked.  Reloading the keys is a problem for the user.  Do NOT reload if user is clicking on same form again.
@@ -205,8 +205,8 @@ PROCEDURE      GUI_MAIN.DECLARE_VARIABLES:T  (158207,45849)  |Last amended Dec 1
 . set NO    (0) YES   (1)
 . set MEM_T (1) MEM_O (4)
 |
-. set VIEW_SPLASH (1) VIEW_HOME (2) VIEW_NEW_CASE (3) VIEW_OLD_KEYS(4) VIEW_NEW_KEYS(5) VIEW_TABLE (6)
-      VIEW_CASE_DELETE (7)  VIEW_CASE_SUMMARY (8) VIEW_DBA (9) VIEW_BULK_RECORD_DELETE (10) VIEW_HIDDEN (11)
+. set VIEW_HOME (1) VIEW_NEW_CASE (2) VIEW_OLD_KEYS(3) VIEW_NEW_KEYS(4) VIEW_TABLE (5)
+      VIEW_CASE_DELETE (6)  VIEW_CASE_SUMMARY (7) VIEW_DBA (8) VIEW_BULK_RECORD_DELETE (9) VIEW_HIDDEN (10)
 
 . set NOT_BOLD NOT_ITALIC NOT_UNDERL  ( 0 )
 . set BOLD     ITALIC     UNDERL      ( 1 )
