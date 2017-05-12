@@ -1,9 +1,7 @@
-PROCEDURE      GUI_MAIN.START:T  (158208,39586)  |Last amended Dec 11, 2015,10:59:46
+PROCEDURE      GUI_MAIN.START:T  (158288,61319)  |Last amended Feb 29, 2016,17:01:59
 C It's best to call GUIPROCF.SYSTEM.START
 c but if the file attribute for the GUI_PROCF is defined you can start from this file
 C CALL this member to start the guiprocf from a database.
-
-C IF GUI_PROCF_RC = 1, USE THE RELEASE CANIDATE.  IF NOT PROCEED WITH THE USUAL GUI.
 
 C CHECK IF THE REQUIRED GUIPROCF ATTRIBUTE IS SET
 C IF THE ATTRIBUTE IS NOT SET ASK USER FOR LOCATION.
@@ -15,16 +13,16 @@ c check to see that GUIPROCF is defined
 program
 . integer * 1 DUMMY
 . ifthen( exists( dsn( 'GUIPROCF' ) ) EQ 0 )
+.   write 'GUIPROCF ATTRIBUTE WAS NOT SET'
 .   execute dbms "call TOOLS.SET_GUIPROCF_ATTRIBUTE"
-.   write 'ATTRIBUTE NOT SET CALL SET ATTRIBUTE'
 . endif
 . ifthen( fileis( dsn( 'GUIPROCF' ) ) ne 1 )
+.   write 'GUIPROCF file does not exists. Set GUIPROCF attribute'
 .   execute dbms "call TOOLS.SET_GUIPROCF_ATTRIBUTE"
-.   write 'FILE DOES NOT EXISTS. CALL SET ATTRIBUTE'
 . endif
 end program
 
-c must exit program to set guiprocf attribute
+c must exit program to officially set guiprocf attribute
 
 program
 . integer * 1 DUMMY
@@ -39,9 +37,7 @@ C Check to see if GUIPROCF is defined
 . endif
 end program
 
-c There are two versions: The live version and the Release Canidate.
-c Set attritute to Release canidate if the global GUI_PROCF_RC=1
-call GUIPROCF.TOOLS.CHECK_VERSION
+call GUIPROCF.TOOLS.CHECK_VIEWPORT
 
 C This comment makes sure attribute has time to take effect.
 
@@ -59,8 +55,8 @@ c User must agree to the terms
 PROGRAM CRWARN
 . CALL GUIPROCF.GUI_MAIN.DECLARE_VARIABLES
 . EXECUTE SUBPROCEDURE SET_PROCFILE_VARS
-. ifNOTthen ( sglobal('USER_AGREEMENT' ) = 'Y' ) | NO USER AGREEMENT
-.   ifthen( meminfo( DB_PROC_FILE + '.GUI_CUSTOM.USER_AGREEMENT:T', 1 ) = MEM_T )
+. ifNOTthen( sglobal('USER_AGREEMENT' ) = 'Y' ) | NO USER AGREEMENT
+.   ifthen( meminfo( DB_PROC_FILE + '.GUI_CUSTOM.USER_AGREEMENT:T', 1 ) eq MEM_T )
 .     COMSTR = "CALL " + DB_PROC_FILE + ".GUI_CUSTOM.USER_AGREEMENT"
 .   else
 .     COMSTR = "CALL GUIPROCF.GUI_CUSTOM.USER_AGREEMENT"
@@ -80,7 +76,11 @@ cif end
 C START THE GUI
 
 CIF EQ 0<GO_ON>, 1
-. CALL GUIPROCF.GUI_MAIN.ALL_COMMANDS
+. CIF EQ '<VIEW_PORT>', 'phone'
+.   CALL GUIPROCF.GUI_MAIN.ALL_COMMANDS_PHONE
+. CIF FALSE
+.   CALL GUIPROCF.GUI_MAIN.ALL_COMMANDS
+. CIF END
 CIF FALSE
 . PROGRAM
 .   WRITE // 'CAN NOT START MAIN GUI.' //

@@ -1,4 +1,4 @@
-PROCEDURE      REPORTS.CODEBOOK_HTML:T  (158103,67690)  |Last amended Aug 28, 2015,18:48:10
+PROCEDURE      REPORTS.CODEBOOK_HTML:T  (158331,57995)  |Last amended Apr 12, 2016,16:06:35
 | Make a nice looking HTML codebook
 
 call SYSPROC.TOOLS.HTMLCODE
@@ -22,8 +22,14 @@ call GUIPROCF.GUI_MAIN.DECLARE_VARIABLES
 . set KEYVAR COMVAR COM# ( 0 )
 
 . set YES(1) NO (0)
-. DB_SR1_FILE = dsn( 'SIR'+ PFORMAT( SYSTEM( 39 ), 'zz' ) +'1' )
-. execute subroutine SYSPROC.TOOLS.FILENAME (DB_SR1_FILE) returning ( PATH_FILE, NAME_FILE, EXT_FILE )
+
+. ifthen ( sglobal('sirver') eq 'XS.01.20' )
+.   DB_PROC_FILE = 'SIR'+ pformat( system(39), 'zzzz' ) + '4'
+. elseif ( sglobal('sirver') eq 'XS.01.19' )
+.   DB_PROC_FILE = 'SIR'+ pformat( system(39), 'zz' ) + '4'
+. endif
+
+. execute subroutine SYSPROC.TOOLS.FILENAME (DB_PROC_FILE) returning ( PATH_FILE, NAME_FILE, EXT_FILE )
 
 
 . CASE_NAME = upper( trim( varname( 0, 1 ) ) )
@@ -33,8 +39,8 @@ call GUIPROCF.GUI_MAIN.DECLARE_VARIABLES
 . DB$ = trim( dbname( 0 ) )
 
 . HTM = '<1>'
-. HTM = replace(HTM,'"','',10,0,0)
-. HTM = replace(HTM,"'","",10,0,0)
+. HTM = replace( HTM, '"', '', 10, 0, 0 )
+. HTM = replace( HTM, "'", "", 10, 0, 0 )
 . ifthen ( len(HTM) eq 0 )
 .   HTM = '<GDATA1>'  | TRY GDATA1 GLOBAL FIRST
 .   IFTHEN ( len(HTM) > 0)
@@ -114,7 +120,9 @@ C DATABASE STRUCTURE AND KEYS
 .   if ( nvarsc( EACH_REC ) le 0 ) next for
 .   REC$ = trim( recname( EACH_REC ) )
 .   write ( HTM ) '<tr>'
-.   write ( HTM ) ' <td>' REC$ '</td>'
+.   write ( HTM ) ' <td>'
+.   write ( HTM ) 2t ['<a href="#' + trim( format( EACH_REC ) )+'" title="' + format(EACH_REC) + '">']
+.   write ( HTM ) 2t REC$ '</td>'
 .   write ( HTM ) ' <td>'
 .   if(dbtype(0) eq nkeys(EACH_REC) + 1 ) write (HTM) 'No Keys'
 .   for EACH_KEY = 1, nkeys(EACH_REC)

@@ -1,0 +1,59 @@
+PROCEDURE      GUI_MAIN.OLD_KEY_LIST:T  (158297,55414)  |Last amended Mar 09, 2016,15:23:34
+subprocedure OLD_KEY_LIST_1
+. IFthen( GETTXT( OLD_KEY_LIST_1 ) EQ 'No data' )
+.   display infobox "There is no data to show.";
+.   exit subprocedure
+. endif
+. PROCEED = 1
+. KEY$N = KEY_NAME_1; KEY$T = KEY_TYPE_1; KEY$V = gettxt( OLD_KEY_LIST_1)
+. execute subprocedure ANY_KEY_CLEAN
+. execute subprocedure ANY_KEY_VALIDATE
+. ifthen( PROCEED eq 0)
+.   display infobox '  Value for "' + KEY_LABEL_1 + '". ' + char( 13) + char( 13) + KEY$V  + ' is not valid.'
+.   EXIT SUBPROCEDURE
+. endif
+. REFRESH_START_KEYNUM = 2
+. execute subprocedure OLD_KEY_CLICK_LIBRARY
+. execute subprocedure MASTER_REFRESH_KEYS
+end subprocedure
+
+subprocedure OLD_KEY_LIST_2
+. PROCEED = 1
+. KEY$N = KEY_NAME_2; KEY$T = KEY_TYPE_2; KEY$V = gettxt( OLD_KEY_LIST_2)
+. execute subprocedure ANY_KEY_CLEAN
+. execute subprocedure ANY_KEY_VALIDATE
+. ifthen( PROCEED eq 0)
+.   display infobox '  Value for "' + KEY_LABEL_2 + '". ' + char( 13) + char( 13) + KEY$V  + ' is not valid.'
+.   EXIT SUBPROCEDURE
+. endif
+. REFRESH_START_KEYNUM = 3
+. execute subprocedure OLD_KEY_CLICK_LIBRARY
+. execute subprocedure MASTER_REFRESH_KEYS
+end subprocedure
+
+SUBPROCEDURE OLD_KEY_LIST_3
+. PROCEED = 1
+. KEY$N = KEY_NAME_3; KEY$T = KEY_TYPE_3; KEY$V = gettxt( OLD_KEY_LIST_3)
+. execute subprocedure ANY_KEY_CLEAN
+. execute subprocedure ANY_KEY_VALIDATE
+. ifthen( PROCEED eq 0)
+.   display infobox '  Value for "' + KEY_LABEL_3 + '". ' + char( 13) + char( 13) + KEY$V  + ' is not valid.'
+.   EXIT SUBPROCEDURE
+. endif
+. REFRESH_START_KEYNUM = 4
+. execute subprocedure OLD_KEY_CLICK_LIBRARY
+. execute subprocedure MASTER_REFRESH_KEYS
+end subprocedure
+
+SUBPROCEDURE OLD_KEY_LIST_4
+. PROCEED = 1
+. KEY$N = KEY_NAME_4; KEY$T = KEY_TYPE_4; KEY$V = gettxt( OLD_KEY_LIST_4)
+. execute subprocedure ANY_KEY_CLEAN
+. execute subprocedure ANY_KEY_VALIDATE
+. ifthen( PROCEED eq 0)
+.   display infobox '  Value for "' + KEY_LABEL_4 + '". ' + char( 13) + char( 13) + KEY$V  + ' was not valid.'
+.   EXIT SUBPROCEDURE
+. endif
+. execute subprocedure OLD_KEY_CLICK_LIBRARY
+end subprocedure
+END PROCEDURE

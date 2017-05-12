@@ -1,4 +1,4 @@
-PROCEDURE      GUI_MAIN.CASE_DELETE:T  (157234,58115)  |Last amended Apr 11, 2013,16:08:35
+PROCEDURE      GUI_MAIN.CASE_DELETE:T  (158242,50792)  |Last amended Jan 14, 2016,14:06:32
 subprocedure CASE_DELETE  | PASS IN CASE_VALUE
 <comment> write 'Sub: CASE_DELETE: ' CASE_VALUE
 . if (CASE_VALUE eq '') display infobox 'CAN NOT DELETE A SYSTEM BLANK VALUE FOR A CASEID. '; exit subprocedure
@@ -47,6 +47,7 @@ subprocedure CASE_DELETE  | PASS IN CASE_VALUE
 . BUFFER_LINE = 'WRITE (DB_DEL_FILE) "END CASE ' + CASE_VALUE + ' DELETION INFO"'  ;execute subprocedure BUFFER_WRITE
 . BUFFER_LINE = 'CLOSE (DB_DEL_FILE)'  ;execute subprocedure BUFFER_WRITE
 . BUFFER_LINE = 'end retrieval'  ; execute subprocedure BUFFER_WRITE
-. execute dbms ['INCLUDE BUFFER ' + BUFFER_NAME]
+. COMSTR = 'INCLUDE BUFFER ' + BUFFER_NAME
+. execute dbms COMSTR
 end subprocedure
 END PROCEDURE

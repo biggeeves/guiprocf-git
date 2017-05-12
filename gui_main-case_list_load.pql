@@ -1,32 +1,28 @@
-PROCEDURE      GUI_MAIN.CASE_LIST_LOAD:T  (158208,38857)  |Last amended Dec 11, 2015,10:47:37
+PROCEDURE      GUI_MAIN.CASE_LIST_LOAD:T  (158288,64259)  |Last amended Feb 29, 2016,17:50:59
 subprocedure CASE_LIST_LOAD
 <COMMENT> write 'Sub: CASE_LIST_LOAD'
-. | start with a blank canvas
-. if ( dbtype( 0 ) eq 0 ) exit subprocedure | caseless database
+. if( dbtype( 0 ) eq 0 ) exit subprocedure | caseless database
+
 . remove all CASE_LIST
 
 | CHECK FOR CUSTOM CASE LIST LOAD AND RUN IT IF IT'S A GOOD COMPILED MEMBER
-. ifthen ( meminfo( DB_PROC_FILE + '.GUI_CUSTOM.CASE_LIST_LOAD:T', 1 ) = MEM_T )
+. ifthen( meminfo( DB_PROC_FILE + '.GUI_CUSTOM.CASE_LIST_LOAD:T', 1 ) = MEM_T )
 <COMMENT> write ' Calling DB_PROC.GUI_CUSTOM.CASE_LIST_LOAD: ' PROCEED
-.   ifthen ( meminfo( DB_PROC_FILE + '.GUI_CUSTOM.CASE_LIST_LOAD:O', 8 ) EQ 0 ) | "Good" subroutine status
+.   ifthen( meminfo( DB_PROC_FILE + '.GUI_CUSTOM.CASE_LIST_LOAD:O', 8 ) EQ 0 ) | "Good" subroutine status
 .     execute subroutine [DB_PROC_FILE + '.GUI_CUSTOM.CASE_LIST_LOAD'] (CASE_LIST) RETURNING (PROCEED) DYNAMIC
 .     EXIT SUBPROCEDURE
 .   else
-.     display infobox "Sorry, out of date compiled Case List Load.  Please tell DBA."
+.     display infobox "Sorry, out of date Case List Load.  Please tell DBA to compile it."
 .     EXIT SUBPROCEDURE
 .   endif
 . endif
 
-. BUFFER_NAME = 'CASE_LIST_LOADER'    ; execute subprocedure BUFFER_START
-. BUFFER_LINE = 'retrieval'           ; execute subprocedure BUFFER_WRITE
-. BUFFER_LINE = '. process cases'     ; execute subprocedure BUFFER_WRITE
-. BUFFER_LINE = '.   append item ' + format( CASE_LIST ) + ", "
-. ifthen (CASE_TYPE = 1) BUFFER_LINE = BUFFER_LINE + 'trimlr(' + CASE_NAME + ')'
-. else                   BUFFER_LINE = BUFFER_LINE + CASE_NAME
-. endif
-. execute subprocedure BUFFER_WRITE
-. BUFFER_LINE = '. end cases'         ; execute subprocedure BUFFER_WRITE
-. BUFFER_LINE = 'end retrieval'       ; execute subprocedure BUFFER_WRITE
-. execute dbms ['INCLUDE BUFFER ' + BUFFER_NAME]
+
+C GET ALL CASES AND APPEND TO LIST
+. process cases
+.   STRING_VARGET = trimlr( varget( CASE_NAME ) )
+.   append item CASE_LIST, STRING_VARGET
+. end cases
+
 end subprocedure
 END PROCEDURE

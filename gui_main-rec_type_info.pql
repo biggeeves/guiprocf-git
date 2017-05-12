@@ -1,15 +1,16 @@
-PROCEDURE      GUI_MAIN.REC_TYPE_INFO:T  (158026,59758)  |Last amended Jun 12, 2015,16:35:58
+PROCEDURE      GUI_MAIN.REC_TYPE_INFO:T  (158241,48514)  |Last amended Jan 13, 2016,13:28:34
 subprocedure REC_TYPE_INFO
 <comment> write 'Sub: REC_TYPE_INFO: Important.  Sets REC_TYPE_NUM, KEY_COUNT, KEY_NAME(S), KEY_TYPE(S), KEY_LABEL(S)'
-. REC_TYPE_NUM  = recnum(gettxt(REC_TYPE_SELECTED))
+. REC_TYPE_NUM  = recnum( gettxt( REC_TYPE_SELECTED ) )
+. DUMMY = globaln( 'REC_TYPE_NUM', REC_TYPE_NUM )
 
-. DUMMY = globaln('REC_TYPE_NUM', REC_TYPE_NUM )
-. KEY_COUNT  = nkeys(REC_TYPE_NUM) | Because the CASEID is always FIRST ONE.
+. KEY_COUNT  = nkeys( REC_TYPE_NUM ) | Because the CASEID is always FIRST ONE.
+
 . DO REPEAT REPX = 1 TO 4
-.   KEY_NAME_!REPX = trimr(keyname(REC_TYPE_NUM, dbtype(0) + REPX ))
-.   KEY_TYPE_!REPX = vtype(REC_TYPE_NUM,KEY_NAME_!REPX)
-.   ifthen (len(pack(varlabsc(REC_TYPE_NUM,KEY_NAME_!REPX))) gt 0 )
-.     KEY_LABEL_!REPX = trim(varlabsc(REC_TYPE_NUM,KEY_NAME_!REPX))
+.   KEY_NAME_!REPX = trimr( keyname( REC_TYPE_NUM, dbtype(0) + REPX ) )
+.   KEY_TYPE_!REPX = vtype( REC_TYPE_NUM,KEY_NAME_!REPX )
+.   ifthen ( len( pack( varlabsc( REC_TYPE_NUM,KEY_NAME_!REPX ) ) ) gt 0 )
+.     KEY_LABEL_!REPX = trim( varlabsc( REC_TYPE_NUM,KEY_NAME_!REPX ) )
 .   else
 .     KEY_LABEL_!REPX = KEY_NAME_!REPX
 .   endif

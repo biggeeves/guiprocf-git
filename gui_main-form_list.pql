@@ -1,0 +1,39 @@
+PROCEDURE      GUI_MAIN.FORM_LIST:T  (158240,56068)  |Last amended Jan 12, 2016,15:34:28
+subprocedure FORM_LIST
+C CHECK TO SEE IF THEY CLICKED THIS SAME THING LAST TIME.
+. ifthen(  FORM_LIST_LAST_LINE = getpos( FORM_LIST ) )
+.   ifthen( M_ARG2 eq 1 )  | DOUBLE CLICK
+<COMMENT> WRITE 'FORM LIST DOUBLE CLICK'
+.     ifthen( REC_ROW_COUNT EQ 1 )  | JUST ONE RECORD.  GET THE VALUES AND GO TO IT.
+.       execute subprocedure ALL_KEY_GET_VALUE
+.       execute subprocedure OLD_KEY_ALL_VALIDATE
+.       if(  PROCEED = NO ) EXIT SUBPROCEDURE
+.       execute subprocedure GOTO_SCREEN_LIBRARY  | double clicked - go to screen and do everything needed afterwards
+.       EXIT SUBPROCEDURE
+.     elseif( REC_ROW_COUNT GT 1 )
+.       GEN_STR1 = 'Choose from the the values listed on the right.'
+                   + char(13) + char(13) + 'Then double click on the last item to go to the form.'
+                   + char(13) + char(13) + 'Or click New Form Button.'
+.       display infobox GEN_STR1
+.       EXIT SUBPROCEDURE
+.     elseif( REC_ROW_COUNT EQ 0 )
+.       IFNOT (I_GUI_REC_NEW EQ 1 ) EXIT SUBPROCEDURE
+.       display YNCBOX 'Create a new form?' RESPONSE RESVAR
+.       if( RESVAR EQ 0 or -1 ) EXIT SUBPROCEDURE  | no or cancel ( 1=Yes)
+.       ifthen(  KEY_COUNT EQ 0)
+.         execute subprocedure GOTO_SCREEN_LIBRARY  | double clicked - go to screen
+.       else
+.         m_page = VIEW_NEW_KEYS
+.         execute subprocedure PAGE
+.         execute subprocedure ITEM_VISIBLE
+.         execute subprocedure NEW_KEY_VISIBLE
+.         focus item NEW_KEY_VALUE_1
+.       endif
+.     endif
+.   endif
+. else
+<COMMENT> WRITE 'FORM LIST SINGLE CLICK'
+.   execute subprocedure FORM_LIST_LIBRARY
+. endif
+end subprocedure
+END PROCEDURE

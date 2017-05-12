@@ -1,34 +1,49 @@
-PROCEDURE      GUI_MAIN.CASE_NEW_LIBRARY:T  (158017,48565)  |Last amended Jun 03, 2015,13:29:25
-subprocedure CASE_NEW_LIBRARY
+PROCEDURE      GUI_MAIN.CASE_NEW_LIBRARY:T  (158297,50102)  |Last amended Mar 09, 2016,13:55:02
+subprocedure CASE_NEW_LIBRARY | RECIEVES (CASE_TEMP_VALUE)
+. set item CASE_DISPLAY_MESSAGE, ''
 <comment> write 'Sub: CASE_NEW_Library'
-. ifNOTthen ( I_GUI_CASE_NEW eq 1)
-.   display infobox 'You do not have permission to create a new ID'
+. ifNOTthen( I_GUI_CASE_NEW eq 1 )
+.   set item CASE_DISPLAY_MESSAGE, 'You do not have permission to create a new ID'
 .   exit subprocedure
-. ENDIF
-. CASE_TEMP_VALUE = trimlr(gettxt(CASE_NEW))
+. endif
+. CASE_TEMP_VALUE = trimlr( gettxt( CASE_SEARCH ) )
 . execute subprocedure CASE_VALIDATE  | pass var CASE_TEMP_VALUE
-. if (PROCEED EQ NO) EXIT SUBPROCEDURE
+. ifthen( PROCEED EQ NO )
+.   set item CASE_DISPLAY_MESSAGE, "Sorry, " + CASE_TEMP_VALUE + " is invalid."
+.   EXIT SUBPROCEDURE
+. endif
 
 . execute subprocedure CASE_LIST_SEARCH
-. ifthen (CASE_FOUND EQ 0)  | case already exists
+. ifthen( CASE_FOUND EQ 0 )  | case does not already exists
 .   CASE_VALUE = CASE_TEMP_VALUE
-.   CASE_VALUE# = numbr(CASE_VALUE)
-.   ifthen (meminfo(DB_PROC_FILE+'.GUI_CUSTOM.CASE_NEW:O',1) = MEM_O)
+.   CASE_VALUE# = numbr( CASE_VALUE )
+.   ifthen( meminfo( DB_PROC_FILE + '.GUI_CUSTOM.CASE_NEW:O', 1 ) = MEM_O )
 <COMMENT> WRITE 'CALLING ' DB_PROC_FILE '.GUI_CUSTOM.CASE_NEW:O'
 .     execute subroutine [DB_PROC_FILE+'.GUI_CUSTOM.CASE_NEW'] (CASE_TEMP_VALUE) RETURNING (PROCEED) DYNAMIC
-<COMMENT> IF(PROCEED EQ NO) WRITE 'PROCEED EQ 0 EXIT SUBPROCEDURE'
-.     if (PROCEED eq NO) EXIT SUBPROCEDURE
+.     ifthen( PROCEED eq NO )
+<COMMENT> WRITE 'PROCEED EQ 0 EXIT SUBPROCEDURE'
+.       set item CASE_DISPLAY_MESSAGE, 'Sorry, ' + CASE_TEMP_VALUE + ' could not be created.'
+.       EXIT SUBPROCEDURE
+.     endif
 .   else
+write  'CALLING GENERIC CASE_NEW'
 .     execute subprocedure CASE_NEW
 .   endif
 .   remove all CASE_LIST
+<COMMENT> WRITE 'ID SHOULD HAVE BEEN CREATED OR SEEN A MESSAGE SAYING IT WASNT'
 .   execute subprocedure CASE_LIST_LOAD
-.   execute subprocedure CASE_LIST_SEARCH    | pass var CASE_TEMP_VALUE
+.   execute subprocedure CASE_LIST_SEARCH    | pass var CASE_TEMP_VALUE | resets value for CASE_FOUND
+. else
+.   set item CASE_DISPLAY_MESSAGE, "That ID has already been used."
 . endif
-. ifthen (CASE_FOUND EQ 0)
-.   display infobox "Please double check that the new ID was created."
+| double check to see if the
+. ifthen ( CASE_FOUND EQ 0 )
+.   set item CASE_DISPLAY_MESSAGE, "Please double check that the new ID was created."
 .   EXIT SUBPROCEDURE
 . else
+.   select item FORM_LIST, 1
+.   select item REC_TYPE_SELECTED, 1
+.   select item REC_FORM_SELECTED, 1
 .   execute subprocedure OLD_KEY_PAGE_DISPLAY_LIBRARY
 . endif
 end subprocedure

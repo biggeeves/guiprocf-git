@@ -1,0 +1,97 @@
+PROCEDURE      EXPORT_TO_MYSQL.MAKE_DIRS:T  (158683,72455)  |Last amended Mar 30, 2017,20:07:35
+C -----------------------------------------------
+C --- create OUTPUT FOLDERS     -----------------
+c
+program CRWARN
+. string  *  250   OUTPUT_DIR DIR$
+. string  *  250   REDCAP_DIR
+. string  *  250   MYSQL_DIR
+. string  *  250   LARAVEL_DIR
+. string  *  250   FILE_PATH FILE_NAME
+. STRING  *    6   FILE_EXT
+. INTEGER *    2   EACH_CHAR
+. integer *    4   PASSFAIL
+. string  *  300   DBMS_LINE
+
+
+. OUTPUT_DIR = dsn( 'prefix' )  +  'db_conversion\'
+. execute SUBROUTINE SYSPROC.TOOLS.FILENAME ( OUTPUT_DIR ) RETURNING ( FILE_PATH, FILE_NAME, FILE_EXT )
+
+
+. DIR$ = OUTPUT_DIR
+. execute subroutine WEBPROCF.TOOLS.MAKE_DIRS ( OUTPUT_DIR ) RETURNING ( PASSFAIL )
+. execute subprocedure CHECK_PASSFAIL
+
+
+. DBMS_LINE = 'set attribute output_dir = "' + OUTPUT_DIR + '"'
+. execute dbms DBMS_LINE
+
+. ifthen ( Nglobal( 'MYSQL' ) eq 1 )
+.   MYSQL_DIR = OUTPUT_DIR + 'mysql\'
+
+.   DBMS_LINE = 'set attribute mysql_base_dir = "' + MYSQL_DIR + '"'
+.   execute dbms DBMS_LINE
+
+.   execute subroutine WEBPROCF.TOOLS.MAKE_DIRS ( MYSQL_DIR ) RETURNING ( PASSFAIL )
+.   execute subprocedure CHECK_PASSFAIL
+. endif
+. ifthen ( Nglobal( 'REDCAP' ) eq 1 )
+
+.   REDCAP_DIR = OUTPUT_DIR + 'redcap\'
+
+.   DBMS_LINE = 'set attribute redcap_base_dir = "' + REDCAP_DIR + '"'
+.   execute dbms DBMS_LINE
+.   execute subroutine WEBPROCF.TOOLS.MAKE_DIRS ( REDCAP_DIR ) RETURNING ( PASSFAIL )
+.   execute subprocedure CHECK_PASSFAIL
+
+.   DIR$ = REDCAP_DIR + 'data\'
+.   execute subroutine WEBPROCF.TOOLS.MAKE_DIRS ( DIR$ ) RETURNING ( PASSFAIL )
+.   execute subprocedure CHECK_PASSFAIL
+
+.   DIR$ = REDCAP_DIR + 'dictionaries\'
+.   execute subroutine WEBPROCF.TOOLS.MAKE_DIRS ( DIR$ ) RETURNING ( PASSFAIL )
+.   execute subprocedure CHECK_PASSFAIL
+
+
+. endif
+
+. ifthen ( Nglobal( 'LARAVEL' ) eq 1 )
+
+c   base Larvel directory
+.   LARAVEL_DIR = OUTPUT_DIR + 'laravel\'
+
+.   DBMS_LINE = 'set attribute laravel_base_dir = "' + LARAVEL_DIR + '"'
+.   execute dbms DBMS_LINE
+
+.   DIR$ = LARAVEL_DIR
+.   execute subroutine WEBPROCF.TOOLS.MAKE_DIRS ( DIR$ ) RETURNING ( PASSFAIL )
+.   execute subprocedure CHECK_PASSFAIL
+
+.   DIR$ = LARAVEL_DIR + 'app\'
+.   execute subroutine WEBPROCF.TOOLS.MAKE_DIRS ( DIR$ ) RETURNING ( PASSFAIL )
+.   execute subprocedure CHECK_PASSFAIL
+
+.   DIR$ = LARAVEL_DIR + 'app\models\'
+.   execute subroutine WEBPROCF.TOOLS.MAKE_DIRS ( DIR$ ) RETURNING ( PASSFAIL )
+.   execute subprocedure CHECK_PASSFAIL
+
+.   DIR$ = LARAVEL_DIR + 'app\controllers\'
+.   execute subroutine WEBPROCF.TOOLS.MAKE_DIRS ( DIR$ ) RETURNING ( PASSFAIL )
+.   execute subprocedure CHECK_PASSFAIL
+
+.   DIR$ = LARAVEL_DIR + 'app\views\'
+.   execute subroutine WEBPROCF.TOOLS.MAKE_DIRS ( DIR$ ) RETURNING ( PASSFAIL )
+.   execute subprocedure CHECK_PASSFAIL
+. endif
+
+
+subprocedure CHECK_PASSFAIL
+. IFNOTTHEN (PASSFAIL EQ 1)
+.   WRITE 'FAILED TO MAKE OUTPUT DIRECTORY.  CHECK PERMISSIONS OR OUTPUT_DIR VALUE'
+.   WRITE 'OUTPUT_DIR: ' DIR$
+.   PQL EXIT DBMS
+. ENDIF
+end subprocedure
+
+end program
+END PROCEDURE

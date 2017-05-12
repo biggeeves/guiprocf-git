@@ -1,0 +1,12 @@
+PROCEDURE      GUI_MAIN.SUBJECT_INFO:T  (158311,58667)  |Last amended Mar 23, 2016,16:17:47
+subprocedure SUBJECT_INFO
+C The family and member have changed over time. Ordered by most recent version.
+. ifthen ( meminfo( DB_PROC_FILE + '.GUI_CUSTOM.SUBJECT_INFO:O',1 ) eq MEM_O )
+.   execute subroutine [DB_PROC_FILE  + '.GUI_CUSTOM.SUBJECT_INFO'] (FORM_INFO CASE_VALUE )
+. elseif ( meminfo( DB_PROC_FILE + '.GUI_CUSTOM.SUBJINFO:O',1 ) eq MEM_O )
+.   execute subroutine [DB_PROC_FILE  + '.GUI_CUSTOM.SUBJINFO'] (FORM_INFO CASE_VALUE )
+. elseif ( meminfo( DB_PROC_FILE + '.NAVIGATE.SUBJINFO:O',1 ) eq MEM_O )
+.   execute subroutine [DB_PROC_FILE  + '.NAVIGATE.SUBJINFO'] (FORM_INFO CASE_VALUE )
+. endif
+end subprocedure
+END PROCEDURE

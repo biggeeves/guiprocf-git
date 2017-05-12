@@ -1,4 +1,4 @@
-PROCEDURE      GUI_MAIN.REC_TABLE_DISPLAY:T  (157367,52089)  |Last amended Aug 22, 2013,14:28:09
+PROCEDURE      GUI_MAIN.REC_TABLE_DISPLAY:T  (158242,50901)  |Last amended Jan 14, 2016,14:08:21
 subprocedure REC_TABLE_DISPLAY
 <comment> write 'Sub: REC_TABLE_DISPLAY: Case:' CASE_VALUE'  Rec: ' REC_TYPE_NUM ', KEY_COUNT: ' KEY_COUNT
 . if (exists(REC_TYPE_NUM) eq 0) exit subprocedure
@@ -33,7 +33,8 @@ subprocedure REC_TABLE_DISPLAY
 . BUFFER_LINE = 'end case is'                     ;execute subprocedure BUFFER_WRITE
 . endif
 . BUFFER_LINE = 'end retrieval'                   ;execute subprocedure BUFFER_WRITE
-. execute dbms ['INCLUDE BUFFER ' + BUFFER_NAME]
+. COMSTR = 'INCLUDE BUFFER ' + BUFFER_NAME
+. execute dbms COMSTR
 . if (gettxt(OLD_KEY_LIST_1) = '' or exists(gettxt(OLD_KEY_LIST_1)) = 0) append item OLD_KEY_LIST_1, "No data"
 end subprocedure
 END PROCEDURE

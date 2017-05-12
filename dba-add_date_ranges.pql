@@ -1,4 +1,4 @@
-PROCEDURE      DBA.ADD_DATE_RANGES:T  (157603,51990)  |Last amended Apr 15, 2014,14:26:30
+PROCEDURE      DBA.ADD_DATE_RANGES:T  (158242,50476)  |Last amended Jan 14, 2016,14:01:16
 | File name: Add_Date_Ranges.pql
 | Path:      various
 | Creator:   Greg Neils and David Merle
@@ -14,16 +14,19 @@ call GUIPROCF.SYSTEM.ALLRECS
 program
 integer *     1   YNC_VAR#                   | What the user choose to do.
 . string   * 300  PATH$   FOLDER$  | File location
+. string   * 300  COMSTR
 . display savebox "Save in directory...",
                   'html file|*.html|',
                   'html',
                   1 RESPONSE YNC_VAR#,
                   PATH$
-. ifthen (YNC_VAR# ge 1)
-.   execute dbms ["attribute DATE_REP filename='"+ PATH$ +"'"]
-.   PATH$ = substr(PATH$,1,len(PATH$)-4)
+. ifthen( YNC_VAR# ge 1)
+.   COMSTR = "attribute DATE_REP filename='" + PATH$ + "'"
+.   execute dbms COMSTR
+.   PATH$ = substr( PATH$,1,len( PATH$)-4)
 .   PATH$ = PATH$ + 'sch'
-.   execute dbms ["attribute DATE_SCHEMA filename='"+ PATH$ +"'"]
+.   COMSTR = "attribute DATE_SCHEMA filename='" + PATH$ + "'"
+.   execute dbms COMSTR
 . endif
 end program
 
@@ -46,40 +49,48 @@ integer *     1 USER_RANGES                  | Do you want user defined ranges?
 integer *     1 MOD_EXISTING_RANGES          | MODIFY existing ranges?
 integer *     1 SHOW_MOD                     | pop opend schema in text editor
 string  *    40 CASEID$                      | The caseid VALUE
-real    *     8 ARRAY MIN_DATA_DATE  (200,600) | What is the minimum date in that variable
-real    *     8 ARRAY MAX_DATA_DATE  (200,600) | What is the maximum date in that variable
+real    *     8 ARRAY MIN_DATA_DATE  ( 200,600) | What is the minimum date in that variable
+real    *     8 ARRAY MAX_DATA_DATE  ( 200,600) | What is the maximum date in that variable
 string  *   200 OUTF_LOC_1   | Where does the HTML report go
 string  *   200 OUT_FLOC_2   | Where does modify schema go
 integer *     4 HARD_CODE_REC                  |  ONE_REC DO REPEAT VARIABLE CODED INTO A VARIABLE
+. string   * 300  COMSTR
 
-IF (0 EQ EXISTS(DSN('DATE_REP')) OR EXISTS(DSN('DATE_SCHEMA')) ) EXIT RETRIEVAL
-IF (fileis (dsn('DATE_REP')) EQ 1) DUMB_N# = DELFILE (DSN('DATE_REP'))
-IF (fileis (dsn('DATE_SCHEMA')) EQ 1) DUMB_N# = DELFILE (DSN('DATE_REP'))
-set MOD_EXISTING_RANGES   (1)        | Yes Modify everything unless I tell you otherwise.
-set INCLUDE_VAR * (1)        | add this variable unless otherwise told not to.
-set MIN_DATA_DATE * (3660000)  | SET MIN to the maximum value
-set MAX_DATA_DATE * (0)        | SET MAX TO the miminum value
-OUTF_LOC_1 = DSN('PREFIX') + 'DateRanges.html'
-OUT_FLOC_2 = DSN('PREFIX') + 'ADD_DATE_RANGES.sch'
+
+IF( 0 EQ EXISTS( DSN( 'DATE_REP' ) ) OR EXISTS(DSN('DATE_SCHEMA')) ) EXIT RETRIEVAL
+IF( fileis( dsn( 'DATE_REP' ) ) EQ 1) DUMB_N# = DELFILE ( DSN( 'DATE_REP'))
+IF( fileis( dsn( 'DATE_SCHEMA' ) ) EQ 1) DUMB_N# = DELFILE ( DSN( 'DATE_REP'))
+set MOD_EXISTING_RANGES   ( 1)        | Yes Modify everything unless I tell you otherwise.
+set INCLUDE_VAR * ( 1)        | add this variable unless otherwise told not to.
+set MIN_DATA_DATE * ( 3660000)  | SET MIN to the maximum value
+set MAX_DATA_DATE * ( 0)        | SET MAX TO the miminum value
+OUTF_LOC_1 = DSN( 'PREFIX') + 'DateRanges.html'
+OUT_FLOC_2 = DSN( 'PREFIX') + 'ADD_DATE_RANGES.sch'
 compute NEW_START_DATE  = datec( today(0) - 365,'mm/dd/yyyy') | 1 year ago is a good start value
 compute NEW_END_DATE  = datec( today(0) + 365*13 ,'mm/dd/yyyy') | Almost 13 Years into the future
 
 display ynbox   ' Set your own Mins and Maxs?' RESPONSE USER_RANGES
-ifthen (USER_RANGES eq 1) | User values.
+ifthen( USER_RANGES eq 1 ) | User values.
 . display textbox ' New MIN: (mm/dd/yyyy)' response YNC_VAR#, USER_DATE_1
-. ifthen  (YNC_VAR# EQ 10)
+. ifthen( YNC_VAR# EQ 10 )
 .   NEW_START_DATE = USER_DATE_1
 . endif
 . display textbox ' New MAX: (mm/dd/yyyy)' response YNC_VAR#, USER_DATE_2
-. ifthen  (YNC_VAR# EQ 10)
+. ifthen( YNC_VAR# EQ 10 )
 .   NEW_END_DATE = USER_DATE_2
 . endif
-. STR$1 = 'New Min: ' + NEW_START_DATE  + char(13) + char(13) + char(13) + 'New Max: ' + NEW_END_DATE
-        + char(13) + char(13) + char(13) + 'If data conflicts with the new range, the variable will not be included in the modify schema.'
+. STR$1 = 'New Min: ' + NEW_START_DATE  +
+          char(13) + char(13) + char(13) +
+          'New Max: ' + NEW_END_DATE +
+          char(13) + char(13) + char(13) +
+          'If data conflicts with the new range, the variable will not be included in the modify schema.'
 . display infobox STR$1
 else
-. STR$1 = 'Min: ' + NEW_START_DATE  + char(13) + char(13) + char(13) + 'New Max: ' + NEW_END_DATE
-        + char(13) + char(13) + char(13) + 'Ranges will start there and will be adjusted by the data they encounter.'
+. STR$1 = 'Min: ' + NEW_START_DATE  +
+          char(13) + char(13) + char(13) +
+          'New Max: ' + NEW_END_DATE +
+          char(13) + char(13) + char(13) +
+          'Ranges will start there and will be adjusted by the data they encounter.'
 . display infobox STR$1
 endif
 
@@ -88,52 +99,52 @@ display YNBOX 'Change existing ranges?' response MOD_EXISTING_RANGES
 
 c set new date ranges
 for ONE_REC = 1, nrecs(0)
-. for XVARS = 1,nvarsc(ONE_REC)
-.   VNAME$ = varnamec(ONE_REC,XVARS)
-.   DT_START(ONE_REC,XVARS) = CDATE(NEW_START_DATE,'MMIDDIYYYY')
-.   DT_END(ONE_REC,XVARS)   = CDATE(NEW_END_DATE,'MMIDDIYYYY')
-.   ifthen (vtype(ONE_REC,VNAME$) ne 3)     | Must be a date variable
-.     INCLUDE_VAR(ONE_REC,XVARS) = 0        | DO NOT ADD THIS VARIABLE
+. for XVARS = 1, nvarsc( ONE_REC )
+.   VNAME$ = varnamec( ONE_REC, XVARS )
+.   DT_START( ONE_REC,XVARS ) = cdate( NEW_START_DATE, 'MMIDDIYYYY' )
+.   DT_END( ONE_REC,XVARS )   = cdate( NEW_END_DATE, 'MMIDDIYYYY' )
+.   ifthen(  vtype( ONE_REC, VNAME$ ) ne 3)     | Must be a date variable
+.     INCLUDE_VAR( ONE_REC, XVARS ) = 0        | DO NOT ADD THIS VARIABLE
 .     NEXT FOR
 .   endif
-.   ifthen (MOD_EXISTING_RANGES eq 0)
-.     if (nmin(ONE_REC,VNAME$) ne 1)         INCLUDE_VAR(ONE_REC,XVARS) = 0   | MIN ALREADY DEFINED.  EXCLUDE
-.     if (nmax(ONE_REC,VNAME$) ne 3660000)   INCLUDE_VAR(ONE_REC,XVARS) = 0   | MAX ALREADY DEFINED.  EXCLUDE
+.   ifthen( MOD_EXISTING_RANGES eq 0 )
+.     if( nmin( ONE_REC,VNAME$ ) ne 1 )         INCLUDE_VAR( ONE_REC, XVARS ) = 0   | MIN ALREADY DEFINED.  EXCLUDE
+.     if( nmax( ONE_REC,VNAME$ ) ne 3660000 )   INCLUDE_VAR( ONE_REC, XVARS ) = 0   | MAX ALREADY DEFINED.  EXCLUDE
 .   endif
 . end for
 end for
 
 
 open  (DATE_REP) dsnvar = OUTF_LOC_1  /write lrecl=300
-. compute STR$1 ='<'+CHAR(33)+'DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">'
-. write (DATE_REP) STR$1
+. compute STR$1 ='<' + CHAR(33) +'DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">'
+. write(DATE_REP) STR$1
 
-. write (DATE_REP) '<html>'
-. write (DATE_REP) '<head>'
-. write (DATE_REP) '<title>'
-. write (DATE_REP) 'Date Report'
-. write (DATE_REP) '</title>'
-. write (DATE_REP) '</head>'
-. write (DATE_REP) ''
-. write (DATE_REP) '<body style="font-family: Arial, Helvetica, sans-serifArial">'
-. write (DATE_REP) '<div style="border: 1px solid #1cc; padding: 30px; margin-top:40px;">'
-. write (DATE_REP) '<p style="color:#E63A00;"><strong>You must run the modify schema file to update the database.</strong>  <p><p> It is located at: <br><br>' [dsn('DATE_SCHEMA')]
-. write (DATE_REP) 'If any date var in a record schema is anything other than MM//dd/YYYY the modify schema will not work for the rec type.'
-. write (DATE_REP) '<br><br>Please modify it to suit your specific needs (and double check it too while your there)</p>'
-. ifthen (USER_RANGES eq 1)
-.   write (DATE_REP) '<p>Starting date: ' NEW_START_DATE '</p>'
-.   write (DATE_REP) '<p>Ending date:   ' NEW_END_DATE '</p>'
+. write(DATE_REP) '<html>'
+. write(DATE_REP) '<head>'
+. write(DATE_REP) '<title>'
+. write(DATE_REP) 'Date Report'
+. write(DATE_REP) '</title>'
+. write(DATE_REP) '</head>'
+. write(DATE_REP) ''
+. write(DATE_REP) '<body style="font-family: Arial, Helvetica, sans-serifArial">'
+. write(DATE_REP) '<div style="border: 1px solid #1cc; padding: 30px; margin-top:40px;">'
+. write(DATE_REP) '<p style="color:#E63A00;"><strong>You must run the modify schema file to update the database.</strong>  <p><p> It is located at: <br><br>' [dsn('DATE_SCHEMA')]
+. write(DATE_REP) 'If any date var in a record schema is anything other than MM//dd/YYYY the modify schema will not work for the rec type.'
+. write(DATE_REP) '<br><br>Please modify it to suit your specific needs (and double check it too while your there)</p>'
+. ifthen( USER_RANGES eq 1 )
+.   write(DATE_REP) '<p>Starting date: ' NEW_START_DATE '</p>'
+.   write(DATE_REP) '<p>Ending date:   ' NEW_END_DATE '</p>'
 . else
 .   write (DATE_REP)'<p>Calculated date ranges based on data. Will be <= ' NEW_START_DATE  ' and >= ' NEW_END_DATE '<p/>'
 . endif
-. write (DATE_REP) '<p> Note: XXXXXXXXXX means the date is beyond 12/31/3000</p>' /
-. write (DATE_REP) '</div>'
+. write(DATE_REP) '<p> Note: XXXXXXXXXX means the date is beyond 12/31/3000</p>' /
+. write(DATE_REP) '</div>'
 
 
-. write (DATE_REP) '<div style="border: 1px solid #c1c; padding: 30px; margin-top:40px;">'
-. write (DATE_REP) '<table width= "900" border ="0" cellspacing ="2" cellpadding="2">'
-. write (DATE_REP) '  <tr><td colspan ="5"> Data values that block the specific variable range from changing</td></tr>'
-. write (DATE_REP) '  <tr><td>Error</td><td>Rec Type</td><td>Variable</td><td>Date</td><td> CaseID</td><td>Keys</td></tr>'
+. write(DATE_REP) '<div style="border: 1px solid #c1c; padding: 30px; margin-top:40px;">'
+. write(DATE_REP) '<table width= "900" border ="0" cellspacing ="2" cellpadding="2">'
+. write(DATE_REP) '  <tr><td colspan ="5"> Data values that block the specific variable range from changing</td></tr>'
+. write(DATE_REP) '  <tr><td>Error</td><td>Rec Type</td><td>Variable</td><td>Date</td><td> CaseID</td><td>Keys</td></tr>'
 
 C FIND DATA THAT VIOLATES THE DATE RANGES.  EXCLUDE THESE VARIABLES FROM ANY SCHEMA MODIFICATION so data is not lost
 process cases
@@ -146,74 +157,82 @@ process cases
                     <GREC5>
 .   HARD_CODE_REC = ONE_REC
 .   process rec ONE_REC
-.     for XVARS = 1,nvarsc(ONE_REC)
-.       IF (INCLUDE_VAR(ONE_REC,XVARS) = 0) NEXT FOR
-.       VNAME$ = varnamec(ONE_REC,XVARS)
-.       VLABEL_# = substr(trimlr(varlabsc(ONE_REC,VNAME$)),1,20)  + '...'
+.     for XVARS = 1, nvarsc( ONE_REC )
+.       IF( INCLUDE_VAR( ONE_REC, XVARS ) eq 0 ) NEXT FOR
+.       VNAME$ = varnamec( ONE_REC, XVARS )
+.       VLABEL_# = substr( trimlr( varlabsc( ONE_REC, VNAME$ ) ), 1, 20 )  + '...'
 
 
 | get the date and display error
 .       compute DATE_NUM# = nget(VNAME$)
 
-.       if (exists(DATE_NUM#) eq 0) next for
+.       if( exists(DATE_NUM#) eq 0) next for
 C
-.       if (MIN_DATA_DATE(ONE_REC,XVARS) gt DATE_NUM#) MIN_DATA_DATE(ONE_REC,XVARS) = DATE_NUM#
-.       if (MAX_DATA_DATE(ONE_REC,XVARS) Lt DATE_NUM#) MAX_DATA_DATE(ONE_REC,XVARS) = DATE_NUM#
+.       if( MIN_DATA_DATE( ONE_REC,XVARS) gt DATE_NUM#) MIN_DATA_DATE( ONE_REC,XVARS) = DATE_NUM#
+.       if( MAX_DATA_DATE( ONE_REC,XVARS) Lt DATE_NUM#) MAX_DATA_DATE( ONE_REC,XVARS) = DATE_NUM#
 
-.       ifthen (USER_RANGES eq 0) | computer assigned range  IE.  NOT USER DEFINED RANGES
-.         if (MIN_DATA_DATE(ONE_REC,XVARS) lt DT_START(ONE_REC,XVARS)) DT_START(ONE_REC,XVARS) = MIN_DATA_DATE(ONE_REC,XVARS)
-.         if (MAX_DATA_DATE(ONE_REC,XVARS) gt DT_END(ONE_REC,XVARS))   DT_END(ONE_REC,XVARS)   = MAX_DATA_DATE(ONE_REC,XVARS)
+.       ifthen(  USER_RANGES eq 0) | computer assigned range  IE.  NOT USER DEFINED RANGES
+.         if( MIN_DATA_DATE( ONE_REC,XVARS) lt DT_START( ONE_REC,XVARS)) DT_START( ONE_REC,XVARS) = MIN_DATA_DATE( ONE_REC,XVARS)
+.         if( MAX_DATA_DATE( ONE_REC,XVARS) gt DT_END( ONE_REC,XVARS))   DT_END( ONE_REC,XVARS)   = MAX_DATA_DATE( ONE_REC,XVARS)
 .       endif
-.       ifthen (DATE_NUM# lt DT_START(ONE_REC,XVARS))  | REPORT BACK TO USER
-.         COMPUTE INCLUDE_VAR(ONE_REC,XVARS) = 0  | DO NOT ADD THIS VARIABLE
-.         compute STR$1 = '<tr><td>New Min Violation: </td><td>' + pack(RECNAME(ONE_REC)) +'</td><td>'+ pack(VNAME$) + '</td><td>' + DATEC(DATE_NUM#,'MM/DD/YYYY  ')+ '</td>'
+.       ifthen(  DATE_NUM# lt DT_START( ONE_REC,XVARS))  | REPORT BACK TO USER
+.         COMPUTE INCLUDE_VAR( ONE_REC,XVARS) = 0  | DO NOT ADD THIS VARIABLE
+.         compute STR$1 = '<tr><td>New Min Violation: </td>' +
+                          '<td>' + pack( RECNAME( ONE_REC)) + '</td>' +
+                          '<td>' + pack( VNAME$) + '</td>' +
+                          '<td>' + datec( DATE_NUM#, 'MM/DD/YYYY  ') + '</td>'
                           + '<td>' + CASEID$ +'</td>'
-.         write (DATE_REP) STR$1
-.         execute subprocedure REPORTKEYVALUES
-.         write (DATE_REP) '</tr>'
+.         write(DATE_REP) STR$1
+.         execute subprocedure REPORT_KEY_VALUES
+.         write(DATE_REP) '</tr>'
 .       endif
 
-.       ifthen (DATE_NUM# gt DT_END(ONE_REC,XVARS))
-.         COMPUTE INCLUDE_VAR(ONE_REC,XVARS) = 0  | DO NOT ADD THIS VARIABLE
-.         compute STR$1 = '<tr><td>New Max Violation: </td><td>' + pack(RECNAME(ONE_REC)) +'</td><td>'+ pack(VNAME$) + '</td><td>' + DATEC(DATE_NUM#,'MM/DD/YYYY  ')+ '</td>'
-                          + '<td>' + CASEID$ +'</td>'
-.         write (DATE_REP) STR$1
-.         execute subprocedure REPORTKEYVALUES
-.         write (DATE_REP) '</tr>'
+.       ifthen( DATE_NUM# gt DT_END( ONE_REC, XVARS ) )
+.         COMPUTE INCLUDE_VAR( ONE_REC,XVARS ) = 0  | DO NOT ADD THIS VARIABLE
+.         compute STR$1 = '<tr><td>New Max Violation: </td>' +
+                          '<td>' + pack(RECNAME(ONE_REC)) + '</td>' +
+                          '<td>'+ pack(VNAME$) + '</td>' +
+                          '<td>' + DATEC(DATE_NUM#,'MM/DD/YYYY  ')+ '</td>' +
+                          '<td>' + CASEID$ +'</td>'
+.         write(DATE_REP) STR$1
+.         execute subprocedure REPORT_KEY_VALUES
+.         write(DATE_REP) '</tr>'
 .       endif
 .     end for
 .   end rec
 . END REPEAT
 end cases
 
-. write (DATE_REP) '  </table>'
-. write (DATE_REP) '</div>'
+. write(DATE_REP) '  </table>'
+. write(DATE_REP) '</div>'
 
 c a 2nd for loop for Max- Min calculated data values
-. write (DATE_REP) '<div style="border: 1px solid #c1c; padding: 30px; margin-top:40px;">'
-. write (DATE_REP) '<table width= "900" border ="0" cellspacing ="2" cellpadding="2">'
-. write (DATE_REP) '  <tr><td colspan ="5"> For your reference: Min and Max data in the database.</td></tr>'
-. write (DATE_REP) '  <tr><td>Rec</td><td>Var</td><td>Label</td><td>Min</td><td> Max</td></tr>'
+. write(DATE_REP) '<div style="border: 1px solid #c1c; padding: 30px; margin-top:40px;">'
+. write(DATE_REP) '<table width= "900" border ="0" cellspacing ="2" cellpadding="2">'
+. write(DATE_REP) '  <tr><td colspan ="5"> For your reference: Min and Max data in the database.</td></tr>'
+. write(DATE_REP) '  <tr><td>Rec</td><td>Var</td><td>Label</td><td>Min</td><td> Max</td></tr>'
 
 . for ONE_REC = 1, nrecs(0)
 .   for XVARS = 1,nvarsc(ONE_REC)
 .     compute VNAME$ = varnamec(ONE_REC,XVARS)
 .     compute STR$1 = '<tr>'
-.     ifthen (MIN_DATA_DATE(ONE_REC,XVARS) NE 3660000)
-.       compute STR$1 = STR$1 + '<td> ' +trim(RECNAME(ONE_REC)) + '</td><td>' + trim(varnamec(ONE_REC,XVARS)) + '</td><td>' + trim(varlabsc(ONE_REC,VNAME$))
-                              + ' </td><td> ' + datec(MIN_DATA_DATE(ONE_REC,XVARS),'mm/dd/yyyy') + '</td>'
+.     ifthen( MIN_DATA_DATE(ONE_REC,XVARS) NE 3660000)
+.       compute STR$1 = STR$1 + '<td> ' +trim(RECNAME(ONE_REC)) + '</td>' +
+                        '<td>' + trim( varnamec( ONE_REC,XVARS ) ) + '</td>' +
+                        '<td>' + trim(varlabsc(ONE_REC,VNAME$))+ ' </td>' +
+                        '<td> ' + datec(MIN_DATA_DATE(ONE_REC,XVARS),'mm/dd/yyyy') + '</td>'
 .     endif
-.     ifthen (MAX_DATA_DATE(ONE_REC,XVARS) NE 0)
-.       compute STR$1 = STR$1 + '<td>' + datec(MAX_DATA_DATE(ONE_REC,XVARS),'mm/dd/yyyy') + ' </td>'
+.     ifthen( MAX_DATA_DATE(ONE_REC,XVARS) NE 0)
+.       compute STR$1 = STR$1 + '<td>' + datec( MAX_DATA_DATE( ONE_REC, XVARS), 'mm/dd/yyyy') + ' </td>'
 .     endif
 .     compute STR$1 = STR$1 + '</tr>'
-.     if (STR$1 ne '<tr></tr>') write (DATE_REP) STR$1
+.     if( STR$1 ne '<tr></tr>') write(DATE_REP) STR$1
 .   end for
 . end for
 
-. write (DATE_REP) '</table>'
-. write (DATE_REP) '</div>'
-. write (DATE_REP) '</body></html>'
+. write(DATE_REP) '</table>'
+. write(DATE_REP) '</div>'
+. write(DATE_REP) '</body></html>'
 . close (DATE_REP)
 
 c WRIT THE FILE FOR MODIFY SCHEMA
@@ -230,7 +249,7 @@ c WRIT THE FILE FOR MODIFY SCHEMA
 .     for XVARS = 1,nvarsc(ONE_REC)
 .       compute VNAME$ = varnamec(ONE_REC,XVARS)
 .       compute VLABEL_# = substr(trimlr(varlabsc(ONE_REC,VNAME$)),1,20)  + '...'
-.       if (INCLUDE_VAR(ONE_REC,XVARS) eq 0) NEXT FOR
+.       if( INCLUDE_VAR(ONE_REC,XVARS) eq 0) NEXT FOR
 
 c       set MIN range
 .       compute STR$1 = VNAME$ + '( "' + datec(DT_START(ONE_REC,XVARS),'mm/dd/yyyy') + '"'
@@ -238,7 +257,7 @@ c       set MIN range
 c       set MAX range
 .       compute STR$1 = STR$1 +  '  "'+ datec(DT_END(ONE_REC,XVARS),'mm/dd/yyyy') + '"  )'
 
-.       ifthen (INCLUDE_REC EQ 1)
+.       ifthen( INCLUDE_REC EQ 1)
 .         write (DATE_SCHEMA) 'MODIFY SCHEMA ' ONE_REC  ' / LOCK    | ' [RECNAME(ONE_REC)]
 .         write (DATE_SCHEMA) 'VAR RANGE '
 .         compute INCLUDE_REC = 2
@@ -256,16 +275,19 @@ compute DUMB_N# = help('file: '+'"'+dsn('DATE_REP')+'"')
 
 display YNBOX 'View modify schema? ' response SHOW_MOD
 WRITE [DSN('DATE_SCHEMA')]
-if (SHOW_MOD eq 1) compute STR$1 = 'EDITFILE "' + dsn('DATE_SCHEMA')+'"/clear'; EXECUTE DBMS STR$1
+ifthen( SHOW_MOD eq 1)
+.  compute COMSTR = 'EDITFILE "' + dsn('DATE_SCHEMA') + '"/clear'
+. EXECUTE DBMS COMSTR
 
-subprocedure REPORTKEYVALUES
+
+subprocedure REPORT_KEY_VALUES
 C report key values back
 . STR$1 = '<td>&nbsp;'
-. if (exists(keyname(HARD_CODE_REC,2)) eq 1) compute STR$1 = STR$1 + 'Keys: '+ pack(keyname(HARD_CODE_REC,2)) + ' ' +  varget(keyname(HARD_CODE_REC,2))
-. if (exists(keyname(HARD_CODE_REC,3)) eq 1) compute STR$1 = STR$1 + '<br> '  + pack(keyname(HARD_CODE_REC,3)) + ' ' +  varget(keyname(HARD_CODE_REC,3))
-. if (exists(keyname(HARD_CODE_REC,4)) eq 1) compute STR$1 = STR$1 + '<br> '  + pack(keyname(HARD_CODE_REC,4)) + ' ' +  varget(keyname(HARD_CODE_REC,4))
-. if (exists(keyname(HARD_CODE_REC,5)) eq 1) compute STR$1 = STR$1 + '<br>'   + pack(keyname(HARD_CODE_REC,5)) + ' ' +  varget(keyname(HARD_CODE_REC,5))
-. write (DATE_REP) STR$1 '</td>'
+. if( exists( keyname( HARD_CODE_REC,2)) eq 1) compute STR$1 = STR$1 + 'Keys: '+ pack(keyname(HARD_CODE_REC,2)) + ' ' +  varget(keyname(HARD_CODE_REC,2))
+. if( exists( keyname( HARD_CODE_REC,3)) eq 1) compute STR$1 = STR$1 + '<br> '  + pack(keyname(HARD_CODE_REC,3)) + ' ' +  varget(keyname(HARD_CODE_REC,3))
+. if( exists( keyname( HARD_CODE_REC,4)) eq 1) compute STR$1 = STR$1 + '<br> '  + pack(keyname(HARD_CODE_REC,4)) + ' ' +  varget(keyname(HARD_CODE_REC,4))
+. if( exists( keyname( HARD_CODE_REC,5)) eq 1) compute STR$1 = STR$1 + '<br>'   + pack(keyname(HARD_CODE_REC,5)) + ' ' +  varget(keyname(HARD_CODE_REC,5))
+. write(DATE_REP) STR$1 '</td>'
 end subprocedure
 end retrieval
 END PROCEDURE

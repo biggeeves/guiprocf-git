@@ -1,4 +1,4 @@
-PROCEDURE      GUI_MAIN.OLD_KEY_REFRESH:T  (157963,82141)  |Last amended Apr 10, 2015,22:49:01
+PROCEDURE      GUI_MAIN.OLD_KEY_REFRESH:T  (158242,50859)  |Last amended Jan 14, 2016,14:07:39
 subprocedure OLD_KEY_REFRESH
 <comment> write 'Sub: OLD_KEY_REFRESH: Get Info: Case:' CASE_VALUE'  Rec: ' REC_TYPE_NUM ', KEY_COUNT: ' KEY_COUNT ', KEY$T: ' KEY$T ', VIA: ' REC_VIA ' REFRESH_START_KEYNUM: ' REFRESH_START_KEYNUM
 
@@ -77,7 +77,8 @@ c make the retrieval in a buffer
 . BUFFER_LINE = 'end case'                            ;execute subprocedure BUFFER_WRITE
 . endif
 . BUFFER_LINE = 'end retrieval'                       ;execute subprocedure BUFFER_WRITE
-. execute dbms ['INCLUDE BUFFER ' + BUFFER_NAME]  | DEBUG
+. COMSTR = 'INCLUDE BUFFER ' + BUFFER_NAME  | DEBUG
+. execute dbms COMSTR
 . if (gettxt(OLD_KEY_LIST_1) = '' or exists(gettxt(OLD_KEY_LIST_1)) = 0) append item OLD_KEY_LIST_1, "No data"
 <comment> write 5t 'OLD_KEY_REFRESH: Case:' CASE_VALUE'  Rec: ' REC_TYPE_NUM ', KEY_COUNT: ' KEY_COUNT ', KEY$T: ' KEY$T ', VIA: ' REC_VIA
 

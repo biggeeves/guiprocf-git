@@ -1,0 +1,16 @@
+PROCEDURE      GUI_MAIN.VIEW_SPREADSHEET:T  (158242,50925)  |Last amended Jan 14, 2016,14:08:45
+SUBPROCEDURE VIEW_SPREADSHEET
+. COMSTR  = "SIR SPREADSHEET RECTYPE=" +
+             format( REC_TYPE_NUM ) +
+             " BOOLEAN = (" + CASE_NAME + " = "
+. ifthen( CASE_TYPE = 1 and sbst( CASE_VALUE, 1, 1 ) <> "'" )
+.   COMSTR  = COMSTR  + '"' + trimlr( CASE_VALUE ) + '"'
+. else
+.   COMSTR  = COMSTR  + CASE_VALUE
+. endif
+. COMSTR  = COMSTR  + ') '
+. COMSTR  = COMSTR  + " labels"
+<comment> write 'VIEW_SPREADSHEET: ' COMSTR
+. execute dbms  COMSTR
+END SUBPROCEDURE
+END PROCEDURE

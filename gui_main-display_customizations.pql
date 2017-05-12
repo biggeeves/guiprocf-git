@@ -1,0 +1,73 @@
+PROCEDURE      GUI_MAIN.DISPLAY_CUSTOMIZATIONS:T  (158635,36459)  |Last amended Feb 10, 2017,10:07:39
+SUBPROCEDURE DISPLAY_CUSTOMIZATIONS
+| A DATABASE MUST BE ATTACHED TO LOOK FOR CUSTOMIZATIONS
+. if( system( 40 ) EQ 0 ) EXIT SUBPROCEDURE
+. ifthen( exists (DB_PROC_FILE) eq 0 )
+.   DISPLAY INFOBOX 'DB PROCFILE NOT DEFINED'
+.   EXIT SUBPROCEDURE
+. ELSEIF( fileis( dsn (DB_PROC_FILE ) ) EQ 0 )
+.   DISPLAY INFOBOX 'DNS for DB PROCFILE is not set'
+. endif
+
+C GUI_MAIN CUSTOMIZATIONS
+
+DO REPEAT MEMNAME = ALL_CALL
+                    CASE_INFO
+                    CASE_INFO_DETAILS
+                    CASE_LIST_LOAD
+                    CASES_SUMMARY
+                    CXID
+                    GUI_SETTINGS
+                    PERMISSIONS
+                    REC_INFO
+                    REC_LIST_LOAD
+                    SPLASH_TEXT
+                    SUBJECT_INFO
+                    USER_AGREEMENT
+. FULL_PATH_MEMBER = DB_PROC_FILE + '.GUI_CUSTOM.MEMNAME:T'
+. ifthen( meminfo( FULL_PATH_MEMBER, 1 ) = MEM_T )
+.   set item CHECK_!MEMNAME, '+'
+.   disable item CREATE_!MEMNAME
+.   enable item EDIT_!MEMNAME
+. else
+.   set item CHECK_!MEMNAME, ''
+.   enable item CREATE_!MEMNAME
+.   disable item EDIT_!MEMNAME
+. endif
+END REPEAT
+
+
+C SCREEN CUSTOMIZATIONS
+
+DO REPEAT MEMNAME = INC_DELETE
+                    INC_HEADER
+                    INC_PERMISSIONS
+                    INC_SUBJINFO
+                    INC_VARS
+                    INC_WRITE
+. FULL_PATH_MEMBER = DB_PROC_FILE + '.SCREENS.MEMNAME:T'
+. ifthen( meminfo( FULL_PATH_MEMBER, 1 ) = MEM_T )
+.   set item CHECK_!MEMNAME, '+'
+.   disable item CREATE_!MEMNAME
+.   enable item EDIT_!MEMNAME
+. else
+.   set item CHECK_!MEMNAME, ''
+.   enable item CREATE_!MEMNAME
+.   disable item EDIT_!MEMNAME
+. endif
+END REPEAT
+
+
+
+| custom subject info to display when a case is selected
+. ifthen( meminfo( DB_PROC_FILE + '.NAVIGATE.SUBJINFO:O', 1 ) eq MEM_O )
+.   set item CHECK_SUBJECT_INFO, '+'
+. elseif( meminfo( DB_PROC_FILE + '.GUI_CUSTOM.SUBJINFO:O', 1 ) eq MEM_O )
+.   set item CHECK_SUBJECT_INFO, '+'
+. elseif( meminfo( DB_PROC_FILE + '.GUI_CUSTOM.SUBJECT_INFO:O', 1 ) eq MEM_O )
+.   set item CHECK_SUBJECT_INFO, '+'
+. else
+.   set item CHECK_SUBJECT_INFO, ''
+. endif
+END SUBPROCEDURE
+END PROCEDURE

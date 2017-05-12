@@ -1,4 +1,4 @@
-PROCEDURE      GITHUB.IMPORT_MEMBERS:T  (157550,47626)  |Last amended Feb 21, 2014,13:13:46
+PROCEDURE      GITHUB.IMPORT_MEMBERS:T  (158242,50742)  |Last amended Jan 14, 2016,14:05:42
 C IMPORTS ALL MEMBERS FROM A SUBFOLDER.
 C EACH FILE IS NAMED "SYSTEM-MEMBER.PQL" AND IS PREAD BACK IN.
 
@@ -11,6 +11,7 @@ string  * 200  IMPORT_MASK
 STRING  * 300  EACH_FILE_NAME
 integer *   2  FILE_COUNT         | Number of families in proc file
 integer *   2  RESVAR        | RESPONSE VARIABLE
+STRING  * 300  COMSTR
 
 c try the procfile folder as a default.
 display YESNOBOX "This could overwrite your web procfile if you are not careful!" response RESVAR
@@ -37,7 +38,8 @@ for EACH_FILE = 1, FILE_COUNT
 . EACH_FILE_NAME = IMPORT_FOLDER +'\' + FILEN(IMPORT_MASK, EACH_FILE)
 . WRITE EACH_FILE_NAME
 C PUT IN CHECK TO MAKE SURE THEY ARE PWRITE FILES.  CHECK FIRST LINE FOR "PROCEDURE"
-. execute dbms "PREAD '" + EACH_FILE_NAME + "'"
+. COMSTR = "PREAD '" + EACH_FILE_NAME + "'"
+. execute dbms COMSTR
 end for
 
 WRITE 'FINISHED Import Members'

@@ -1,4 +1,4 @@
-PROCEDURE      TOOLS.SET_GUIPROCF_ATTRIBUTE:T  (158208,38457)  |Last amended Dec 11, 2015,10:40:57
+PROCEDURE      TOOLS.SET_GUIPROCF_ATTRIBUTE:T  (158299,40342)  |Last amended Mar 11, 2016,11:12:22
 program
 . integer *      2   RESVAR               | Response Variable
 . string  *    300   PATH$                | File: Path
@@ -9,14 +9,14 @@ program
 
 PATH$ = dsn( procfile( 0 ) )
 display openbox "Locate the GUIPROCF" , "*.srp|*.SRP", "srp|SRP", 1 RESPONSE RESVAR, PATH$
-ifthen (RESVAR gt 0)
-.  execute subroutine SYSPROC.TOOLS.FILENAME (PATH$) RETURNING (FILE_PATH, FILE_NAME, FILE_EXT)
+ifthen( RESVAR gt 0 )
+.  execute subroutine SYSPROC.TOOLS.FILENAME ( PATH$ ) RETURNING ( FILE_PATH, FILE_NAME, FILE_EXT )
 |  DEFINE GUIPROCF
 .  COMSTR = 'attribute GUIPROCF = "' + PATH$ + '"'
 .  EXECUTE DBMS COMSTR
 
-|  DEFINE GUIPROCF RELEASE CANIDATE
-.  COMSTR = 'attribute GUIPROCF_RC = "' + FILE_PATH + FILE_NAME + '-rc.' + FILE_EXT + '"'
+|  DEFINE GUIPROCF RELEASE CANDIDATE
+.  COMSTR = 'attribute GUIPROCF_RC = "' + FILE_PATH + FILE_NAME + '-RC.' + FILE_EXT + '"'
 .  EXECUTE DBMS COMSTR
 else
 . display infobox "The Main GUI Procfile attribute must be defined to run the main gui!"

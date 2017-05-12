@@ -1,0 +1,9 @@
+PROCEDURE      GUI_MAIN.EVERY_MESSAGE:T  (158288,63440)  |Last amended Feb 29, 2016,17:37:20
+subprocedure EVERY_MESSAGE
+. TIME_LEFT = 15
+. execute subprocedure DEBUG_INFO
+C SYSTEM_ERR_CHECK SHOULD GO HERE  | MOVE TO TIMER TO NOT GET TO MANY MESSAGES
+<comment> write '-------------------- Message  --------------------' //
+. SET ITEM CASE_DISPLAY_MESSAGE, ''
+end subprocedure
+END PROCEDURE

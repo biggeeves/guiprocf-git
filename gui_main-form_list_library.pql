@@ -1,4 +1,4 @@
-PROCEDURE      GUI_MAIN.FORM_LIST_LIBRARY:T  (157965,59862)  |Last amended Apr 12, 2015,16:37:42
+PROCEDURE      GUI_MAIN.FORM_LIST_LIBRARY:T  (158311,58981)  |Last amended Mar 23, 2016,16:23:01
 subprocedure FORM_LIST_LIBRARY
 <COMMENT> WRITE 'START FORM_LIST_LIBRARY'
 .   execute subprocedure SET_PREVIOUS_KEYS
@@ -14,7 +14,7 @@ c   SIR crashes if calling a non existent subprocedure.  be careful.
 .   ifthen ( exists( REC_TYPE_NUM ) eq 1 )
 .     ifthen ( exists( recname( REC_TYPE_NUM ) ) eq 1 )
 .       execute subprocedure ["get_rec_" + format(REC_TYPE_NUM)]
-.       execute subprocedure view_all_keys
+.       execute subprocedure VIEW_ALL_KEYS
 c       Display data
 .       execute subprocedure MASTER_REFRESH_KEYS
 .     endif

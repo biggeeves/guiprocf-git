@@ -1,4 +1,4 @@
-PROCEDURE      GUI_MAIN.CASE_ALL_DATA_DISPLAY:T  (157591,58277)  |Last amended Apr 03, 2014,16:11:17
+PROCEDURE      GUI_MAIN.CASE_ALL_DATA_DISPLAY:T  (158288,66244)  |Last amended Feb 29, 2016,18:24:04
 subprocedure CASE_ALL_DATA_DISPLAY
 <comment> write 'Sub: CASE_ALL_DATA_DISPLAY: Case:' CASE_VALUE
 c displays all record information to the user.
@@ -26,8 +26,8 @@ c displays all record information to the user.
 .   elseif(len(recdoc(FORX ,1)) gt 0)
 .     GEN_STR1 = GEN_STR1 + trim(recdoc(FORX ,1))
 .   endif
-.   BUFFER_LINE = '. REC_TYPE_COUNT = count(' + format(FORX) +')'                            ; execute subprocedure BUFFER_WRITE
-.   BUFFER_LINE = '. SHOW_LINE_$ = "<br>"'                                                  ; execute subprocedure BUFFER_WRITE
+.   BUFFER_LINE = '. REC_TYPE_COUNT = count(' + format(FORX) +')' ; execute subprocedure BUFFER_WRITE
+.   BUFFER_LINE = '. SHOW_LINE_$ = "<br>"'                        ; execute subprocedure BUFFER_WRITE
 .   BUFFER_LINE = '. if( REC_TYPE_COUNT gt 0) TOTAL_REC_TYPE_COUNT = TOTAL_REC_TYPE_COUNT + 1'     ; execute subprocedure BUFFER_WRITE
 .   BUFFER_LINE = '. TOTAL_COUNT = TOTAL_COUNT + REC_TYPE_COUNT'                               ; execute subprocedure BUFFER_WRITE
 .   BUFFER_LINE = '. IF(REC_TYPE_COUNT GT 0) SHOW_LINE_$ = SHOW_LINE_$ + "<font color=""' + HTML_RED3 + '"">"'       ; execute subprocedure BUFFER_WRITE
@@ -42,6 +42,7 @@ c displays all record information to the user.
 . BUFFER_LINE = 'set item ' + format(CASE_REC_WARNING) + ', "This will delete " + format(TOTAL_COUNT) + " records in " + format(TOTAL_REC_TYPE_COUNT) + " different forms."'  ;execute subprocedure BUFFER_WRITE
 . BUFFER_LINE = 't= scrollto (GUI_ITEM_LIST , 0)'   ;execute subprocedure BUFFER_WRITE
 . BUFFER_LINE = 'end retrieval'                   ;execute subprocedure BUFFER_WRITE
-. execute dbms ['INCLUDE BUFFER ' + BUFFER_NAME]
+. COMSTR = 'INCLUDE BUFFER ' + BUFFER_NAME
+. execute dbms COMSTR
 end subprocedure
 END PROCEDURE

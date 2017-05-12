@@ -1,0 +1,75 @@
+PROCEDURE      REPORTS.MAKE_HEADER:T  (158243,47789)  |Last amended Jan 15, 2016,13:16:29
+. subprocedure MAKE_HEADER
+.   write(htm)  '<!DOCTYPE HTML>'/
+                '<html>'/
+                '<head>'/
+                '<meta http-equiv="Content-Type" content="text/html;charset=utf-8">'/
+                '<title>' [dbname(0)] ' ' CASE_NAME ' Summary</title>'/
+                '<STYLE type="text/css">'/
+                'BODY {'
+                ' font-family: Arial, sans-serif;'
+                ' color: black;'
+                '}'/
+                'h1 {'
+                ' text-align: center;'
+                ' padding: 10px 0px 10px 0px;'
+                ' margin: 0px;'
+                '}'/
+                'h2 {'
+                ' text-align: center;'
+                ' padding: 10px;'
+                ' margin: 0px;'
+                '}'/
+                'h4 {text-align: center;}'/
+                'h5 {'
+                ' background-color: orange;'
+                ' border: 1px solid black;'
+                ' padding: 10px;'
+                ' margin: 0px 0px 30px 0px;'
+                ' text-align: right;'
+                '}'/
+                'p {'
+                ' margin-top: .5em;'
+                ' margin-bottom: .5em;'
+                '}'/
+                'a {text-decoration:none; color:black}'
+                'table {border: 5px solid #555;'
+                ' border-radius: 5px;'
+                ' border-collapse: collapse;'
+                ' width: 100%;'
+                ' padding: 15px;'
+                ' margin-bottom: 20px;'
+                '}'/
+                'th  {'
+                ' background-color:' HTML_BLUE5 ';'
+                ' color:#fff;'
+                ' font-weight:bold;'
+                ' padding:15px;'
+                '}'/
+                'th:hover  {'
+                ' background-color:' HTML_BLUE2 ';'
+                '}'/
+                'th span {font-size: .7em;}'/
+                'tr:nth-child(even) {background-color: #EEEEEE;}'
+                'tr:hover, tr:nth-child(even):hover{'
+                ' background-color: #DDDDDD;'
+                '}'/
+                'tr.totals td {background-color:' HTML_BLUE1 ';font-weight:bold;}'/
+
+                'td {'
+                '  border: 0px;'
+                '  border-left: 1px solid #CECECE;'
+                '  padding:5px 15px 5px 15px;'
+                '  text-align:right;'
+                '}'/
+                'td:hover {background-color:#FFFFFF;}'/
+                'tr td:first-child {font-weight:bold;}'/
+                'ul {padding-left: 75px; margin-top:0px; margin-bottom:0px;}'/
+                'li {list-style-type: none; display: inline-block;margin-right:15px;margin-bottom:10px;}'
+                '.bluekeys'
+                '  {color:' HTML_BLUE4 ';}'
+                '}'/
+                '</style>'/
+                '</head>'/
+. end subprocedure
+END PROCEDURE

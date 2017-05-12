@@ -1,0 +1,520 @@
+PROCEDURE      EXPORT_TO_MYSQL.EXPORT_RECORD_DATA:T  (158694,61282)  |Last amended Apr 10, 2017,17:01:22
+C ---------------------------------------------------------------------
+C ----------------          EXPORT DATA          ----------------------
+
+C print back remarks
+PRINT BACK OFF
+
+program crwarn
+string  *  300    BASE_DIR
+                  REDCAP_DIR
+                  Z_SQLFN
+                  Z_DATFN
+                  Z_LOADIT
+                  Z_DATA
+                  THIS_REDCAP_DATA_FILE
+                  MYSQL_BASE_DIR
+                  F_EVENTS
+
+string  *   78    THIS_SIR_REC_NAME
+                  THIS_SQL_REC_NAME
+                  THIS_VAR_NAME
+string  *  4000   THIS_LINE
+integer *     1   PASSFAIL
+real    *     8   Z_DUMMY
+integer *     1   THIS_VTYPE
+integer *     4   EACH_REC
+                  EACH_VAR
+                  THIS_VARLENG
+integer *     1   EACH_KEY
+                  KEY_COUNT         | Number keys for record type
+string  *    32   KEY_NAME_1        | Name of first KEY for record type
+                  THIS_VAR_SQL_TYPE
+string  *   100   Z_VTERM
+integer *     4   IO_FEEDBACK
+integer *     1   MYSQL_RESERVED   | IS IT A RESERVED WORD IN MYSQL?  BOOLEAN
+string  *   200   MYSQL_FILENAME   | JUST INCASE THE FILE NAME FOR DATA IMPORT NEEDS TO BE MANIPULATED BASED ON THE SYSTEM
+string  *   300   CHECK_WORD
+                  CHECK_FILE
+                  CLEAN_WORD
+string  *   300   CSV_VALUE
+string  *  3000   CSV_LINE
+                  FILE_LINE
+string  *     6   LINE_TERMINATOR
+
+integer *     4   STOP_REC        | What record number should this stop at.  Used for sampling and testing.
+
+integer *     1   MAKE_REDCAP_DATA
+                  MAKE_MYSQL_DATA
+                  MAKE_REDCAP_EVENT_MAP
+
+integer *     1   PREFIX_VAR_NAMES
+
+string  *    40   array ALL_VAR_NAMES (1)
+integer *     2   array VAR_NAME_COUNTS (1,1,1)
+string  *  4094   RENAMED_VARIABLES
+
+string  *   100   REDCAP_EVENT_NAME
+string  *   200   REDCAP_REPEAT_INSTRUMENT
+                  REDCAP_REPEAT_INSTANCE
+
+
+integer *     4   MAX_VARS_IN_REC
+                  MAX_RECS
+                  DUP_COUNT
+                  TOTAL_VARS
+                  VAR_COUNTER
+
+string  *   255   ILINE                 | LINE FROM A FILE
+
+LINE_TERMINATOR = '<LINE_TERMINATOR>'
+BASE_DIR        = dsn( 'output_dir' )
+REDCAP_DIR      = dsn( 'redcap_base_dir' )
+MYSQL_BASE_DIR  = dsn( 'mysql_base_dir' )
+
+. STOP_REC = fst( nglobal('STOP_REC'), NRECS(0) )
+. ifthen (nrecs(0) < nglobal('STOP_REC') )
+.   | can't get record information for rectypes that can't exist
+.   STOP_REC = NRECS(0)
+. endif
+
+. IFTHEN ( nglobal('MYSQL') <> 1 )
+<COMMENT> 'MYSQL data files will NOT be created as per setting.'
+.   MAKE_MYSQL_DATA = 0
+. ELSE
+<COMMENT> 'Making MYSQL Data files.'
+.   MAKE_MYSQL_DATA = 1
+. ENDIF
+
+. IFTHEN ( nglobal('redcap') <> 1 )
+<COMMENT> 'REDCap files will NOT be created as per setting.'
+.   MAKE_REDCAP_DATA = 0
+. ELSE
+<COMMENT> WRITE 'Making REDCap data files.'
+.   MAKE_REDCAP_DATA = 1
+. ENDIF
+
+. ifthen( (0 EQ MAKE_MYSQL_DATA) AND (0 EQ MAKE_REDCAP_DATA))
+<COMMENT> 'No data files to make'
+.   EXIT PROGRAM
+. endif
+
+. ifthen ( nglobal('REDCAP_EVENT_MAP') EQ 1 )
+<COMMENT> 'Makine REDCap event mapping file'
+.   MAKE_REDCAP_EVENT_MAP = 1
+. endif
+
+
+compute Z_DATA    =  BASE_DIR +  trim( '<DBNAME>' ) + "_export_data.pql"
+compute Z_LOADIT  =  MYSQL_BASE_DIR +  '07_' + trim( '<DBNAME>' ) + "_loadit"
+compute Z_DUMMY   =  globals( "DATAPROG",  Z_DATA )
+compute Z_DUMMY   =  globals( "LOADIT",  Z_LOADIT )
+compute Z_DUMMY   =  globalN( "G_CONTINUE",  1) | RETRIEVAL EXECUTED.
+compute F_EVENTS  =  REDCAP_DIR +  + "data\" + + "_events.csv"
+
+C OPEN THE NECESSARY FILES
+
+DO REPEAT EACH_FILENAME = F_LOADIT  F_DATA /
+          EACH_PATH =     Z_LOADIT  Z_DATA
+
+. open EACH_FILENAME / dsnvar = EACH_PATH  /write iostat = IO_FEEDBACK lrecl=3000
+. CHECK_FILE = EACH_PATH
+. execute subprocedure CHECK_IO
+end repeat
+
+
+
+write 'Files created ' / 'f_loadit: '           [ dsn( 'f_loadit' ) ] /
+                         'f_data:   '           [ dsn( 'f_data' ) ] /
+      '-------------------------' //
+
+
+. write( f_loadit ) "#!/bin/sh"
+. ifthen( '<NEW>' = 'no' )
+.   write( f_loadit )["mysql --local-infile = 1 --database = <DBNAME> --password = <password> --user = <username> --execute = 'drop database <DBNAME>'"]
+. endif
+. write( f_loadit )["mysql --local-infile = 1 --password = <password> --user = <username> --execute = 'source " + dsn( 'f_db_create' ) + "'"]
+. write( f_loadit )["mysql --local-infile = 1 --database = <DBNAME> --password = <password> --user = <username> --execute = 'source " + DSN( 'f_constr' ) + "'"]
+
+ifthen (MAKE_REDCAP_EVENT_MAP eq 1)
+  open f_events / dsnvar = F_EVENTS / write / lrecl = 255
+  write f_events 'arm_num, unique_event_name, form'  | Event CSV Headers
+endif
+
+
+
+. RENAMED_VARIABLES = ""
+. MAX_VARS_IN_REC = 0
+. TOTAL_VARS = 0
+. for EACH_REC = 1, STOP_REC
+.   IF (MAX_VARS_IN_REC < NVARSC(EACH_REC)) MAX_VARS_IN_REC = NVARSC(EACH_REC)
+.   TOTAL_VARS = TOTAL_VARS + NVARSC(EACH_REC)
+. end for
+. TOTAL_VARS = TOTAL_VARS + 1
+. MAX_RECS = NRECS(0)
+ifthen (0 eq exists(TOTAL_VARS) or  exists(MAX_RECS) or exists(MAX_VARS_IN_REC))
+. write 'Array value opps: ' TOTAL_VARS MAX_RECS MAX_VARS_IN_REC
+. exit program
+endif
+. REDEFINE ARRAY 'ALL_VAR_NAMES'   (TOTAL_VARS)
+. REDEFINE ARRAY 'VAR_NAME_COUNTS' (MAX_RECS, MAX_VARS_IN_REC, 1 )
+
+. VAR_COUNTER = 1
+. for EACH_REC = 1, STOP_REC
+.   compute THIS_SIR_REC_NAME = trim( lower( recname( EACH_REC ) ) )
+.   if( exists( THIS_SIR_REC_NAME ) eq 0 ) next for
+.   for EACH_VAR = 1, nvarsc( EACH_REC )
+.     compute THIS_VAR_NAME = lower( trim( varnamec( EACH_REC, EACH_VAR ) ) )
+.     ALL_VAR_NAMES (VAR_COUNTER) = THIS_VAR_NAME
+.     VAR_COUNTER = VAR_COUNTER + 1
+.   end for
+. end for
+
+
+. VAR_COUNTER = 1
+. for EACH_REC = 1, STOP_REC
+.   compute THIS_SIR_REC_NAME = trim( lower( recname( EACH_REC ) ) )
+.   if( exists( THIS_SIR_REC_NAME ) eq 0 ) next for
+.   for EACH_VAR = 1, nvarsc( EACH_REC )
+.     compute THIS_VAR_NAME = lower( trim( varnamec( EACH_REC, EACH_VAR ) ) )
+.     DUP_COUNT = 0
+.       for POSSIBLE_DUP = 1, TOTAL_VARS
+.         IFTHEN (ALL_VAR_NAMES (POSSIBLE_DUP ) EQ THIS_VAR_NAME)
+.           ifthen (VAR_COUNTER < POSSIBLE_DUP )
+.           endif
+.           DUP_COUNT = DUP_COUNT + 1
+.         endif
+.       END FOR
+.     VAR_NAME_COUNTS( EACH_REC, EACH_VAR, 1) = DUP_COUNT
+.     VAR_COUNTER = VAR_COUNTER + 1
+.   end for
+. end for
+
+for EACH_REC = 1, STOP_REC
+. THIS_SIR_REC_NAME = trim( lower( recname( EACH_REC ) ) )
+. if( exists( THIS_SIR_REC_NAME ) eq 0 ) next for
+. KEY_COUNT = nkeys(EACH_REC)
+. ifthen (KEY_COUNT > 0)
+.   KEY_NAME_1 = keyname(EACH_REC,  1 + dbtype(0))  | 1st= caseid, 2nd = key name in case structured dbs
+. else
+.   KEY_NAME_1 = ''
+. endif
+. THIS_SQL_REC_NAME = sglobal( 'TABLE_PREFIX' ) + THIS_SIR_REC_NAME
+. compute Z_SQLFN = MYSQL_BASE_DIR +  THIS_SQL_REC_NAME + '.sql'
+. compute Z_DATFN = MYSQL_BASE_DIR +  THIS_SQL_REC_NAME + '.<FILE_ENDING>'
+
+
+c better to make this a subroutine that passes in record number and variable number and passes back redcap variable name.  It is used in two places, and could be used in more places down the road.
+
+c include REDCap column headers
+. ifthen ( MAKE_REDCAP_DATA eq 1)
+.   compute THIS_REDCAP_DATA_FILE = REDCAP_DIR + "data\" + THIS_SQL_REC_NAME + '.csv'
+.   open this_rdata / dsnvar = THIS_REDCAP_DATA_FILE / write / lrecl = 4000
+.   THIS_LINE  = ''
+.   for EACH_VAR = 1, nvarsc( EACH_REC )
+.     compute THIS_VAR_NAME = lower( trim( varnamec( EACH_REC, EACH_VAR ) ) )
+
+.     ifthen ( dbtype(0) eq 1 ) | case structured.
+C       !!!!  WARNING !!!!
+c       Variable NameS must be unique in REDCAP.
+C       Do NOT prepend the CASE ID, IT IS ALREADY UNIQUE
+.       ifthen ( THIS_VAR_NAME EQ lower( trim( varnamec( 0, 1 ) ) ) )
+|         Case ID.  Check to see if redcap_event_name is required (ie longitudinal projects)
+.         ifthen (nglobal('REDCAP_EVENT_NAME') eq 1)
+.           THIS_VAR_NAME = THIS_VAR_NAME + ',redcap_event_name'
+.         endif
+c         add column after caseid for infinitely repeating events?
+.         ifthen (nglobal('REDCAP_REPEAT') eq 1)
+.           THIS_VAR_NAME = THIS_VAR_NAME + ',redcap_repeat_instrument,redcap_repeat_instance'
+.         endif
+.       else
+.         IFTHEN (PREFIX_VAR_NAMES EQ 1)
+.           THIS_VAR_NAME = THIS_SQL_REC_NAME + '_' + THIS_VAR_NAME
+.         ELSE
+.           IFTHEN (VAR_NAME_COUNTS( EACH_REC, EACH_VAR, 1) > 1)
+|             The variable name must be unique in REDCap.
+.             THIS_VAR_NAME = THIS_SIR_REC_NAME + '_' + THIS_VAR_NAME
+.           ENDIF
+.         ENDIF
+.       endif
+.     endif
+.     THIS_LINE = THIS_LINE + THIS_VAR_NAME
+.     if ( EACH_VAR lt nvarsc( EACH_REC ) ) THIS_LINE = THIS_LINE + ','
+.   end for
+.   write( this_rdata) THIS_LINE
+.   ifthen (len(THIS_LINE) GT 4000)
+.     write 'REDCAP DATA FILE TRUNCATED!' /
+            5t 'HEADER CONTAINING VARIABLE NAMES IS TOO LONG!' /
+.   endif
+.   close this_rdata
+. endif
+
+. write( f_data ) 'remark "Creating Rec# ' EACH_REC ': ' THIS_SIR_REC_NAME '"'
+. write( f_data ) 'remark "' Z_SQLFN  '"'
+. write( f_data ) 'remark "' Z_DATFN  '"'
+. ifthen ( MAKE_REDCAP_DATA eq 1)
+.   write( f_data ) 'remark "' THIS_REDCAP_DATA_FILE '"'
+. endif
+. write( f_data ) // 'RETRIEVAL SEED = <CASE_SEEDER> |' EACH_REC ': ' THIS_SIR_REC_NAME
+. write( f_data ) 'string  * 4094  DATA_LINE'
+. write( f_data ) 'string  * 4094  DATA_VALUE'
+. write( f_data ) 'integer *    4  INSTANCE'
+
+
+. write( f_loadit )["mysql --local-infile = 1 --database = <DBNAME> --password = <password> --user = <username> --execute = 'source " + Z_SQLFN + "'"]
+. ifthen ( MAKE_MYSQL_DATA eq 1)
+.   open f_zsqlfn / dsnvar = Z_SQLFN / write
+.   MYSQL_FILENAME = Z_DATFN
+.   EXECUTE SUBPROCEDURE ESCAPE_SLASHES
+
+.   write( f_zsqlfn ) "LOAD DATA LOCAL "
+.   write( f_zsqlfn ) ["INFILE '" + MYSQL_FILENAME + "'"] /
+                      " INTO TABLE " THIS_SQL_REC_NAME /
+                      " COLUMNS TERMINATED BY '<SQL_DELIMINATOR>'" /
+                      " OPTIONALLY ENCLOSED BY '""'"/
+                      " ESCAPED BY '""'"/
+                      " LINES TERMINATED BY '<LINE_TERMINATOR>'"  /
+                      " IGNORE 1 LINES;"/
+. endif
+
+
+. write( f_data ) 'compute DELIM = <PQL_DELIMINATOR>'
+. ifthen ( MAKE_MYSQL_DATA eq 1)
+.   FILE_LINE = 'open f_mysql_datafile / ' +
+                'dsn = "' + Z_DATFN + '"' +
+                ' /write/lrecl = 4000'
+.   write( f_data ) FILE_LINE
+. endif
+. ifthen ( MAKE_REDCAP_DATA eq 1)
+.   FILE_LINE = 'open f_redcap_datafile / dsn = ' +
+                '"' + THIS_REDCAP_DATA_FILE + '"' +
+                '/append/lrecl = 4000'  | append because of the column headers
+.   write( f_data ) FILE_LINE
+. endif
+
+c include MYSQL column headers
+. write( f_data/noeol) 'write( f_mysql_datafile) '
+. THIS_LINE = '"'
+. for EACH_VAR = 1, nvarsc( EACH_REC )
+.   compute THIS_VAR_NAME = lower( trim( varnamec( EACH_REC, EACH_VAR ) ) )
+.   THIS_LINE = THIS_LINE + THIS_VAR_NAME
+.   if ( EACH_VAR lt nvarsc( EACH_REC ) ) THIS_LINE = THIS_LINE + '<DELIMINATOR>'
+.   ifthen ( amod( EACH_VAR, 10 ) GE 0 ) | keep it to 10 variables on a line
+.     THIS_LINE = THIS_LINE + '"'
+.     write( f_data) 5T THIS_LINE
+.     THIS_LINE = '     "'  | add indented space to make the new line readable
+.   endif
+. end for
+
+c PROCESS CASES
+
+. write( f_data ) 'process cases <CASE_RESTRICTION> '
+. execute subprocedure ADD_CASE_CRITERIA
+. write( f_data ) 'INSTANCE = 0'
+. write( f_data ) 'process rec ' THIS_SIR_REC_NAME
+. write( f_data ) 'INSTANCE = INSTANCE + 1'
+. write( f_data ) 'get vars all'
+. write( f_data ) 'DATA_LINE = ""'
+
+. for EACH_VAR = 1, nvarsc( EACH_REC )
+.   ifthen(  EACH_VAR LT nvarsc( EACH_REC ) )
+.     compute Z_VTERM = 'DELIM'
+.   else
+.     compute Z_VTERM = ""
+.   endif
+.   compute THIS_VAR_NAME = lower( trim( varnamec( EACH_REC, EACH_VAR ) ) )
+.   compute THIS_VTYPE    = vtype( EACH_REC, THIS_VAR_NAME )
+.   compute THIS_VARLENG  = varleng( EACH_REC, THIS_VAR_NAME )
+
+.   recode THIS_VAR_SQL_TYPE = THIS_VTYPE( 1 = 'VARCHAR' )( 2 = 'VARCHAR' )( 3 = 'DATE' )( 4 = 'TIME' )( 5 = 'INTEGER' )
+    ( 6 = 'FLOAT' )( 7 = 'DOUBLE PRECISION' )( 8 = 'BIGINT' )
+.   EXECUTE SUBROUTINE TOOLS.CHECK_RESERVED_WORDS (THIS_VAR_NAME) RETURNING (CLEAN_WORD MYSQL_RESERVED)
+.   write( f_mysql_datafile/noeol ) CLEAN_WORD
+
+.   execute subprocedure REDCAP_EVENTS  | Add Column With Redcap Event Data If Necessary
+
+.   execute subprocedure REDCAP_REPEATS | Add Column With Redcap Repeating Forms
+
+.   THIS_LINE = ''
+.   ifthen( THIS_VAR_SQL_TYPE  = 'VARCHAR' )
+.     THIS_LINE = 'DATA_VALUE = fst( ' + THIS_VAR_NAME + ', missing( ' + THIS_VAR_NAME + ' ) )'
+.     write( f_data ) THIS_LINE
+.     THIS_LINE = 'DATA_VALUE = ''"'' + DATA_VALUE + ''"'''
+.   elseif( THIS_VAR_SQL_TYPE = 'INTEGER' or 'FLOAT' or 'DOUBLE PRECISION' or 'BIGINT' )
+.     THIS_LINE = 'DATA_VALUE = format( fst( ' + THIS_VAR_NAME + ', missing( ' + THIS_VAR_NAME + ' ) ) )'
+.   else
+.     ifthen( THIS_VTYPE = 3 )
+.       THIS_LINE = 'DATA_VALUE = datec( ' + THIS_VAR_NAME + ', "<date_format>" )'
+.     else
+.       THIS_LINE = 'DATA_VALUE = timec( ' + THIS_VAR_NAME + ', "<time_format>" )'
+.     endif
+.   endif
+.   write( f_data ) THIS_LINE
+.   write( f_data ) 'EXECUTE SUBPROCEDURE ADD_VALUE_TO_LINE' /
+
+
+|   close the create table sql statement
+.   ifthen(  EACH_VAR lt nvarsc( EACH_REC ) )
+.     | DO NOTHING
+.   else
+.     ifthen ( MAKE_MYSQL_DATA eq 1)
+.       write( f_data ) 'write( f_mysql_datafile ) DATA_LINE'
+.     endif
+.     ifthen ( MAKE_REDCAP_DATA eq 1)
+.       write( f_data ) 'write( f_redcap_datafile ) DATA_LINE'
+.     endif
+.     write( f_data ) 'end process rec'
+.     write( f_data ) 'end process cases'
+.     ifthen ( MAKE_MYSQL_DATA eq 1)
+.       write( f_data ) 'close( f_mysql_datafile )'
+.     endif
+.     ifthen ( MAKE_REDCAP_DATA eq 1)
+.       write( f_data ) 'close( f_redcap_datafile )'
+.     endif
+
+.     write( f_data ) //
+.     write( f_data ) 'SUBPROCEDURE ADD_VALUE_TO_LINE'
+.     write( f_data ) '. IFTHEN ( ( DATA_VALUE NE "" ) OR ( EXISTS( DATA_VALUE ) EQ 1 ) )'
+.     write( f_data ) '.   DATA_LINE = DATA_LINE + DATA_VALUE'
+.     write( f_data ) '. ELSE'
+.     write( f_data ) '.   DATA_LINE = DATA_LINE + "<NULL_VALUE>"'
+.     write( f_data ) '. ENDIF'
+.     write( f_data ) '. DATA_LINE = DATA_LINE + DELIM'
+.     write( f_data ) 'end subprocedure'
+
+.     write( f_data ) 'end retrieval'
+.     close( f_zsqlfn )
+.   end if
+. end for
+end for
+
+close ( f_data )
+close ( loadit )
+ifthen ( MAKE_REDCAP_EVENTS eq 1)
+. close ( f_events )
+endif
+
+SUBPROCEDURE CHECK_IO
+. IFNOTTHEN ( IO_FEEDBACK EQ 0 )
+.   WRITE 'ERRORS WITH NECESSARY FILE: ' CHECK_FILE ' ERROR: ' IO_FEEDBACK
+.   Z_DUMMY = globals( "G_CONTINUE",  '0')
+. ENDIF
+END SUBPROCEDURE
+
+subprocedure MAKE_FILE_LINE
+C CREATE A LINE THAT CAN BE READ IN BY MYSQL
+. IF ( EXISTS( CSV_LINE ) EQ 0 ) CSV_LINE = ""
+. CSV_VALUE =  replace( CSV_VALUE, '"', '""', 99, 2, 0 ) | 2 double qoutes when imported turn into 1 double qoute
+. CSV_VALUE =  replace( CSV_VALUE, "’", "'", 99, 2, 0 )  | There is an issue with the back qoutes and importing into MySQL`
+
+. IFTHEN ( EXISTS( CSV_VALUE ) EQ 0)
+.   CSV_VALUE = '<NULL_VALUE>'
+. ELSEIF ( pack( trimlr( CSV_VALUE ) ) EQ '' )
+.   CSV_VALUE = '<NULL_VALUE>'
+. ELSEIF ( CSV_VALUE EQ 'NULL' )
+.   CSV_VALUE = '<NULL_VALUE>'
+. ELSE
+.   CSV_VALUE =  '"' + TRIMR( CSV_VALUE) + '"'       | ADD QOUTES AND GET RID OF TRAILING SPACES
+. ENDIF
+
+. CSV_LINE = CSV_LINE + CSV_VALUE + '<DELIMINATOR>'
+end subprocedure
+
+SUBPROCEDURE TRIM_LAST_COMMA
+. CSV_LINE = TRIMR( CSV_LINE )
+C . IF ( SUBSTR( CSV_LINE, LEN( CSV_LINE ), 1 ) EQ ',' ) CSV_LINE = SUBSTR( CSV_LINE, 1, LEN( CSV_LINE )  -1)
+END SUBPROCEDURE
+
+SUBPROCEDURE ESCAPE_SLASHES
+c for windows the "\" in the file path must be escaped as it is a SQL reserved keyword
+. IFNOT ( 0<WINDOWS_MACHINE> EQ 1 ) EXIT SUBPROCEDURE
+. MYSQL_FILENAME = replace( MYSQL_FILENAME , '\', '\\', 99, 2, 0 )
+END SUBPROCEDURE
+
+
+subprocedure REDCAP_EVENTS
+c recieves THIS_SIR_REC_NAME, THIS_VAR_NAME, EACH_VAR, KEY_COUNT
+. ifthen(nglobal('redcap_event_name') eq 1 )
+.   ifthen (EACH_VAR eq 2)
+
+.     execute subprocedure calc_redcap_event_name
+
+.     THIS_LINE = 'DATA_VALUE = ' + REDCAP_EVENT_NAME
+.     write( f_data ) THIS_LINE
+.     write( f_data ) 'EXECUTE SUBPROCEDURE ADD_VALUE_TO_LINE' /
+.   endif
+. endif
+end subprocedure
+
+
+
+subprocedure calc_redcap_event_name
+. REDCAP_EVENT_NAME = '""'
+. ifthen (KEY_COUNT = 0)
+.   REDCAP_EVENT_NAME = '"' + sglobal('REDCAP_NOKEYS') + '_arm1"'
+. elseif( KEY_COUNT = 1)
+.   ifthen( upper(SGLOBAL('REDCAP_KEYFIELD')) EQ upper(KEY_NAME_1) )
+.     REDCAP_EVENT_NAME = '"' + THIS_VAR_NAME + '"' +
+                          '+ "_" + format( ' + THIS_VAR_NAME + ')' +
+                          '+ "_arm_1"'
+.   else
+.     REDCAP_EVENT_NAME = '"anytime_arm_1"'
+.   endif
+. else
+C multiple keyed record type conver to infinitely repeating forms
+.   REDCAP_EVENT_NAME = '"' + sglobal('REDCAP_MULT_KEYS') + '_arm_1"'
+. endif
+end subprocedure
+
+subprocedure REDCAP_REPEATS
+c recieves THIS_SIR_REC_NAME, THIS_VAR_NAME, EACH_VAR, KEY_COUNT, KEY_NAME_1
+IFTHEN (THIS_SIR_REC_NAME EQ 'brain')
+write THIS_SIR_REC_NAME, THIS_VAR_NAME, EACH_VAR, KEY_COUNT, KEY_NAME_1
+endif
+
+. if( nglobal('redcap_repeat') <> 1 ) exit subprocedure
+. if( EACH_VAR <> 2) exit subprocedure  | INCLUDE ONLY once in same position every time
+. ifthen ( KEY_COUNT eq 0)
+.   REDCAP_REPEAT_INSTRUMENT = 'DATA_VALUE = "" | no keys, redcap instance blank'
+.   REDCAP_REPEAT_INSTANCE   = 'DATA_VALUE = "" | no keys, redcap instance blank'
+. elseif( upper(SGLOBAL('REDCAP_KEYFIELD')) EQ upper(KEY_NAME_1) )
+.   REDCAP_REPEAT_INSTRUMENT = 'DATA_VALUE = "" | keyname = redcap event field name'
+.   REDCAP_REPEAT_INSTANCE   = 'DATA_VALUE = "" | keyname = redcap event field name'
+. else
+C   REDCAP REPEAT INSTRUMENT NAME
+.   REDCAP_REPEAT_INSTRUMENT = 'DATA_VALUE = ' + '"' + THIS_SIR_REC_NAME + '" | REDCap instance form name'
+.   REDCAP_REPEAT_INSTANCE   = 'DATA_VALUE = format(INSTANCE) | REDCap instance counter'
+. endif
+
+. THIS_LINE = REDCAP_REPEAT_INSTRUMENT
+. write( f_data ) THIS_LINE
+. write( f_data ) 'EXECUTE SUBPROCEDURE ADD_VALUE_TO_LINE' /
+
+C REDCAP REPEAT INSTANCE
+
+. THIS_LINE = REDCAP_REPEAT_INSTANCE
+. write( f_data ) THIS_LINE
+. write( f_data ) 'EXECUTE SUBPROCEDURE ADD_VALUE_TO_LINE' /
+
+end subprocedure
+
+subprocedure ADD_CASE_CRITERIA
+. if (NGLOBAL('CASE_CRITERIA') <> 1) exit subprocedure
+. if (meminfo('EXPORT_TO_MYSQL.CASE_CRITERIA', 1) <> 1) exit subprocedure
+. open case_critiria read dsn = 'EXPORT_TO_MYSQL.CASE_CRITERIA' lrecl=255 iostat = IO_FEEDBACK member
+. loop
+.   read(case_critiria, err=err) iline (a255)
+.   write( f_data ) iline
+. end loop
+. err:
+c  WRITE 'THERE WAS AN ERROR OR END OF FILE was reached'
+end subprocedure
+
+end program
+
+REMARK 'INCLUDING <DATAPROG>'
+
+include file "<DATAPROG>"
+
+REMARK 'CONTINUING TO CREATE DATABASE AND LOAD DATA: <LOADIT>'
+END PROCEDURE

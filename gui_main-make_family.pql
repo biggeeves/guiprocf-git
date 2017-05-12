@@ -1,4 +1,4 @@
-PROCEDURE      GUI_MAIN.MAKE_FAMILY:T  (158208,40616)  |Last amended Dec 11, 2015,11:16:56
+PROCEDURE      GUI_MAIN.MAKE_FAMILY:T  (158306,61786)  |Last amended Mar 18, 2016,17:09:46
 SUBPROCEDURE MAKE_FAMILY | recieves FAMILY_NAME
 c does the family screens already exists?  if not make it.
 
@@ -14,6 +14,7 @@ c does the family screens already exists?  if not make it.
 
 . compute COMSTR = 'CREATE FAMILY ' + FAMILY_NAME
 . EXECUTE DBMS COMSTR
+write ////// COMSTR ///////
 
 END SUBPROCEDURE
 END PROCEDURE

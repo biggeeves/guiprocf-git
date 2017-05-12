@@ -1,0 +1,113 @@
+PROCEDURE      GUI_CUSTOM.MAKE_GUI_SETTINGS:T  (158254,42875)  |Last amended Jan 26, 2016,11:54:35
+PROGRAM CRWARN
+. call GUIPROCF.GUI_MAIN.DECLARE_VARIABLES
+. execute subprocedure SET_PROCFILE_VARS
+. CASE_NAME = varnamec( 0, 1 )
+. CASE_TYPE = vtype( 0, CASE_NAME ) | 0=STRING, 1=INTEGER
+
+. FAMILY_NAME = 'GUI_CUSTOM'
+. MEMBER_NAME = 'CASE_LIST_LOAD'
+. FULL_PATH_MEMBER = DB_PROC_FILE + '.' + FAMILY_NAME + '.' + MEMBER_NAME
+
+
+. ifthen( 0 eq len( DB_PROC_FILE ) or exists( DB_PROC_FILE ) )
+.   display infobox 'No DB_PROC_FILE defined.  EXITING.  CONTACT ADMIN.'
+.   EXIT PROGRAM
+. endif
+. COMSTR = "set procfile " + DB_PROC_FILE
+. execute dbms  COMSTR | gui_custom goes into database procfile file, not the guiprocf
+
+. execute subprocedure MAKE_FAMILY
+
+. ifthen( meminfo (FULL_PATH_MEMBER + ':T', 1 )  > 0 ) | MEMBER ALREADY EXISTS
+.    display YNBOX 'THIS  WILL  OVERWRITE   "' + FULL_PATH_MEMBER + '".' + CHAR(13) + 'OVER WRITE IT?'
+             RESPONSE RESVAR
+.    ifthen( RESVAR EQ 0 )
+.      display infobox "CANCELED"
+.      EXIT PROGRAM
+.    endif
+. endif
+
+. open ( MEMBER_NAME ) dsnvar = FULL_PATH_MEMBER iostat = MY_IOSTAT  write lrecl=300 REPLACE member
+. ifthen (MY_IOSTAT NE 0)
+.   write 'unable to write to member: ' FULL_PATH_MEMBER ' .  exiting.  Them member was NOT made.  IOSTAT:' MY_IOSTAT
+.   EXIT PROGRAM
+. endif
+
+. write( MEMBER_NAME ) "c Originally created by the GUIPROCF" /
+                       "c Template for creating your own custom CASE LIST LOAD"/
+                       "c This sample shows how to restrict GUEST_USER to a range of IDs"/
+                       "c The CASE ID must be the correct type: Integer or String.  Change the code accordingly."/
+                       "c ITEM_NUMBER is the gui control id of the CASE LIST."/
+
+
+. write( MEMBER_NAME ) "subroutine GUI_CUSTOM.CASE_LIST_LOAD:O (ITEM_NUMBER) returning (PROCEED) replace" /
+                       "integer * 2 ITEM_NUMBER" /
+                       "integer * 1 PROCEED" /
+. ifthen( CASE_TYPE EQ 1 )
+.   MEMBER_LINE = "string * 64 ID_START ID_END"
+. else
+.   MEMBER_LINE = "integer * 2 ID_START ID_END"
+. endif
+. EXECUTE SUBPROCEDURE MEMBER_WRITE
+. write( MEMBER_NAME ) // "PROCEED = 0"//
+                       "ifthen (sglobal('USERA') eq 'GNEILS' or 'DMERLE' or 'HANDREWS' or 'MFENG')"/
+                       "| full access to all IDs."/
+. ifthen( CASE_TYPE EQ 1 )
+.   MEMBER_LINE = ". ID_START = '0'; ID_END = '20000'"
+. else
+.   MEMBER_LINE = ". ID_START = 0; ID_END = 20000"
+. endif
+. EXECUTE SUBPROCEDURE MEMBER_WRITE
+
+. write( MEMBER_NAME ) ". PROCEED = 1"/
+
+
+. write( MEMBER_NAME ) "elseif(sglobal( 'USERA' ) EQ 'GUEST_USER' )" /
+. ifthen( CASE_TYPE EQ 1 )
+.   MEMBER_LINE = ". ID_START = '300'; ID_END =   '400'"
+. else
+.   MEMBER_LINE = ". ID_START = 300; ID_END =   400"
+. endif
+. EXECUTE SUBPROCEDURE MEMBER_WRITE
+. write( MEMBER_NAME ) ". PROCEED = 1" /
+                       "endif" //
+                       "ifthen( PROCEED eq 0 )" /
+                       ". display infobox 'Please contact your DBA for your list of KIT IDs.'" /
+                       ". RETURN  | DO NOT CONTINUE. EXIT THE SUBROUTINE" /
+                       "endif" /
+                       "PROCESS CASES LIST = ID_START THRU ID_END" /
+.   MEMBER_LINE = ". append item ITEM_NUMBER, " + CASE_NAME
+. EXECUTE SUBPROCEDURE MEMBER_WRITE
+
+. write( MEMBER_NAME ) "END CASES" /
+                       "end subroutine" /
+. close MEMBER_NAME
+
+C compile the new member
+execute subprocedure COMPILE_MEMBER
+
+C include the appropriate subprocedures
+call GUIPROCF.GUI_MAIN.COMPILE_MEMBER
+CALL GUIPROCF.GUI_MAIN.SET_PROCFILE_VARS
+CALL GUIPROCF.GUI_MAIN.MAKE_FAMILY
+
+subprocedure MEMBER_WRITE
+. if( exists( MEMBER_LINE ) EQ 0 ) MEMBER_LINE = '| WARNING SYSTEM MISSING MEMBER_LINE!'
+. write ( MEMBER_NAME )  MEMBER_LINE
+end subprocedure
+
+END PROGRAM
+
+
+cif eq 1,2
+1 = string
+2 = categorical
+3 = date
+4 = time
+5 = integer
+6 = real (single precision)
+7 = real (double precision)
+8 = scaled variable
+cif end
+END PROCEDURE

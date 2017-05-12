@@ -1,0 +1,16 @@
+PROCEDURE      REPORTS.CASE_SUMMARY:T  (158255,30330)  |Last amended Jan 27, 2016,08:25:30
+SUBPROCEDURE CASE_SUMMARY
+. ifthen( meminfo( DB_PROC_FILE + '.GUI_CUSTOM.CASE_INFO:O', 1 ) eq MEM_O )
+<COMMENT> WRITE 'CALLING ' DB_PROC_FILE '.GUI_CUSTOM.CASE_INFO:O'
+.   execute subroutine [DB_PROC_FILE + '.GUI_CUSTOM.CASE_INFO'] ( CASE_VALUE CASE_INFO_SUMMARY )
+                       RETURNING ( PROCEED) DYNAMIC
+. else
+.   remove all CASE_INFO_SUMMARY
+.   GEN_STR1 = '<body bgcolor="' + HTML_YELLOW1 + '" readonly="true">'
+.   append line CASE_INFO_SUMMARY,  GEN_STR1  HTML
+.   GEN_STR1 = '<p align="center"><font size="+3"><B>Selected: ' + CASE_VALUE + '</p>'
+.   append line CASE_INFO_SUMMARY, GEN_STR1 HTML
+.   GEN_STR1 = '<p>Ask your DBA to customize this area for you.</p>'
+. endif
+END SUBPROCEDURE
+END PROCEDURE

@@ -1,0 +1,152 @@
+PROCEDURE      REPORTS.CASES_KEY_VALUES:T  (158331,58030)  |Last amended Apr 12, 2016,16:07:10
+call SYSPROC.TOOLS.HTMLCODE
+call GUIPROCF.SYSTEM.ALLRECS
+
+retrieval  CRWARN
+<comment> write "making Cases List Displaying each record and key values for that record."
+call GUIPROCF.GUI_MAIN.DECLARE_VARIABLES
+
+CASE_NAME = trimlr( keyname( 0, 1 ) )
+CASE_LABEL = trimlr( varlabsc( 0, CASE_NAME ) )
+if( CASE_LABEL eq '') CASE_LABEL = CASE_NAME
+if( dbtype(0) eq 0 ) CASE_LABEL = 'Tested with Case Structured DBs.'
+
+. ifthen ( sglobal('sirver') eq 'XS.01.20' )
+.   DB_PROC_FILE = 'SIR'+ pformat( system(39), 'zzzz' ) + '4'
+. elseif ( sglobal('sirver') eq 'XS.01.19' )
+.   DB_PROC_FILE = 'SIR'+ pformat( system(39), 'zz' ) + '4'
+. endif
+. execute subroutine SYSPROC.TOOLS.FILENAME (DB_PROC_FILE)
+               returning ( PATH_FILE, NAME_FILE, EXT_FILE )
+
+. OUTPUT_FILE = PATH_FILE + 'cases_and_key_values.html'
+
+. open ( HTM ) write dsnvar = OUTPUT_FILE lrecl = 6000
+. execute subprocedure MAKE_HEADER
+
+GEN_STR1 = datec(today(0), 'Wwwwwwwww MM.DD.YYYY')
+write(htm) '<h3>Cases and Key Values. Created ' GEN_STR1 '</h3>'
+write(htm) '<div> '
+write(htm) '<table>'
+write(htm) 2t '<tr>'
+write(htm) '<th title="Case">' CASE_LABEL  '</th>'
+write(htm) '<th title="Total Records">Total</th>'
+for EACH_RECORD_NUMBER = 1, nrecs(0)
+. ifnot (len(recname(EACH_RECORD_NUMBER)) gt 0) next for
+. RECORD_NAME = trimlr(recname(EACH_RECORD_NUMBER))
+. ifthen (len(trimlr(recdoc(EACH_RECORD_NUMBER, 0))) gt 0)
+.   REC_LABEL = trimlr(recdoc(EACH_RECORD_NUMBER, 0))
+. elseif (len(trimlr(recdoc(EACH_RECORD_NUMBER, 1))) gt 0)
+.   REC_LABEL = trimlr(recdoc(EACH_RECORD_NUMBER, 1))
+. else
+.   REC_LABEL = trimlr(recname(EACH_RECORD_NUMBER))
+. endif
+. REC_ROW_COUNT = numrecs(EACH_RECORD_NUMBER)
+. GEN_STR1 = ' title="' + REC_LABEL +  '"'
+. write(htm) '<th' GEN_STR1 '>' RECORD_NAME '</th>'
+end for
+write(htm) 2t '</tr>'
+
+c totals for each rec
+GEN_STR1 = '<tr class="totals">' +
+           '<td>Cases: ' + format( system(24) ) + '</td>' +
+           '<td>Recs: ' + format( system(25) ) + '</td>'
+write(htm) GEN_STR1
+for EACH_RECORD_NUMBER = 1, nrecs(0)
+. ifnot (len(recname(EACH_RECORD_NUMBER)) gt 0) next for
+. REC_ROW_COUNT = numrecs(EACH_RECORD_NUMBER)
+. GEN_STR1 = '<td>'+ format(REC_ROW_COUNT) + '</td>'
+. write(htm) GEN_STR1
+end for
+write(htm) 2t '</tr>'
+
+
+
+process cases
+. write(htm) '<tr>'
+. VAR_NAME_CB = stdname( CASE_NAME )
+. CASE_VALUE = trim( varget( VAR_NAME_CB ) )
+. GEN_STR1 = '  <td>' + CASE_VALUE + '</td>'
+. write(htm) GEN_STR1
+
+| total record count
+. RECORD_COUNT = 0
+. for EACH_RECORD_NUMBER = 1, nrecs(0)
+.   ifnot (len(recname(EACH_RECORD_NUMBER)) gt 0) next for
+.   RECORD_COUNT = RECORD_COUNT + count(EACH_RECORD_NUMBER)
+. end for
+. GEN_STR1 = '<td>' + format(RECORD_COUNT ) + '</td>'
+. write(htm) GEN_STR1
+
+
+do repeat RECN = <GREC1>
+                 <GREC2>
+                 <GREC3>
+                 <GREC4>
+                 <GREC5>
+
+. REC_TYPE_NUM = RECN
+. GEN_STR1 = pack( recname( REC_TYPE_NUM ) )
+. RECORD_COUNT = count(RECN)
+. GEN_STR1 =  '<td title="'  +  CASE_VALUE  + '">' | RECORD_COUNT  '</td>'
+. SOME_TOGGLE = 0
+. REC_ROW_COUNT = 0
+. process rec RECN
+.   SOME_TOGGLE = 1
+.   REC_ROW_COUNT = REC_ROW_COUNT  + 1
+.   ifthen( amod( REC_ROW_COUNT, 2 ) eq 0 )
+.     GEN_STR1 = GEN_STR1 + '<span class="bluekeys">'
+.   endif
+.   for EACH_KEY = 1 + dbtype(0), nkeys( REC_TYPE_NUM ) +  dbtype( 0 )
+.     KEY_NAME = pack( keyname( REC_TYPE_NUM, EACH_KEY ) )
+.     VAR_NAME_CB  = stdname( KEY_NAME )
+.     STRING_VARGET = pack( varget( VAR_NAME_CB ) )
+.     ifthen( vtype( REC_TYPE_NUM, VAR_NAME_CB ) eq 3 )
+.       VAR_FORMAT = datemap( REC_TYPE_NUM, VAR_NAME_CB )
+.       STRING_VARGET = datec( cdate( STRING_VARGET, VAR_FORMAT ), VAR_FORMAT )
+.       STRING_VARGET = replace( STRING_VARGET, " ", "/", 2, 1, 0 )
+.     elseif( vtype( REC_TYPE_NUM, KEY_NAME ) eq 4 )
+        VAR_FORMAT = timemap( REC_TYPE_NUM, KEY_NAME )
+.       STRING_VARGET = timec( ctime( STRING_VARGET, VAR_FORMAT ), VAR_FORMAT )
+.     endif
+.     GEN_STR1 = GEN_STR1 + STRING_VARGET
+.     ifthen( EACH_KEY < nkeys( REC_TYPE_NUM ) +  dbtype( 0 ) )
+.       GEN_STR1 = GEN_STR1 + '&nbsp;|&nbsp;'
+.     endif
+.   end for
+.   if( mod( REC_ROW_COUNT, 2 ) eq 0 )  GEN_STR1 = GEN_STR1 + '</span>'
+.   ifthen( count( REC_TYPE_NUM ) gt REC_ROW_COUNT ) | More records to display
+.     ifthen( nkeys( REC_TYPE_NUM ) gt 1 ) | more then 2 keys: display one rec/line
+.       GEN_STR1 = GEN_STR1 + '<br>'
+.     else
+.       GEN_STR1 = GEN_STR1 + ', '
+.     endif
+.   endif
+. end rec
+. ifthen( nkeys( REC_TYPE_NUM ) eq 0 ) | No keys use Y/N
+.   ifthen( SOME_TOGGLE eq 1 )
+.     GEN_STR1 = GEN_STR1 + 'Y'
+.   else
+.     GEN_STR1 = GEN_STR1 + 'N'
+.   endif
+. else
+.   if( SOME_TOGGLE eq 0 ) GEN_STR1 = GEN_STR1 + '0'
+. endif
+. write(htm) GEN_STR1 '</td>'
+
+end repeat
+
+write(htm) '</tr>'
+end cases
+
+write(htm) '</table></div>'
+write(htm) '</form>'
+write(htm) '</body>'
+write(htm) '</html>'
+
+write 'Finished: Case Summary is at: ' OUTPUT_FILE
+
+call GUIPROCF.REPORTS.MAKE_HEADER
+
+end retrieval
+END PROCEDURE

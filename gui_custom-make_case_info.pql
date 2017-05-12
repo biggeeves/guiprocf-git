@@ -1,4 +1,4 @@
-PROCEDURE      GUI_CUSTOM.MAKE_CASE_INFO:T  (158208,45665)  |Last amended Dec 11, 2015,12:41:05
+PROCEDURE      GUI_CUSTOM.MAKE_CASE_INFO:T  (158254,53923)  |Last amended Jan 26, 2016,14:58:43
 program crwarn
 . CALL GUIPROCF.GUI_MAIN.DECLARE_VARIABLES
 
@@ -34,8 +34,10 @@ c check to see if the member exists already
 .   write 'unable to write to ' FULL_PATH_MEMBER '.  Exiting.  IOSTAT:' FILE_IOSTAT
 .   EXIT PROGRAM
 . endif
-
-. write ( MEMBER_NAME ) "CALL " GUIPROCF_MEMBER /
+. write ( MEMBER_NAME ) "CALL " GUIPROCF_MEMBER //
+                        'c This will compile a subroutine of the same name into the database procfile'/
+                        'c The subroutine supplies the Case Info for your database'/
+                        'c Because of Case types, string or integer, it must be compiled correctly'/
 
 . close MEMBER_NAME
 

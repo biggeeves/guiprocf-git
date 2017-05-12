@@ -1,4 +1,4 @@
-PROCEDURE      GUI_MAIN.OLD_CASE_SEARCH_LIBRARY:T  (157268,48655)  |Last amended May 15, 2013,13:30:55
+PROCEDURE      GUI_MAIN.OLD_CASE_SEARCH_LIBRARY:T  (158288,69710)  |Last amended Feb 29, 2016,19:21:50
 subprocedure OLD_CASE_SEARCH_LIBRARY
 <comment> write 'OLD_CASE_SEARCH_Library: '
 . CASE_TEMP_VALUE = trimlr(upper(gettxt(CASE_SEARCH)))
@@ -8,9 +8,12 @@ subprocedure OLD_CASE_SEARCH_LIBRARY
 . if (PROCEED EQ NO) exit SUBPROCEDURE
 . execute subprocedure CASE_LIST_SEARCH     | pass var CASE_TEMP_VALUE
 . ifthen (CASE_FOUND EQ NO)
-.   display infobox CASE_TEMP_VALUE + ' was not found'
+.   SET ITEM CASE_DISPLAY_MESSAGE, CASE_TEMP_VALUE + ' was not found.'
 .   exit SUBPROCEDURE
 . endif
+. select item FORM_LIST,1
+. select item REC_TYPE_SELECTED,1
+. select item REC_FORM_SELECTED,1
 . execute subprocedure OLD_KEY_PAGE_DISPLAY_LIBRARY
 end subprocedure
 END PROCEDURE

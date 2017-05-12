@@ -1,5 +1,5 @@
-PROCEDURE      GUI_MAIN.DB_FOOTER:T  (158165,85685)  |Last amended Oct 29, 2015,23:48:05
-c DISPLAY HIPPA or release canidate IN THE FOOTER
+PROCEDURE      GUI_MAIN.DB_FOOTER:T  (158299,44810)  |Last amended Mar 11, 2016,12:26:50
+c DISPLAY HIPPA or release candidate IN THE FOOTER
 
 subprocedure DB_FOOTER
 . execute subroutine SYSPROC.TOOLS.FILENAME (dsn('GUIPROCF')) RETURNING (PATH_FILE,NAME_FILE,EXT_FILE)
@@ -9,9 +9,9 @@ subprocedure DB_FOOTER
 . append line DB_FOOTER, GEN_STR1 html
 
 . ifthen(upper(trim(NAME_FILE)) EQ 'GUIPROCF-RC')
-.   GEN_STR1 = 'RELEASE CANIDATE!'
+.   GEN_STR1 = 'RELEASE CANDIDATE'
 .   for FORN = 1,3
-.     GEN_STR1 = GEN_STR1 + '      RELEASE CANIDATE!'
+.     GEN_STR1 = GEN_STR1 + '    .    RELEASE CANDIDATE'
 .   end for
 .   set item DB_FOOTER, GEN_STR1
 . else

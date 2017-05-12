@@ -1,6 +1,6 @@
-PROCEDURE      GUI_MAIN.CASE_LIST_SEARCH:T  (157963,79647)  |Last amended Apr 10, 2015,22:07:27
+PROCEDURE      GUI_MAIN.CASE_LIST_SEARCH:T  (158215,40658)  |Last amended Dec 18, 2015,11:17:38
 subprocedure CASE_LIST_SEARCH
-c this searches the list, not the database
+c this searches the list, NOT the database
 <comment> write 'Sub: CASE_SEARCH: ' CASE_TEMP_VALUE
 . CASE_FOUND = 0
 . for CYCLE_NUM = 1, getnitem(CASE_LIST)

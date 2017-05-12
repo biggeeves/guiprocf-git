@@ -1,7 +1,19 @@
-PROCEDURE      GUI_MAIN.ALL_KEY_INI_DISPLAY:T  (158026,58622)  |Last amended Jun 12, 2015,16:17:02
+PROCEDURE      GUI_MAIN.ALL_KEY_INI_DISPLAY:T  (158241,48265)  |Last amended Jan 13, 2016,13:24:25
 subprocedure ALL_KEY_INI_DISPLAY
 <comment> write 'sub: ALL_KEY_INI_DISPLAY: REC_TYPE_NUM' REC_TYPE_NUM '  Nkeys: ' KEY_COUNT
 c old keys, GET AND DISPLAY STATIC  KEY INFORMATION
+c clear display
+. execute subprocedure CLEAR_KEY_DISPLAY
+. if (exists(REC_TYPE_NUM) eq 0) exit subprocedure |
+. if (KEY_COUNT eq 0) exit subprocedure
+. execute subprocedure NEW_KEY_SCHEMA_INFO
+. execute subprocedure NEW_KEY_VALUE_LABELS
+end subprocedure
+
+
+subprocedure CLEAR_KEY_DISPLAY
+<comment> write 'sub: CLEAR_KEY_DISPLAY'
+c clear display
 . do repeat REPX = 1 TO 4
 |   old keys page
 .   set item OLD_KEY_LABEL_!REPX, KEY_LABEL_!REPX
@@ -15,33 +27,49 @@ c old keys, GET AND DISPLAY STATIC  KEY INFORMATION
 |   table keys page
 .   set item   TABLE_KEY_LABEL_!REPX, KEY_LABEL_!REPX
 . end repeat
-. if (exists(REC_TYPE_NUM) eq 0) exit subprocedure |
-. if (KEY_COUNT eq 0) exit subprocedure
+end subprocedure
 
-| THIS IS FOR NEW KEY AREA ONLY.  It is broken out to keep things simpler to work on in the future
+subprocedure NEW_KEY_SCHEMA_INFO
+| Display New Key Information
+. do repeat REPX = 1 TO 4
+.   KEY$N    = KEY_NAME_!REPX
+.   KEY_LABEL_COUNT = nvallab( REC_TYPE_NUM, KEY$N )
+.   KEY_MIN  = nmin  ( REC_TYPE_NUM, KEY$N )          | The minimum range of the key, if there is one
+.   KEY_MAX  = nmax  ( REC_TYPE_NUM, KEY$N )          | The maximum range of the key, if there is one
+.   KEY$T    = vtype ( REC_TYPE_NUM, KEY$N )
+.   VTYPE_MAP = ''
+.   GEN_STR1  = ''
+.   ifthen (KEY$T eq 1)
+.     GEN_STR1  = 'Max Chars: ' +
+                  substr( vformat( REC_TYPE_NUM, KEY$N ), 2, len(vformat(REC_TYPE_NUM, KEY$N)))
+.   elseif (KEY$T eq 3)
+.     VTYPE_MAP = datemap( REC_TYPE_NUM, KEY$N )
+.     VTYPE_MAP = replace( VTYPE_MAP, 'E', '', 1, 1, 0 )
+.     VTYPE_MAP = replace( VTYPE_MAP, 'I', '/', 3, 1, 0 )
+.     GEN_STR1  = VTYPE_MAP + '    '
+.     if( KEY_MIN gt 1 ) GEN_STR1  = GEN_STR1  + 'Min: ' + dateC(KEY_MIN, VTYPE_MAP)
+.     if( KEY_MAX < 3660000) GEN_STR1  = GEN_STR1  + '   Max:  ' + dateC(KEY_MAX, VTYPE_MAP)
+.   elseif (KEY$T eq 4)
+.     VTYPE_MAP = timemap( REC_TYPE_NUM, KEY$N )
+.     VTYPE_MAP = replace( VTYPE_MAP, 'E', '', 1, 1, 0 )
+.     VTYPE_MAP = replace( VTYPE_MAP, 'I', ':', 3, 1, 0 )
+.     GEN_STR1  = VTYPE_MAP + '    ' + timeC(KEY_MIN, VTYPE_MAP)  + ' - ' + timeC(KEY_MAX, VTYPE_MAP)
+.   elseif (KEY$T ge 5)
+.     if(exists(KEY_MIN) eq 1) GEN_STR1  = 'Min: ' + format(KEY_MIN)
+.     if(exists(KEY_MAX) eq 1) GEN_STR1  = GEN_STR1  + '    Max: ' + format(KEY_MAX)
+.   endif
+.   set item NEW_KEY_VAR_MAP_!REPX, GEN_STR1
+. end repeat
+end subprocedure
+
+subprocedure NEW_KEY_VALUE_LABELS
 . do repeat REPX = 1 TO 4
 .   KEY$N   = KEY_NAME_!REPX
-.   KEY_LABEL_COUNT = nvallab(REC_TYPE_NUM, KEY$N)
-.   KEY_MIN  = nmin   (REC_TYPE_NUM, KEY$N)          | The minimum range of the key, if there is one
-.   KEY_MAX  = nmax   (REC_TYPE_NUM, KEY$N)          | The maximum range of the key, if there is one
-.   KEY$T   = vtype  (REC_TYPE_NUM, KEY$N)
-|   set VTYPE_MAP to what you want help to say.
-.   VTYPE_MAP = ''
-.   ifthen (KEY$T eq 1)
-.     VTYPE_MAP = 'Max Chars: ' + substr( vformat(REC_TYPE_NUM, KEY$N), 2, len(vformat(REC_TYPE_NUM, KEY$N)))
-.   elseif (KEY$T eq 3)
-.     VTYPE_MAP = datemap(REC_TYPE_NUM, KEY$N)
-.     VTYPE_MAP = replace(VTYPE_MAP,'E','',1,1,0)
-.     VTYPE_MAP = VTYPE_MAP + '    ' + dateC(KEY_MIN, VTYPE_MAP)  + ' - ' + dateC(KEY_MAX, VTYPE_MAP)
-.   elseif (KEY$T eq 4)
-.     VTYPE_MAP = timemap(REC_TYPE_NUM, KEY$N)
-.     VTYPE_MAP = replace(VTYPE_MAP,'E','',1,1,0)
-.     VTYPE_MAP = VTYPE_MAP + '    ' + timeC(KEY_MIN, VTYPE_MAP)  + ' - ' + timeC(KEY_MAX, VTYPE_MAP)
-.   elseif (KEY$T ge 5)
-.     if(exists(KEY_MIN) eq 1) VTYPE_MAP = 'Min: ' + format(KEY_MIN)
-.     if(exists(KEY_MAX) eq 1) VTYPE_MAP = VTYPE_MAP + '    Max: ' + format(KEY_MAX)
-.   endif
-.   set item NEW_KEY_VAR_MAP_!REPX, VTYPE_MAP
+.   KEY_LABEL_COUNT = nvallab( REC_TYPE_NUM, KEY$N )
+.   KEY_MIN  = nmin  ( REC_TYPE_NUM, KEY$N )          | The minimum range of the key, if there is one
+.   KEY_MAX  = nmax  ( REC_TYPE_NUM, KEY$N )          | The maximum range of the key, if there is one
+.   KEY$T    = vtype ( REC_TYPE_NUM, KEY$N )
+
 |   check for value labels
 .   ifthen (nvalid(REC_TYPE_NUM, KEY$N) ne 0 and KEY_LABEL_COUNT = 0) | Valid values without labels
 .     for VALID_COUNT = 1, nvalid(REC_TYPE_NUM, KEY$N)
@@ -66,7 +94,7 @@ c old keys, GET AND DISPLAY STATIC  KEY INFORMATION
 .     end for
 .   endif
 . end repeat
-
-
 end subprocedure
+
+
 END PROCEDURE

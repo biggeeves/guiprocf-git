@@ -1,4 +1,4 @@
-PROCEDURE      GITHUB.EXPORT_MEMBERS:T  (157550,47587)  |Last amended Feb 21, 2014,13:13:07
+PROCEDURE      GITHUB.EXPORT_MEMBERS:T  (158242,50735)  |Last amended Jan 14, 2016,14:05:35
 C EXPORTS ALL MEMBERS TO A SUBFOLDER
 C EACH FILE IS NAMED "SYSTEM-MEMBER.PQL" AND IS PWRITTEN FOR EASY IMPORT BACK IN
 
@@ -16,6 +16,7 @@ integer *     4   MEM#C         | number of members in proc file
 string  *    45   MEMBER_NAME   | Member names
 string  *  2000   EACH_LINE    | The current line read in the text file
 integer *     2   RESVAR        | RESPONSE VARIABLE
+string  *   300   COMSTR
 
 
 c try the procfile folder as a default.
@@ -47,7 +48,8 @@ for EACH_FAMILY = 1, FAM#C
 .   MEMBER_FILE_NAME = OUTPUT_FOLDER + FAMILY_NAME + '-' + substr( MEMBER_NAME, 1, len(MEMBER_NAME) -2) + '.pql'
 .   MEMBER_FILE_NAME = lower(MEMBER_FILE_NAME)
 .   write 5t 'Output: ' MEMBER_FILE_NAME
-.   execute dbms "PWRITE '" + MEMBER_FILE_NAME + "' , " + MEMBER_SIR_NAME + " /NOINFORM"
+.   COMSTR = "PWRITE '" + MEMBER_FILE_NAME + "' , " + MEMBER_SIR_NAME + " /NOINFORM"
+.   execute dbms COMSTR
 . end for
 end for
 

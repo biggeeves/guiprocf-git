@@ -1,0 +1,5 @@
+PROCEDURE      GUI_MAIN.SET_VARIABLES:T  (158233,39002)  |Last amended Jan 05, 2016,10:50:02
+subprocedure SET_VARIABLES
+. compute VIEW_PORT = fst( upget( 'sir.view_port' ), 'desktop' )
+end subprocedure
+END PROCEDURE

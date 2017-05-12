@@ -1,0 +1,34 @@
+PROCEDURE      EXPORT_TO_MYSQL.COMPILER:T  (158652,39109)  |Last amended Feb 27, 2017,10:51:49
+| FIND MEMBERS AND COMPILE THEM
+global COMMENT = '.'
+PROGRAM
+STRING * 100 MEMBER_NAME
+
+MEMBER_NAME = 'TOOLS.CHECK_RESERVED_WORDS'
+EXECUTE SUBPROCEDURE COMPILE_MEMBER
+
+MEMBER_NAME = 'TOOLS.MAKE_DIRS'
+EXECUTE SUBPROCEDURE COMPILE_MEMBER
+
+
+SUBPROCEDURE COMPILE_MEMBER | recieves MEMBER_NAME:STRING
+C COMPILE MEMBER IF POSSIBLE
+. ifthen ( meminfo( MEMBER_NAME + ':T', 1 ) eq 1 )
+<COMMENT> write ' Exists: ' MEMBER_NAME
+.   ifthen ( meminfo( MEMBER_NAME + ':O', 8 ) EQ 0 ) | "Good" subroutine status
+<COMMENT> write ' Good status: ' MEMBER_NAME
+.   else
+<COMMENT> write 'Before: meminfo eq ' [meminfo( MEMBER_NAME + ':O', 8)]
+.     display infobox "Sorry, out of date " + MEMBER_NAME
+.     execute dbms ['call ' + MEMBER_NAME]
+<COMMENT> write 'After:  meminfo eq ' [meminfo( MEMBER_NAME + ':O', 8)]
+.   endif
+. else
+<COMMENT> write 'MISSING: ' MEMBER_NAME
+. endif
+
+END SUBPROCEDURE
+
+
+END PROGRAM
+END PROCEDURE

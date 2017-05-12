@@ -1,0 +1,44 @@
+PROCEDURE      EXPORT_TO_MYSQL.START:T  (158653,35289)  |Last amended Feb 28, 2017,09:48:09
+GLOBAL GO_ON = 1   | THIS GLOBAL IS ONLY USED HERE.  VERY IMPORTANT GLOBAL IN THE BEGINNING
+
+c check if the guiprocf is defined, if so use it
+. program
+.   integer * 1 T
+.   ifthen( exists( dsn( 'GUIPROCF' ) ) EQ 1 )
+.     ifthen( fileis( dsn( 'GUIPROCF' ) ) eq 1 )
+.       T = globaln( 'GO_ON', 1)
+.     else
+.       write 'dsn of GUIPROCF was not a file.'
+.       execute dbms "CALL EXPORT_TO_MYSQL.DEFINE_GUIPROCF"
+.       T = globaln( 'GO_ON', 0)
+.     endif
+.   else
+.     T = globaln( 'GO_ON', 0)
+.     execute dbms "CALL EXPORT_TO_MYSQL.DEFINE_GUIPROCF"
+.   endif
+. end program
+
+c DOUBLE CHECK GUIPROCF
+. program
+.   integer * 1 T
+.   ifthen( exists( dsn( 'GUIPROCF' ) ) EQ 1 )
+.     ifthen( fileis( dsn( 'GUIPROCF' ) ) eq 1 )
+.       T = globaln( 'GO_ON', 1)
+.     else
+.       T = globaln( 'GO_ON', 0)
+.     endif
+.   else
+.     T = globaln( 'GO_ON', 0)
+.   endif
+. end program
+
+CIF EQ 0<GO_ON>, 1
+. program
+.   CALL GUIPROCF.EXPORT_TO_MYSQL.CONTROLLER
+. end program
+CIF FALSE
+. PROGRAM
+.   WRITE 'ATTRIBUTE FOR GUIPROCF MUST BE DEFINED BEFORE CONTINUING'
+. END PROGRAM
+CIF END
+END PROCEDURE

@@ -1,7 +1,8 @@
-PROCEDURE      GUI_MAIN.CASE_NEW:T  (157766,48911)  |Last amended Sep 25, 2014,13:35:11
-subprocedure CASE_NEW  | PASS IN CASE_VALUE
+PROCEDURE      GUI_MAIN.CASE_NEW:T  (158288,64430)  |Last amended Feb 29, 2016,17:53:50
+C recieves: CASE_VALUE
+
+subprocedure CASE_NEW
 <comment> write 'Sub: CASE_NEW: ' CASE_VALUE
-c IT PASSED THE TEST NOW CREATE IT create buffer to insert new case
 . if ( CASE_VALUE eq '' ) display infobox 'Cannot create a blank case'; exit subprocedure
 . if ( exists( CASE_VALUE ) eq 0 ) display infobox 'Cannot create a system missing case'; exit subprocedure
 . if ( validate( 0, CASE_NAME, CASE_VALUE ) NE 0 ) display infobox 'That value is invalid'; exit subprocedure
@@ -10,6 +11,7 @@ c IT PASSED THE TEST NOW CREATE IT create buffer to insert new case
 . BUFFER_LINE = '. new case is ' ; execute subprocedure BUFFER_ADD_CASE; execute subprocedure BUFFER_WRITE
 . BUFFER_LINE = 'end case is'  ; execute subprocedure BUFFER_WRITE
 . BUFFER_LINE = 'end retrieval'; execute subprocedure BUFFER_WRITE
-. execute dbms ['INCLUDE BUFFER ' + BUFFER_NAME]
+. COMSTR = 'INCLUDE BUFFER ' + BUFFER_NAME
+. execute dbms COMSTR
 end subprocedure
 END PROCEDURE

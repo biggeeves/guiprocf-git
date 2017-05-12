@@ -1,0 +1,27 @@
+PROCEDURE      GUI_MAIN.SET_PAGES:T  (158288,65104)  |Last amended Feb 29, 2016,18:05:04
+subprocedure SET_PAGES
+ifthen( VIEW_PORT = 'phone' or 'tablet' ) | Future ability to set page variables by view port "Phone, Tablet, Desktop"
+. set VIEW_HOME                 (1)
+      VIEW_LIST_CASES           (2)
+      VIEW_OLD_KEYS             (3)
+      VIEW_NEW_KEYS             (4)
+      VIEW_TABLE                (5)
+      VIEW_CASE_DELETE_SUMMARY  (6)
+      VIEW_CASE_SUMMARY         (7)
+      VIEW_DBA                  (8)
+      VIEW_BULK_RECORD_DELETE   (9)
+      VIEW_HIDDEN               (10)
+else | desktop is default
+. set VIEW_HOME                 (1)
+      VIEW_LIST_CASES           (2)
+      VIEW_OLD_KEYS             (3)
+      VIEW_NEW_KEYS             (4)
+      VIEW_TABLE                (5)
+      VIEW_CASE_DELETE_SUMMARY  (6)
+      VIEW_CASE_SUMMARY         (7)
+      VIEW_DBA                  (8)
+      VIEW_BULK_RECORD_DELETE   (9)
+      VIEW_HIDDEN               (10)
+endif
+end subprocedure
+END PROCEDURE

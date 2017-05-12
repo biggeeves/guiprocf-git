@@ -1,0 +1,5 @@
+PROCEDURE      GUI_MAIN.DISPLAY_CASE_DELETE_INFO:T  (158288,66007)  |Last amended Feb 29, 2016,18:20:07
+subprocedure DISPLAY_CASE_DELETE_INFO
+c something goes here
+end subprocedure
+END PROCEDURE

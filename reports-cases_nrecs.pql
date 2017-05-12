@@ -1,0 +1,121 @@
+PROCEDURE      REPORTS.CASES_NRECS:T  (158331,57915)  |Last amended Apr 12, 2016,16:05:15
+call SYSPROC.TOOLS.HTMLCODE
+call GUIPROCF.SYSTEM.ALLRECS
+
+retrieval  CRWARN
+<comment> write "making Cases List Displaying each record and key values for that record."
+call GUIPROCF.GUI_MAIN.DECLARE_VARIABLES
+
+CASE_NAME = trimlr( keyname(0, 1 ) )
+CASE_LABEL = trimlr( varlabsc(0, CASE_NAME ) )
+if(CASE_LABEL eq '') CASE_LABEL = CASE_NAME
+if( dbtype(0) eq 0 ) CASE_LABEL =' Tested only with Case Structured DBs'
+
+. ifthen ( sglobal('sirver') eq 'XS.01.20' )
+.   DB_PROC_FILE = 'SIR'+ pformat( system(39), 'zzzz' ) + '4'
+. elseif ( sglobal('sirver') eq 'XS.01.19' )
+.   DB_PROC_FILE = 'SIR'+ pformat( system(39), 'zz' ) + '4'
+. endif
+
+. execute subroutine SYSPROC.TOOLS.FILENAME (DB_PROC_FILE)
+               returning ( PATH_FILE, NAME_FILE, EXT_FILE )
+
+. OUTPUT_FILE = PATH_FILE + 'cases_and_record_counts.html'
+
+. open ( HTM ) write dsnvar = OUTPUT_FILE lrecl = 3000
+. execute subprocedure MAKE_HEADER
+
+set REC_TOT__4 (0)
+
+write(htm) '<h3>Cases and Record Counts ' [datec(today(0), 'Wwwwwwwww MM.DD.YYYY')] '</h3>'
+write(htm) '<p>Each row contains information about the subject identified in the first column.'
+           'The column headers indicate types of data'
+           '(typically data collection forms, but laboratory data types may be present as well);'
+           'run the cursor over a column header and you will see the full name of the data type.'
+           'The number in each cell represents the number of forms in the database for a given data type.'
+           'If a form is used only once (at baseline), the possible values are zero (0) and one (1).'
+           'For forms that are administered at multiple intervals,'
+           'or forms that may be filled out at any time (e.g. adverse events),'
+           'the number may be higher.  '
+           'The column immediately next to the subject ID shows the total number of forms for the subject in the database.'
+           ' The row immediately under the header row indicates the total number of forms of each type in the database.'
+           '</p>'
+write(htm) '<div> '
+write(htm) '<table>'
+write(htm) '<tr>'
+write(htm) '<th title="Case">' CASE_LABEL  '</th>'
+write(htm) '<th title="Total Records">Total</th>'
+
+for EACH_RECORD_NUMBER = 1, nrecs(0)
+. ifnot (len(recname(EACH_RECORD_NUMBER)) gt 0) next for
+. RECORD_NAME = trimlr(recname(EACH_RECORD_NUMBER))
+. ifthen (len(trimlr(recdoc(EACH_RECORD_NUMBER, 0))) gt 0)
+.   REC_LABEL = trimlr(recdoc(EACH_RECORD_NUMBER, 0))
+. elseif (len(trimlr(recdoc(EACH_RECORD_NUMBER, 1))) gt 0)
+.   REC_LABEL = trimlr(recdoc(EACH_RECORD_NUMBER, 1))
+. else
+.   REC_LABEL = trimlr(recname(EACH_RECORD_NUMBER))
+. endif
+. REC_ROW_COUNT = numrecs(EACH_RECORD_NUMBER)
+. GEN_STR1 = '<th title="' + REC_LABEL + '">' +
+             RECORD_NAME +' </th>'
+write(htm) GEN_STR1
+end for
+write(htm) '</tr>'
+
+c totals for each rec
+GEN_STR1 = '<tr class="totals">' +
+           '<td>Cases: ' + format( system(24) ) + '</td>' +
+           '<td>Recs: ' + format( system(25) ) + '</td>'
+write(htm) GEN_STR1
+for EACH_RECORD_NUMBER = 1, nrecs(0)
+. ifnot (len(recname(EACH_RECORD_NUMBER)) gt 0) next for
+. REC_ROW_COUNT = numrecs(EACH_RECORD_NUMBER)
+. GEN_STR1 = '<td>' + format(REC_ROW_COUNT) + '</td>'
+write(htm) GEN_STR1
+end for
+write(htm) 2t '</tr>'
+
+
+
+
+process cases
+. write(htm) '<tr>'
+. VAR_NAME_CB = stdname( CASE_NAME )
+. CASE_VALUE = trim( varget( VAR_NAME_CB ) )
+. GEN_STR1 = '<td>' + CASE_VALUE + '</td>'
+. write(htm) GEN_STR1
+
+. REC_TOT__4 = 0
+. GEN_STR1 = ''
+. for EACH_RECORD_TYPE = 1, NRECS(0)
+.   IF (NVARSC(EACH_RECORD_TYPE) EQ 0) NEXT FOR
+.   RECORD_COUNT = count(EACH_RECORD_TYPE)
+.   REC_TOT__4 = REC_TOT__4  + RECORD_COUNT
+.   GEN_STR1 = GEN_STR1 + '<td>'
+.   ifthen( nkeys( REC_TYPE_NUM ) eq 0 ) | No keys use Y/N
+.     ifthen( RECORD_COUNT eq 0 )
+.       GEN_STR1 = GEN_STR1 + 'Y'
+.     else
+.       GEN_STR1 = GEN_STR1 + 'N'
+.     endif
+.   else
+.     GEN_STR1 = GEN_STR1 + format(RECORD_COUNT)
+.   endif
+.   GEN_STR1 = GEN_STR1 + '</td>'
+. end FOR
+. write(htm) '<td>' REC_TOT__4 '</td>'
+. write(htm) GEN_STR1
+. write(htm) '</tr>'
+end cases
+
+write(htm) '</table></div>'
+write(htm) '</form>'
+write(htm) '</body>'
+write(htm) '</html>'
+write 'Finished: Case Summary is at: ' OUTPUT_FILE
+
+call GUIPROCF.REPORTS.MAKE_HEADER
+
+end retrieval
+END PROCEDURE

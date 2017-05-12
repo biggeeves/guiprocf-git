@@ -1,6 +1,11 @@
-PROCEDURE      GUI_MAIN.DB_TITLE:T  (158165,52567)  |Last amended Oct 29, 2015,14:36:07
+PROCEDURE      GUI_MAIN.DB_TITLE:T  (158331,58108)  |Last amended Apr 12, 2016,16:08:28
 subprocedure DB_TITLE
-. GEN_STR1 = ''
+. REMOVE ALL DB_TITLE
+
+. GEN_STR1 = '<body readonly="true" bgcolor="#FDB912">' +
+             '<p align="center">' +
+             '<font color="#FFFFFF" size="+4"><b>'
+
 . HTML_COLOR = HTML_COLUMBIA_BLUE  | DEFAULTS TO ASSUME LIVE
 . ifthen ( pattern( upper( DB_SR1_FILE), '@DEVELOPMENT@') eq 1 )
 .   HTML_COLOR = HTML_ORANGE6
@@ -13,32 +18,32 @@ subprocedure DB_TITLE
 .   GEN_STR1 = 'Backup: ' + datec(cdate(SUBSTR(DB_SR1_FILE,26,16),'YYYYIMMIDD'),'Mmm/DD/YYYY')
 . endif
 
-c . GEN_STR1 = '<body bgcolor="' + HTML_COLOR + '" readonly="true"><font color="#11399E" size="+3">' + GEN_STR1
-
-
-. ifthen (system(40) lt 1)
+. ifthen( system(40) lt 1 )
 .   write "NOTE: A Database should be attached"
 .   set dialog title "NO DATABASE"
 .   GEN_STR1 = GEN_STR1 + "  No Database"
-. elseif (system(40) EQ 1)
+. elseif( system(40) EQ 1 )
 .   set dialog title dbname(0) + " Created by the DCC"
 .   ifthen (len(recdoc( 0, 0 )) gt 0)
 .     GEN_STR1 = GEN_STR1 + ' ' + recdoc( 0, 0 )
 .   else
 .     GEN_STR1 = GEN_STR1 + ' ' + dbname( 0 )
 .   endif
-. elseif (system(40) GT 1)
+. elseif( system(40) GT 1)
 .   write "More than 1 database have been connect at the same time.  " /
           "The current default database is:" [DBNAME(0)]
 .   for EACH_DB = 1, SYSTEM(40)
 .     write 5t 'DB# ' EACH_DB '. Database name is: ' [dbname(EACH_DB)]
-.     write 10t 'Procfile: '  [dsn('SIR'+ PFORMAT(EACH_DB ,'zz' ) +'4')]
+.     ifthen ( sglobal('sirver') eq 'XS.01.20' )
+.       DB_PROC_FILE = 'SIR'+ pformat( system(39), 'zzzz' ) + '4'
+.     elseif ( sglobal('sirver') eq 'XS.01.19' )
+.       DB_PROC_FILE = 'SIR'+ pformat( system(39), 'zz' ) + '4'
+.     endif
+.     write 10t 'Procfile: ' DB_PROC_FILE
 .   end for
 . endif
 
-. set item DB_TITLE, GEN_STR1
-c removed:  Setting the font color makes it display on the splash page
-c . SET ITEM FONT DB_TITLE ,1,0,0, 1,HTML_COLOR
+. APPEND LINE DB_TITLE, GEN_STR1  HTML
 
 end subprocedure
 END PROCEDURE

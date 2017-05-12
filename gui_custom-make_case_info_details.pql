@@ -1,4 +1,4 @@
-PROCEDURE      GUI_CUSTOM.MAKE_CASE_INFO_DETAILS:T  (158208,45276)  |Last amended Dec 11, 2015,12:34:36
+PROCEDURE      GUI_CUSTOM.MAKE_CASE_INFO_DETAILS:T  (158254,53795)  |Last amended Jan 26, 2016,14:56:35
 C GUI_CUSTOM.MAKE_CASE_INFO_DETAILS
 program crwarn
 
@@ -13,8 +13,8 @@ CALL GUIPROCF.GUI_MAIN.SET_PROCFILE_VARS
 .   display infobox 'No DB_PROC_FILE defined.  EXITING.  CONTACT ADMIN.'
 .   exit program
 . endif
-
-. execute dbms ["set procfile " + DB_PROC_FILE ] | screens go into database procfile file, not the guiprocf
+. COMSTR = "set procfile " + DB_PROC_FILE  | screens go into database procfile file, not the guiprocf
+. execute dbms COMSTR
 
 . execute subprocedure MAKE_FAMILY
 
@@ -33,12 +33,16 @@ c check to see if the member exists already
 .   write 'unable to write to ' FULL_MEMBER_NAME '.  Exiting.  GUI_CUSTOM.CASE_INFO_DETAILS ERROR IOSTAT:' FILE_IOSTAT
 .   EXIT PROGRAM
 . endif
+
+. write ( MEMBER_NAME ) 'c this is customizable'
+                        'c Roll your own code below'
+
 . STR$1 = 'CALL GUIPROCF.' + FAMILY_NAME + ". " + MEMBER_NAME
 . write ( MEMBER_NAME ) STR$1  /
 
 . close MEMBER_NAME
-
-EXECUTE DBMS ["call " + FULL_MEMBER_NAME]
+. COMSTR = "call " + FULL_MEMBER_NAME
+. EXECUTE DBMS COMSTR
 
 CALL GUIPROCF.GUI_MAIN.SET_PROCFILE_VARS
 CALL GUIPROCF.GUI_MAIN.MAKE_FAMILY

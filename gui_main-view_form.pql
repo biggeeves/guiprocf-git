@@ -1,0 +1,25 @@
+PROCEDURE      GUI_MAIN.VIEW_FORM:T  (158310,58618)  |Last amended Mar 22, 2016,16:16:58
+subprocedure VIEW_FORM
+. ifthen( REC_ROW_COUNT EQ 0)
+.   display YNCBOX 'Create a new form?' RESPONSE RESVAR
+
+.   if( RESVAR EQ 0 or -1 ); EXIT SUBPROCEDURE  | no or cancel (1=Yes)
+
+.   ifthen( KEY_COUNT ge 1) |intercept and go to new key screen
+.     m_page = VIEW_NEW_KEYS
+.     execute subprocedure PAGE
+.     execute subprocedure ITEM_VISIBLE
+.     execute subprocedure NEW_KEY_VISIBLE
+.     focus item NEW_KEY_VALUE_1
+.     EXIT SUBPROCEDURE
+.   endif
+. endif
+
+. execute subprocedure ALL_KEY_GET_VALUE
+. execute subprocedure OLD_KEY_ALL_VALIDATE
+
+. if(  PROCEED = NO ) EXIT SUBPROCEDURE
+
+. execute subprocedure GOTO_SCREEN_LIBRARY  | double clicked - go to screen and do everything needed afterwards
+end subprocedure
+END PROCEDURE

@@ -1,4 +1,4 @@
-PROCEDURE      GUI_MAIN.REC_LIST_LOAD:T  (158026,59831)  |Last amended Jun 12, 2015,16:37:11
+PROCEDURE      GUI_MAIN.REC_LIST_LOAD:T  (158255,29080)  |Last amended Jan 27, 2016,08:04:40
 C CREATE ARRAYS FOR RECORD TYPE INFORMATION AND LOAD SEVERAL LISTS AND DROP DOWNS
 
 subprocedure REC_LIST_LOAD
@@ -28,26 +28,27 @@ subprocedure REC_LIST_LOAD
 
 . FORM_COUNT = 0
 . for CYCLE_NUM = 1, nrecs(0)
-.   REC_INFO_NAME(CYCLE_NUM) = trimlr(recname(CYCLE_NUM))
+.   REC_INFO_NAME( CYCLE_NUM ) = trimlr( recname( CYCLE_NUM ) )
 c   create exception for two memo records - CASE_MEMO  and  REC_MEMO
-.   IF (REC_INFO_NAME(CYCLE_NUM) EQ 'CASE_MEMO' OR 'REC_MEMO' or 'MEMO') NEXT FOR
-.   ifNOT (len(REC_INFO_NAME(CYCLE_NUM)) gt 0) NEXT FOR
-.   FORM_COUNT = FORM_COUNT +1
-.   REC_INFO_NUM (CYCLE_NUM) = CYCLE_NUM
-.   REC_INFO_FORM (CYCLE_NUM) = REC_INFO_NAME(CYCLE_NUM)
-.   REC_INFO_DISPLAY(CYCLE_NUM) = REC_INFO_NAME(CYCLE_NUM)
+.   IF( REC_INFO_NAME( CYCLE_NUM ) EQ 'CASE_MEMO' OR 'REC_MEMO' or 'MEMO' ) NEXT FOR
+.   ifNOT( len( REC_INFO_NAME( CYCLE_NUM ) ) gt 0 ) NEXT FOR
+.   FORM_COUNT = FORM_COUNT + 1
+.   REC_INFO_NUM( CYCLE_NUM ) = CYCLE_NUM
+.   REC_INFO_FORM( CYCLE_NUM ) = REC_INFO_NAME( CYCLE_NUM )
+.   REC_INFO_DISPLAY(CYCLE_NUM ) = REC_INFO_NAME( CYCLE_NUM )
 
-.   ifthen(len(recdoc(CYCLE_NUM,0)) gt 0)
-.     REC_INFO_DISPLAY(CYCLE_NUM) = trimlr(recdoc(CYCLE_NUM,0))
-.   elseif(len(recdoc(CYCLE_NUM,1)) gt 0)
-.     REC_INFO_DISPLAY(CYCLE_NUM) = trimlr(recdoc(CYCLE_NUM,1))
+.   ifthen( len( recdoc( CYCLE_NUM, 0 ) ) gt 0 )
+.     REC_INFO_DISPLAY( CYCLE_NUM ) = trimlr( recdoc( CYCLE_NUM, 0 ) )
+.   elseif( len( recdoc( CYCLE_NUM, 1 ) ) gt 0 )
+.     REC_INFO_DISPLAY( CYCLE_NUM ) = trimlr( recdoc( CYCLE_NUM, 1 ) )
 .   endif
-.   REC_INFO_DISPLAY(CYCLE_NUM) = replace(REC_INFO_DISPLAY(CYCLE_NUM),char(9), '', 5, 0, 0) | Get rid of tabs in the DOCUMENT line.
-.   REC_INFO_DISPLAY(CYCLE_NUM) = ' ' + REC_INFO_DISPLAY(CYCLE_NUM)
+ | Get rid of tabs in the DOCUMENT line.
+.   REC_INFO_DISPLAY( CYCLE_NUM ) = replace( REC_INFO_DISPLAY( CYCLE_NUM ), char( 9 ), '', 10, 1, 0)
+.   REC_INFO_DISPLAY( CYCLE_NUM ) = ' ' + REC_INFO_DISPLAY( CYCLE_NUM )
 
-.   append item FORM_LIST, '  ' +  REC_INFO_DISPLAY(CYCLE_NUM)
-.   append item REC_TYPE_SELECTED, REC_INFO_NAME(CYCLE_NUM)
-.   append item REC_FORM_SELECTED, REC_INFO_NAME(CYCLE_NUM)
+.   append item FORM_LIST, '  ' +  REC_INFO_DISPLAY( CYCLE_NUM )
+.   append item REC_TYPE_SELECTED, REC_INFO_NAME( CYCLE_NUM )
+.   append item REC_FORM_SELECTED, REC_INFO_NAME( CYCLE_NUM )
 
 . end for
 

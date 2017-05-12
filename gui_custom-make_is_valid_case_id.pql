@@ -1,0 +1,83 @@
+PROCEDURE      GUI_CUSTOM.MAKE_IS_VALID_CASE_ID:T  (158254,28688)  |Last amended Jan 26, 2016,07:58:08
+C Creates a validation check for the case ID.
+c returns 0 for fail, 1 for pass
+
+PROGRAM crwarn
+. call GUIPROCF.GUI_MAIN.DECLARE_VARIABLES
+. execute subprocedure SET_PROCFILE_VARS
+
+. FAMILY_NAME = 'GUI_CUSTOM'
+. MEMBER_NAME = 'IS_VALID_CASE_ID'
+. FULL_PATH_MEMBER = DB_PROC_FILE + '.' + FAMILY_NAME + '.' + MEMBER_NAME
+
+
+. ifthen( 0 eq len( DB_PROC_FILE ) or exists( DB_PROC_FILE ) )
+.   display infobox 'No DB_PROC_FILE defined.  EXITING.  CONTACT ADMIN.'
+.   EXIT PROGRAM
+. endif
+. COMSTR = "set procfile " + DB_PROC_FILE
+. execute dbms  COMSTR | gui_custom goes into database procfile file, not the guiprocf
+
+. execute subprocedure MAKE_FAMILY
+
+. ifthen ( meminfo (FULL_PATH_MEMBER + ':T', 1 )  > 0 ) | MEMBER ALREADY EXISTS
+.    display YNBOX 'THIS  WILL  OVERWRITE   "' + FULL_PATH_MEMBER + '".' + CHAR(13) + 'OVER WRITE IT?' RESPONSE RESVAR
+.    ifthen (RESVAR EQ 0 )
+.      display infobox "CANCELED"
+.      EXIT PROGRAM
+.    endif
+. endif
+
+. open ( MEMBER_NAME ) dsnvar = FULL_PATH_MEMBER iostat = MY_IOSTAT  write lrecl=200 REPLACE member
+. ifthen (MY_IOSTAT NE 0)
+.   write 'unable to write to member: ' FULL_PATH_MEMBER ' .  exiting.  Them member was NOT made.  IOSTAT:' MY_IOSTAT
+.   EXIT PROGRAM
+. endif
+
+. write( MEMBER_NAME ) "c Originally created by the GUIPROCF" /
+                       "c Template for creating your own custom CASE ID VALIDATION"/
+                       "c Validates a value for the CASE ID. " /
+                       "c Recieves TEMP_ID. "/
+                       "c Returns  IS_VALID. "/
+                       "c If IS_VALID = 1; ID is valid "/
+                        "c If IS_VALID = 0; ID is NOT valid "/
+c
+. write( MEMBER_NAME ) "subroutine GUI_CUSTOM.IS_VALID_CASE_ID (TEMP_ID ) returning (IS_VALID) replace" /
+                       "integer *  1   IS_VALID" /
+                       "string  * 64   TEMP_ID" /
+                       "IS_VALID = 0" | NOTHING IS VALID UNTIL PROVEN
+. MEMBER_LINE = "ifthen(  validate( 0, varname(0,1), TEMP_ID ) EQ 0 ) " | note: SIR validate returns 0 for valid value
+. EXECUTE SUBPROCEDURE MEMBER_WRITE
+. write( MEMBER_NAME ) ". IS_VALID = 1" | ASSUME THE IT PASSES
+. write( MEMBER_NAME ) "end if"
+. write( MEMBER_NAME ) "end subroutine"
+. close MEMBER_NAME
+
+C compile the new member
+execute subprocedure COMPILE_MEMBER
+
+C include the appropriate subprocedures
+call GUIPROCF.GUI_MAIN.COMPILE_MEMBER
+CALL GUIPROCF.GUI_MAIN.SET_PROCFILE_VARS
+CALL GUIPROCF.GUI_MAIN.MAKE_FAMILY
+
+subprocedure MEMBER_WRITE
+. if (exists(MEMBER_LINE) EQ 0) MEMBER_LINE = '| WARNING SYSTEM MISSING MEMBERLINE!'
+. write ( MEMBER_NAME )  MEMBER_LINE
+end subprocedure
+
+END PROGRAM
+
+CIF EQ 1,2
+0 = Valid value
+1 = Wrong data type/Not valid value
+2 = Violation of specified valid values or ranges
+3 = Missing value 0 (Undefined or system missing value)
+4 = Missing value 1
+5 = Missing value 2
+6 = Missing value 3
+7 = String too long / extra data after number - truncated
+CIF END
+
+
+END PROCEDURE

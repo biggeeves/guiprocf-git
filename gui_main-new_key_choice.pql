@@ -1,0 +1,11 @@
+PROCEDURE      GUI_MAIN.NEW_KEY_CHOICE:T  (158241,52317)  |Last amended Jan 13, 2016,14:31:57
+DO REPEAT REPX = 1, 2, 3, 4
+subprocedure NEW_KEY_CHOICE_!REPX
+. KEY$N = KEY_NAME_!REPX
+. KEY$V = TRIM( gettxt( NEW_KEY_CHOICE_!REPX))
+. KEY$T = KEY_TYPE_!REPX
+. execute subprocedure ANY_KEY_CLEAN
+. set item NEW_KEY_VALUE_!REPX, KEY$V
+end subprocedure
+END REPEAT
+END PROCEDURE

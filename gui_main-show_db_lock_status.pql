@@ -1,0 +1,29 @@
+PROCEDURE      GUI_MAIN.SHOW_DB_LOCK_STATUS:T  (158330,49271)  |Last amended Apr 11, 2016,13:41:11
+subprocedure SHOW_DB_LOCK_STATUS
+. execute subprocedure DB_LOCK_STATUS | get the actual lock status from the file.
+
+. ifthen (nglobal('GSECLEV') <> 1)
+.   hide item DB_LOCK_STATUS_LABEL  | must be DBA to see LOCK Status.
+.   exit subprocedure
+. endif
+|
+. ifthen ( DB_LOCK_STATUS EQ 1)
+.   show item DB_LOCK_STATUS_LABEL
+.   set item DB_LOCK_STATUS_LABEL, 'LOCKED'
+.   SET ITEM FONT DB_LOCK_STATUS_LABEL,1,0,0, 0,"#EE0000"
+.   check item DB_LOCKER
+.   uncheck item DB_UNLOCKER
+. elseif ( DB_LOCK_STATUS EQ 0)
+.   show item DB_LOCK_STATUS_LABEL
+.   set item DB_LOCK_STATUS_LABEL, 'Unlocked'
+.   SET ITEM FONT DB_LOCK_STATUS_LABEL,1,0,0, 0,"#000000"
+.   uncheck item DB_LOCKER
+.   check item DB_UNLOCKER
+. else
+.   hide item DB_LOCK_STATUS_LABEL
+.   set item DB_LOCK_STATUS_LABEL, 'DB LOCK: UNKNOWN'
+.   check item DB_UNLOCKER
+.   uncheck item DB_LOCKER
+. endif
+end subprocedure
+END PROCEDURE

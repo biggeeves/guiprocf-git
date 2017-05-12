@@ -1,10 +1,10 @@
-PROCEDURE      GUI_CUSTOM.GUI_SETTINGS:T  (157815,55940)  |Last amended Nov 13, 2014,15:32:20
+PROCEDURE      GUI_CUSTOM.GUI_SETTINGS:T  (158254,43347)  |Last amended Jan 26, 2016,12:02:27
 C Sample Code for Customization
 c turn debug mode on and display pop up info at exit
 
 <COMMENT> WRITE 'IN DBPROCF.GUI_CUSTOM.GUI_SETTING'
-. ifthen ( sglobal( 'USERA' eq 'BWILLIAMS' OR 'HANDREWS' )
-.   DUMMY = globals( 'DEBUG_MODE', '1' )
-.   DUMMY = globalN( 'SHOW_DEBUG_INFO', 1 )
+. ifthen ( sglobal( 'USERA' ) eq 'BWILLIAMS' OR 'HANDREWS' )
+.   DUMMY = globals( 'DEBUG_MODE', '0' )
+.   DUMMY = globalN( 'SHOW_DEBUG_INFO', 0 )
 . endif
 END PROCEDURE

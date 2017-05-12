@@ -1,6 +1,61 @@
-PROCEDURE      GUI_MAIN.DEBUG_INFO:T  (157231,42203)  |Last amended Apr 08, 2013,11:43:23
+PROCEDURE      GUI_MAIN.DEBUG_INFO:T  (158242,49771)  |Last amended Jan 14, 2016,13:49:31
 subprocedure DEBUG_INFO
-. BUFFER_LINE = format(DEBUG_LINE) + ' Focus: ' + format(getfocus(0))+ ' = ' + gettxt(GETFOCUS(0)) + ', Page: ' + format(m_page)
+. ifNOTthen( sglobal( 'DEBUG_MODE' ) EQ '1' )
+.   EXIT SUBPROCEDURE
+. endif
+
+| does the debug buffer exits?
+. BUFFER_COUNT = system(56)
+. for EACH_BUFFER = 1, BUFFER_COUNT
+.   if( trim( bufname( EACH_BUFFER ) ) EQ 'DEBUG_INFO' ) EXIT FOR
+. end for
+. ifthen( EACH_BUFFER GT BUFFER_COUNT )
+.   write 'debug_info buffer is missing'
+.   execute subprocedure START_DEBUG
+. endif
+
+. BUFFER_LINE = format(DEBUG_LINE) +
+                ' Focus: ' + format( getfocus( 0 ) ) +
+                ' = ' + gettxt( getfocus( 0 ) ) +
+                ', Page: ' + format( m_page )
 . insert line into buffer 'DEBUG_INFO' numbered DEBUG_LINE from BUFFER_LINE
+. DEBUG_LINE = DEBUG_LINE + 1
+end subprocedure
+
+subprocedure START_DEBUG
+C DEBUGGER INFO
+. DEBUG_LINE = 1
+. ifthen( sglobal( 'DEBUG_MODE' ) EQ '1' )
+.   BUFFER_NAME = 'DEBUG_INFO'
+.   execute subprocedure BUFFER_START
+.   BUFFER_LINE = 'Date:     ' + datec( today( 0 ), 'mm/dd/yy' ) ; execute subprocedure BUFFER_WRITE
+.   BUFFER_LINE = 'Time:     ' + timec( now( 0 ),'hh:mm' ) ; execute subprocedure BUFFER_WRITE
+.   BUFFER_LINE = 'Database: ' + fst( dbname( 0 ), 'unk' )  ; execute subprocedure BUFFER_WRITE
+.   BUFFER_LINE = 'User:     ' + fst( sglobal( 'USERA' ), 'UNK' )  ; execute subprocedure BUFFER_WRITE
+.   BUFFER_LINE = 'SecLevel: ' + fst( sglobal( 'GSECLEV' ), 'UNK' ) ; execute subprocedure BUFFER_WRITE
+.   BUFFER_LINE = 'Copy everything and paste it in an e-mail to Greg Neils' ; execute subprocedure BUFFER_WRITE
+.   BUFFER_LINE = 'Steps to reproduce ----------' ; execute subprocedure BUFFER_WRITE
+. else
+.   hide item DEBUG_CODE
+. endif
+end subprocedure
+
+subprocedure SHOW_DEBUG_INFO
+. ifNOT( sglobal( 'SHOW_DEBUG_INFO' ) EQ '1' ) exit subprocedure
+. for EACH_BUFFER = 1, SYSTEM( 56 )  | check to see if debug_info buffer exists before trying to open it.
+.   ifthen(  TRIM( bufname( EACH_BUFFER)) eq 'DEBUG_INFO' )
+.     EDIT BUFFER 'DEBUG_INFO'
+.     exit for
+.   endif
+. end for
+end subprocedure
+
+subprocedure INLINE_DEBUG_CODE
+. BUFFER_NAME = 'DEBUG_CODE'         ; execute subprocedure BUFFER_START
+. BUFFER_LINE = 'program'            ; execute subprocedure BUFFER_WRITE
+. BUFFER_LINE = gettxt( DEBUG_CODE)  ; execute subprocedure BUFFER_WRITE
+. BUFFER_LINE = 'end program'        ; execute subprocedure BUFFER_WRITE
+. COMSTR = 'INCLUDE BUFFER ' + BUFFER_NAME
+. execute dbms COMSTR
 end subprocedure
 END PROCEDURE

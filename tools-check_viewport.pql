@@ -1,0 +1,13 @@
+PROCEDURE      TOOLS.CHECK_VIEWPORT:T  (158233,38516)  |Last amended Jan 05, 2016,10:41:56
+program crwarn
+. INTEGER *  4  DUMMY
+. string  * 32  VIEW_PORT
+. VIEW_PORT = fst( upget( 'sir.view_port' ), 'desktop' )
+. ifNOTthen( VIEW_PORT eq 'desktop' or 'tablet' or 'phone')
+.   VIEW_PORT = 'desktop'
+.   DUMMY = upset( 'sir.view_port', VIEW_PORT )
+.   write 'Invalid viewport. View_port set to desktop as default'
+. endif
+. DUMMY = GLOBALS( 'VIEW_PORT', VIEW_PORT )
+end program
+END PROCEDURE

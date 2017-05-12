@@ -1,0 +1,33 @@
+PROCEDURE      GUI_MAIN.CASE_DELETE_REQUEST:T  (158297,51715)  |Last amended Mar 09, 2016,14:21:55
+SUBPROCEDURE CASE_DELETE_REQUEST
+| Explaination required
+. ifthen( gettxt( CASE_DELETE_REASON) EQ '' )
+.   display infobox 'Please provide a reason.'
+.   exit subprocedure
+. elseif( len( PACK( gettxt( CASE_DELETE_REASON ) ) ) LE 5 )
+.   display infobox 'Please provide a detailed reason.'
+.   exit subprocedure
+. endif
+
+| Check Permission level
+
+| Double check
+. GEN_STR1 = ''
+. display textbox 'Type "DELETE" to delete ' + CASE_LABEL + ': ' + CASE_VALUE RESPONSE RESVAR, GEN_STR1
+. GEN_STR1 = pack( GEN_STR1 )
+. ifthen( RESVAR EQ 0 or -1 )
+.   EXIT SUBPROCEDURE  | no or cancel (1=Yes)
+. endif
+. ifNOTthen( GEN_STR1 eq 'DELETE' )
+.   EXIT SUBPROCEDURE
+. ENDIF
+
+. execute subprocedure CASE_DELETE
+. execute subprocedure CASE_LIST_LOAD
+. m_page = VIEW_HOME
+. execute subprocedure PAGE
+. execute subprocedure ITEM_VISIBLE
+. execute subprocedure ITEM_ENABLE
+. select item CASE_LIST, 0
+END SUBPROCEDURE
+END PROCEDURE

@@ -1,0 +1,18 @@
+PROCEDURE      TOOLS.SET_DB_PROCFILE_ATTRIBUTE:T  (158695,32505)  |Last amended Apr 11, 2017,09:01:45
+c set the procfile to the database procfile
+program
+. string  *    32    DB_PROC_FILE    | points to database procfile
+. string  *   300    COMSTR
+. ifthen ( sglobal('sirver') eq 'XS.01.20' )
+.   DB_PROC_FILE = 'SIR'+ pformat( system(39), 'zzzz' ) + '4'
+. elseif ( sglobal('sirver') eq 'XS.01.19' )
+.   DB_PROC_FILE = 'SIR'+ pformat( system(39), 'zz' ) + '4'
+. endif
+. ifthen ( 0 eq len( DB_PROC_FILE ) or exists( DB_PROC_FILE ) )
+.   display infobox 'No DB_PROC_FILE defined.  EXITING.  CONTACT ADMIN.'
+.   exit program
+. endif
+. COMSTR = 'set attribute db_proc_file = "' + dsn(DB_PROC_FILE) + '"'
+. execute dbms COMSTR
+end program
+END PROCEDURE

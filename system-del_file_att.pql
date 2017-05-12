@@ -1,22 +1,30 @@
-PROCEDURE      SYSTEM.DEL_FILE_ATT:T  (158155,36740)  |Last amended Oct 19, 2015,10:12:20
+PROCEDURE      SYSTEM.DEL_FILE_ATT:T  (158299,48529)  |Last amended Mar 11, 2016,13:28:49
 c Created: 3/21/2013
 c By: Greg Neils
 c Brief: Create Deletion File Attribute
 c Full Description:  Sets DAILY_DEL_FILE to proper location
 
-program
-. string * 300 DAILY_DEL_FILE
-. string * 300 PATH$
-. string * 100 NAME$
-. string * 32  EXT$
-. string * 32  DB_PROC_FILE
-. integer *  1  ESCAPERESULT
-
-. DB_PROC_FILE = 'SIR'+ pformat(system(39),'zz') +'4'
-. execute subroutine SYSPROC.TOOLS.FILENAME (dsn(DB_PROC_FILE)) RETURNING (PATH$, NAME$, EXT$)
+program crwarn
+. string  *  300  DAILY_DEL_FILE
+. string  *  300  PATH$
+. string  *  100  NAME$
+. string  *   32  EXT$
+. string  *   32  DB_PROC_FILE
+. string  *  300  COMSTR
+. integer *    4  DUMMY
+. ifthen ( sglobal('sirver') eq 'XS.01.20' )
+.   DB_PROC_FILE = 'SIR'+ pformat( system(39), 'zzzz' ) + '4'
+. elseif ( sglobal('sirver') eq 'XS.01.19' )
+.   DB_PROC_FILE = 'SIR'+ pformat( system(39), 'zz' ) + '4'
+. endif
+. execute subroutine SYSPROC.TOOLS.FILENAME ( dsn( DB_PROC_FILE ) )
+                     RETURNING ( PATH$, NAME$, EXT$ )
 . DAILY_DEL_FILE = PATH$ + 'deletions'
-. if(fileis(DAILY_DEL_FILE) <> -1) t = makedir(DAILY_DEL_FILE)
+. ifthen( fileis( DAILY_DEL_FILE ) <> -1 )
+.   DUMMY = makedir( DAILY_DEL_FILE )
+. endif
 . DAILY_DEL_FILE = DAILY_DEL_FILE + '\deletion_reasons.txt'
-. EXECUTE DBMS ['SET ATTRIBUTE DAILY_DEL_FILE "'+ DAILY_DEL_FILE + '"']
+. COMSTR = 'SET ATTRIBUTE DAILY_DEL_FILE "' + DAILY_DEL_FILE + '"'
+. EXECUTE DBMS COMSTR
 end program
 END PROCEDURE

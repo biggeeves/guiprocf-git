@@ -1,4 +1,4 @@
-PROCEDURE      GUI_MAIN.OLD_KEY_ALL_VALIDATE:T  (157590,45049)  |Last amended Apr 02, 2014,12:30:49
+PROCEDURE      GUI_MAIN.OLD_KEY_ALL_VALIDATE:T  (158215,48002)  |Last amended Dec 18, 2015,13:20:02
 subprocedure OLD_KEY_ALL_VALIDATE
 <comment> write 'Sub: OLD_KEY_ALL_VALIDATE'
 | At this point the date and times are integers store in varibles defines as strings.  These do NOT validate and must be treated carefully!
@@ -18,7 +18,7 @@ subprocedure OLD_KEY_ALL_VALIDATE
 .       IF(exists(KEY_VALUE_!REPX) EQ 1)  GEN_STR1 = GEN_STR1 + '"' + KEY_VALUE_!REPX + '" '
 .       GEN_STR1 = GEN_STR1 + ' for ' + KEY_NAME_!REPX + ' is not valid.'
 .       ifthen (sglobal('DEBUG_MODE') EQ '1')
-.	  GEN_STR1 = GEN_STR1 + char(13) + ' VAL_VAR = ' + format(VAL_VAR)
+.   GEN_STR1 = GEN_STR1 + char(13) + ' VAL_VAR = ' + format(VAL_VAR)
                     + char(13) + 'KEYTYPE: ' + format(KEY_TYPE_!REPX)
 .       endif
 .       display infobox GEN_STR1
@@ -27,5 +27,9 @@ subprocedure OLD_KEY_ALL_VALIDATE
 .     endif
 .   endif
 . end repeat
+. ifthen( nkeys(REC_TYPE_NUM) + dbtype(0) ge 5 )
+.   display infobox "Sorry, we are presently limited to 4 keys."
+.   PROCEED = NO
+. endif
 end subprocedure
 END PROCEDURE

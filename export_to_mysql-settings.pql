@@ -1,0 +1,133 @@
+PROCEDURE      EXPORT_TO_MYSQL.SETTINGS:T  (158695,32897)  |Last amended Apr 11, 2017,09:08:17
+C -----------------------------------------------
+C ---- Global Settings   ------------------------
+
+GLOBAL USERNAME           = dcd
+GLOBAL PASSWORD           = dcd
+GLOBAL new                = no
+GLOBAL NULL_VALUE         = ''            | NULL
+GLOBAL DATE_FORMAT        = 'mm/dd/yyyy'  |  'yyyy-mm-dd'
+GLOBAL TIME_FORMAT        = 'hh:mm'       |  'hh:mm:ss'
+GLOBAL G_CONTINUE         = 0             | 0=Do Not Continue   1=Continue
+GLOBAL STOP_ON_ERROR      = 0             | 0=No 1=Yes
+GLOBAL WINDOWS_MACHINE    = 1
+GLOBAL LINE_TERMINATOR    = '\n'          | Will be overwritten by WINDOWS_MACHINE if WINDOWS_MAHCINE = 1
+GLOBAL LARAVEL            = 0             | Create Laravel Framework, 1=Yes, 0=No
+GLOBAL MYSQL              = 0             | Create MySQL files, 1=Yes, 0=No
+
+C SETTING BELOW CAN BE CUSTOMIZED
+C TO CHANGE THESE SETTINGS COPY GLOBALS TO YOUR DATABASE PROCFILE: "EXPORT_TO_MYSQL.SETTINGS"
+| global CASE_RESTRICTION = 'SAMPLE_SIZE = 1'
+GLOBAL STOP_REC           = 99            | DON'T SET THIS TO GET ALL RECORD TYPES
+GLOBAL CASE_RESTRICTION   = 'count = 100' | ' COUNT = 99'
+GLOBAL CASE_CRITERIA      = 1             | If equal to one, include case otherwise skip case.
+GLOBAL TABLE_PREFIX       = ''            |'crf_' Better for MySQL.  Perhaps apply only to MySQL
+GLOBAL FILE_ENDING        = 'csv'         | possible values csv or tab
+GLOBAL PREFIX_VAR_NAMES   = 0             | Prefix variable names with the table., 1=Yes, 0=No
+GLOBAL SHOW_WARNINGS      = 0             | show warning warnings, 1=Yes, 0=No
+GLOBAL COMMENT            = '|'           |
+| REDCap
+GLOBAL REDCAP             = 1             | Create REDCap Files, 1=Yes, 0=No
+GLOBAL REDCAP_EVENT_NAME  = 1             | Create column for redcap_event_name
+GLOBAL REDCAP_KEYFIELD    = 'interval'    | Map a single key field to the REDCap Event Name Column
+GLOBAL REDCAP_NOKEYS      = 'baseline'    | Map non-keyed records to manadory REDCap Event Name Column
+GLOBAL REDCAP_MULT_KEYS   = 'anytime'     | Map all other keyed record types to thie REDCap Event Name
+C                           Note that anytime forms will be mapped to an "Infinitely Repeating Event".
+c                           - And will be ordered in SIR Ascending Order
+
+c Infinitly repeating forms
+GLOBAL REDCAP_REPEAT      =  1            | Create column for redcap_repeat_instrument
+GLOBAL REDCAP_EVENT_MAP   =  1            | Data file for event mappings that can be uploaded into REDCap
+GLOBAL REDCAP_EVENT_START =  0            | Number of REDCap events to create based on mapping of KEYFIELD
+GLOBAL REDCAP_EVENT_END   = 20            | Number of REDCap events to create based on mapping of KEYFIELD
+
+GLOBAL REDCAP_FORM_STATUS = -1            | -1 = Incomplete data not saved,
+                                          |  0 = Inclomplete
+                                          |  1 = Unverified
+                                          |  2 = Complete
+                                          |  note: still in development
+
+c Check for local settings
+program
+. string  *   300    COMSTR
+. string  *   100    LOCAL_SETTINGS
+. LOCAL_SETTINGS = 'DB_PROC_FILE.EXPORT_TO_MYSQL.SETTINGS'
+. ifthen (MEMINFO(LOCAL_SETTINGS, 1) EQ 1)
+.   COMSTR =  "CALL " + LOCAL_SETTINGS
+.   execute dbms COMSTR
+.   WRITE 'USING LOCAL SETTINGS IN DB PROCFILE'
+. ELSE
+.   WRITE 'No local settings (Member = "EXPORT_TO_MYSQL.SETTINGS"). Using default settings.'
+. endif
+end program
+
+
+c feedback
+PRINT BACK OFF
+C PRINT BACK REMARKS
+
+
+C -----------------------------------------------
+C ----LINE TERMINATOR and file endinds-----------
+C
+PROGRAM
+. integer * 1 T
+. string  * 4 FILE_ENDING  | "csv, tab"
+. T = globaln ( 'CASE_SEEDER', NOW(0) )
+. IFTHEN  ( 0<WINDOWS_MACHINE> EQ 1 )
+.   T = globals ( 'LINE_TERMINATOR', '\r\n' )  | WINDOWS END OF LINE.  change according to your system.
+.   WRITE 'PATHS TO WINDOWS FILE WILL BE HAVE THE BACKSLASH (SQL KEYWORD) ESCAPED.  LOOK FOR DOUBLE BACKSLASHES '/
+. ENDIF
+
+| set the file ending and everything else will be set.  |add new options when needed.
+. FILE_ENDING = lower( sglobal( 'FILE_ENDING' ) )
+. IFTHEN  ( FILE_ENDING  EQ 'tab' )
+.   T = globals ( 'DELIMINATOR', char(9) )  | tab
+.   T = globals ( 'SQL_DELIMINATOR', '\t' )  | tab
+.   T = globals ( 'PQL_DELIMINATOR', 'char(9)' )  | tab
+
+. elseif   ( FILE_ENDING EQ 'csv' )
+.   T = globals ( 'DELIMINATOR', char(44) )
+.   T = globals ( 'SQL_DELIMINATOR', ',' )
+.   T = globals ( 'PQL_DELIMINATOR', 'char(44)' )
+. else
+.   write /////'  !!!!! A BIG MISTAKE HAPPENED.  PLEASE CHOOSE A FILE ENDING  !!!!!  ///'
+. ENDIF
+end program
+
+
+
+C -----------------------------------------------
+C ---   report back settings --------------------
+Program
+write 'YOUR SETTINGS ARE' /
+      5t 'SEED               = <CASE_SEEDER>' /
+      5t 'SAMPLE SIZE        = <SAMPLE_SIZE>'  /
+      5t 'STOP REC           = <STOP_REC>'  /
+      5t 'USERNAME           = <USERNAME>' /
+      5t 'PASSWORD           = <PASSWORD>' /
+      5t 'NEW                = <NEW> ' /
+      5t 'Laravel            = <laravel> ' /
+      5t 'CASE_RESTRICTION   = <CASE_RESTRICTION>' /
+      5t 'CASE_CRITERIA      = <CASE_CRITERIA>'/
+      5t 'WINDOWS MACHINE    = <WINDOWS_MACHINE>' /
+      5t 'LINE TERMINATOR    = <LINE_TERMINATOR>' /
+      5T 'FILE_ENDING        = <FILE_ENDING>' /
+      5T 'DELIMINATOR        = <DELIMINATOR>' /
+      5T 'SQL_DELIMINATOR    = <SQL_DELIMINATOR>' /
+      5T 'PQL_DELIMINATOR    = <PQL_DELIMINATOR>' /
+      5t 'Prefix Var Names   = <PREFIX_VAR_NAMES>' /
+      5t 'REDCAP             = <REDCAP>' /
+      5t 'REDCAP_EVENT_NAME  = <REDCAP_EVENT_NAME>'/
+      5t 'REDCAP_KEYFIELD    = <REDCAP_KEYFIELD>'/
+      5t 'REDCAP_NOKEYS      = <REDCAP_NOKEYS>'/
+      5t 'REDCAP_MULT_KEYS   = <REDCAP_MULT_KEYS>'/
+      5t 'REDCAP_REPEAT      = <REDCAP_REPEAT>'/
+      5t 'REDCAP_FORM_STATUS = <REDCAP_FORM_STATUS>'/
+      5t 'REDCAP_EVENT_MAP   = <REDCAP_EVENT_MAP>'/
+      5t 'MYSQL              = <MYSQL>' /
+      5t 'Show Warnings      = <SHOW_WARNINGS>' /
+      5t 'Show Comments      = <COMMENT>' /
+
+end program
+END PROCEDURE

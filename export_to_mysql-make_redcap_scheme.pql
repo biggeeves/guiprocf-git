@@ -1,0 +1,649 @@
+PROCEDURE      EXPORT_TO_MYSQL.MAKE_REDCAP_SCHEME:T  (158694,64935)  |Last amended Apr 10, 2017,18:02:15
+cif eq 1,2
+CALL EXPORT_TO_MYSQL.DEFINE_GUIPROCF
+CALL EXPORT_TO_MYSQL.SETTINGS
+CALL EXPORT_TO_MYSQL.MAKE_DIRS
+cif end
+C -----------------------------------------------------
+C ---  Create REDCAP Data Dictionary  -----------------
+
+program CRWARN
+. STRING  *  300   CREATE_DB_FILE
+                   EACH_PATH
+                   REDCAP_DICTIONARY
+                   REDCAP_BASE_DIR
+                   REDCAP_DATA_FILE
+                   REDCAP_EVENTS_FILE
+                   REDCAP_EVENTS_MAP
+. STRING  *  255   REDCAP_EVENT_NAME
+                   REDCAP_EVENT_DISPLAY
+. string  * 4094   REDCAP_DATA_FILE_HEADER
+                   REDCAP_CSV_LINE
+                   REDCAP_VALLABS
+. STRING  *  300   CREATE_CONSTRAINT_FILE
+. INTEGER *    4   IO_FEEDBACK
+                   Z_DUMMY
+                   INT_VAL
+                   STOP_REC
+. STRING  *  300   CHECK_WORD
+                   CLEAN_WORD
+                   CHECK_FILE
+. STRING  *   90   THIS_VAR_NAME
+. integer *    1   THIS_VTYPE
+. STRING  *  300   THIS_VARLAB
+. STRING  *   32   THIS_VAR_SQL_TYPE
+                   THIS_VAR_REDCAP_VALIDATION
+                   THIS_VARMIN
+                   THIS_VARMAX
+. INTEGER *    4   THIS_VARMIN_CALC            | includes missing values
+                   THIS_VARMAX_CALC            | includes missing values
+. string  *   32   THIS_FIELD_TYPE
+                   THIS_SIR_REC_NAME
+                   THIS_SQL_REC_NAME
+. integer *    4   THIS_VARLENG
+. string  *  300   THIS_VALUE_LABEL
+                   THIS_MISS_1
+                   THIS_MISS_2
+                   THIS_MISS_3
+. integer *    4   THIS_VALLAB_CNT             | Value Label Count
+                   THIS_VALID_VALUE_CNT        | Valid Value Count
+                   THIS_VALID_VALUE            | SPECIFIC VALID VALUE
+                   THIS_NUMERIC_RANGE
+. string  *  300   THIS_MIN_VALID_VALUE
+                   THIS_MAX_VALID_VALUE
+                   TEMP_VALUE
+
+. STRING  *  800   REDCAP_FILE_HEADER
+. STRING  *  300   THIS_LINE
+                   FEEDBACK_LINE
+                   THIS_ACTION_TAGS            | REDCap action tags for fields.  samples: @READONLY @HIDDEN @NOW @USERNAME @TODAY
+. INTEGER *    1   KEY_COUNT
+. integer *    4   EACH_REC
+                   EACH_VAR
+                   EACH_KEY
+                   EACH_INT                    | cycle through integers
+. INTEGER *    2   Z_INDS
+. INTEGER *    4   EACH_INDEX
+                   EACH_INDEX_VAR
+                   MAX_INDEX_VAR
+. STRING  *   32   KEY_NAME_1
+. INTEGER *    1   FIRST_TIME_THROUGH
+. string  *  4094  RENAMED_VARIABLES
+. INTEGER *    1   PREFIX_VAR_NAMES
+. string  *   40   array ALL_VAR_NAMES (1)
+. integer *    2   array VAR_NAME_COUNTS (1,1,1)
+. INTEGER *    4   MAX_VARS_IN_REC
+                   MAX_RECS
+                   DUP_COUNT
+                   TOTAL_VARS
+                   VAR_COUNTER
+. INTEGER *    1   NMISS
+. STRING  *    1   SMISS
+. STRING  *    1   LF          | LINE FEED OR CHARAIGE RETURN
+. integer *    1   REDCAP_EVENT_MAP
+
+
+SET NMISS (MISSING)
+SET SMISS (MISSING)
+LF =   CHAR(13)
+
+. IFNOTTHEN ( '<redcap>' EQ '1' )
+.   WRITE 'Redcap files will NOT be created as per setting.'
+.   EXIT PROGRAM
+. ELSE
+.   WRITE 'Making REDCap data dictionary.'
+. ENDIF
+
+c set up files and directories
+. REDCAP_BASE_DIR = dsn('redcap_base_dir')
+. ifthen (0 eq exists (REDCAP_BASE_DIR ) or len(REDCAP_BASE_DIR) )
+.   write // 'REDCAP_BASE_DIR IS NOT SET.   CAN NOT MAKE REDCAP FILES'
+.   EXIT PROGRAM
+. else
+.   write 'REDCap Base Dir: ' REDCAP_BASE_DIR
+. endif
+
+| THE REDCAP HEADERS ARE NECCESSARY FOR IMPORT.  REDCAP AUTOMATICALLY IGNORES THE FIRST LINE OF THE FILE
+. REDCAP_FILE_HEADER =  'Variable / Field Name,Form Name,Section Header,Field Type,Field Label,' +
+               '"Choices, Calculations, OR Slider Labels",Field Note,' +
+               'Text Validation Type OR Show Slider Number,Text Validation Min,Text Validation Max,' +
+               'Identifier?,Branching Logic,Required Field?,Custom Alignment,' +
+               'Question Number (surveys only),Matrix Group Name,Matrix Ranking?,Field Annotation'
+
+
+. REDCAP_DICTIONARY   = REDCAP_BASE_DIR +   '_data_dictionary.csv'
+. REDCAP_DATA_FILE    = REDCAP_BASE_DIR +   'redcap_data_import.csv'
+. REDCAP_EVENTS_FILE  = REDCAP_BASE_DIR +   'redcap_events_import.csv'
+. REDCAP_EVENTS_MAP   = REDCAP_BASE_DIR +   'redcap_events_map_import.csv'
+
+. open redcap_data / dsnvar = REDCAP_DATA_FILE /write iostat = IO_FEEDBACK lrecl=5000
+. if ( IO_FEEDBACK <> 0 ) write 'Failed to open ' REDCAP_DATA_FILE
+. REDCAP_DATA_FILE_HEADER = ''
+
+. open redcap_data_dict / dsnvar = REDCAP_DICTIONARY  /write iostat = IO_FEEDBACK lrecl=5000
+. if ( IO_FEEDBACK <> 0 ) write 'Failed to open ' REDCAP_DICTIONARY
+. write( redcap_data_dict ) REDCAP_FILE_HEADER
+
+. ifthen (NGLOBAL('REDCAP_EVENT_MAP') eq 1)
+.   WRITE 'Will make REDCap Events file'
+.   REDCAP_EVENT_MAP = 1
+
+.   open events / dsnvar = REDCAP_EVENTS_FILE  /write iostat = IO_FEEDBACK lrecl=5000
+.   if ( IO_FEEDBACK <> 0 ) write 'Failed to open ' REDCAP_EVENTS_FILE
+.   write( events) 'event_name,arm_num,unique_event_name,custom_event_label'
+
+.   open event_map / dsnvar = REDCAP_EVENTS_MAP  /write iostat = IO_FEEDBACK lrecl=5000
+.   if ( IO_FEEDBACK <> 0 ) write 'Failed to open ' REDCAP_EVENTS_MAP
+.   write( event_map) 'arm_num,unique_event_name,form'
+
+. endif
+
+. STOP_REC = fst( nglobal('STOP_REC'), NRECS(0) )
+. ifthen (nrecs(0) < nglobal('STOP_REC') )
+.   | can't get record information for rectypes that can't exist
+.   STOP_REC = NRECS(0)
+. endif
+
+. RENAMED_VARIABLES = ""
+. MAX_VARS_IN_REC = 0
+. TOTAL_VARS = 0
+. for EACH_REC = 1, STOP_REC
+.   IF (MAX_VARS_IN_REC < NVARSC(EACH_REC)) MAX_VARS_IN_REC = NVARSC(EACH_REC)
+.   TOTAL_VARS = TOTAL_VARS + NVARSC(EACH_REC)
+. end for
+. TOTAL_VARS = TOTAL_VARS + 1
+. MAX_RECS = NRECS(0)
+ifthen (0 eq exists(TOTAL_VARS) or  exists(MAX_RECS) or exists(MAX_VARS_IN_REC))
+. write 'Array value opps: ' TOTAL_VARS MAX_RECS MAX_VARS_IN_REC
+. exit program
+endif
+. REDEFINE ARRAY 'ALL_VAR_NAMES'   (TOTAL_VARS)
+. REDEFINE ARRAY 'VAR_NAME_COUNTS' (MAX_RECS, MAX_VARS_IN_REC, 1 )
+
+. VAR_COUNTER = 1
+. for EACH_REC = 1, STOP_REC
+.   compute THIS_SIR_REC_NAME = trim( lower( recname( EACH_REC ) ) )
+.   if( exists( THIS_SIR_REC_NAME ) eq 0 ) next for
+.   for EACH_VAR = 1, nvarsc( EACH_REC )
+.     compute THIS_VAR_NAME = lower( trim( varnamec( EACH_REC, EACH_VAR ) ) )
+.     ALL_VAR_NAMES (VAR_COUNTER) = THIS_VAR_NAME
+.     VAR_COUNTER = VAR_COUNTER + 1
+.   end for
+. end for
+
+
+. VAR_COUNTER = 1
+. for EACH_REC = 1, STOP_REC
+.   compute THIS_SIR_REC_NAME = trim( lower( recname( EACH_REC ) ) )
+.   if( exists( THIS_SIR_REC_NAME ) eq 0 ) next for
+.   for EACH_VAR = 1, nvarsc( EACH_REC )
+.     compute THIS_VAR_NAME = lower( trim( varnamec( EACH_REC, EACH_VAR ) ) )
+.     DUP_COUNT = 0
+.       for POSSIBLE_DUP = 1, TOTAL_VARS
+.         IFTHEN (ALL_VAR_NAMES (POSSIBLE_DUP ) EQ THIS_VAR_NAME)
+.           ifthen (VAR_COUNTER < POSSIBLE_DUP )
+.           endif
+.           DUP_COUNT = DUP_COUNT + 1
+.         endif
+.       END FOR
+.     VAR_NAME_COUNTS( EACH_REC, EACH_VAR, 1) = DUP_COUNT
+.     VAR_COUNTER = VAR_COUNTER + 1
+.   end for
+. end for
+
+
+. for EACH_REC = 1, STOP_REC
+.   compute THIS_SIR_REC_NAME = trim( lower( recname( EACH_REC ) ) )
+.   if( exists( THIS_SIR_REC_NAME ) eq 0 ) next for
+<COMMENT>  WRITE 'CREATING REDCAP SCHEME: ' THIS_SIR_REC_NAME
+
+.   EACH_PATH  = REDCAP_BASE_DIR + 'dictionaries\' + THIS_SIR_REC_NAME + '.csv'
+
+.   open EACH_FILENAME / dsnvar = EACH_PATH  /write iostat = IO_FEEDBACK lrecl=5000
+.     if ( IO_FEEDBACK <> 0 ) write 'Failed to open ' EACH_PATH ',' REDCAP_BASE_DIR
+.     write( EACH_FILENAME ) REDCAP_FILE_HEADER
+
+
+.   THIS_SQL_REC_NAME = THIS_SIR_REC_NAME
+.   ifthen ( nkeys ( EACH_REC) gt 0 ) | has a key field
+.     for EACH_KEY = 1, nkeys( EACH_REC )
+.       compute THIS_VAR_NAME = lower( trim( keyname( EACH_REC, EACH_KEY ) ) )
+.       THIS_LINE = THIS_LINE + THIS_VAR_NAME
+.       IF ( EACH_KEY LT nkeys( EACH_REC ) ) THIS_LINE = THIS_LINE + '_'
+.     end for
+.     THIS_LINE = THIS_LINE + 'redcap_event_name<DELIMINATOR>'
+<comment>  write 'redcap_event_name for ' THIS_SIR_REC_NAME ' is a combination of variables: '
+.   endif
+.   for EACH_VAR = 1, nvarsc( EACH_REC )
+.     THIS_VAR_NAME = lower( trim( varnamec( EACH_REC, EACH_VAR ) ) )
+
+C     !!! WARNING !!! REDCAP DOES IT'S OWN CASE VARAIBLE UPON UPLOADING EACH RECORD.
+.     ifthen ( dbtype(0) eq 1 ) | case structured.
+.       ifthen ( FIRST_TIME_THROUGH EQ 0 )
+.         IF ( THIS_VAR_NAME EQ lower( trim( varnamec( 0, 1 ) ) ) )  NEXT FOR | !!!! CASE ID SHOUDL BE SKIPPED EXCEPT FOR FIRST RECORD
+.       endif
+.     endif
+.     THIS_VTYPE    = vtype( EACH_REC, varnamec( EACH_REC, EACH_VAR ) )
+.     THIS_VARLENG  = varleng( EACH_REC, varnamec( EACH_REC, EACH_VAR ) )
+.     THIS_VARLAB   = varlabsc ( EACH_REC, THIS_VAR_NAME )
+.     THIS_VARMIN   = FST( FORMAT( NMIN( EACH_REC, THIS_VAR_NAME) ), SMIN ( EACH_REC, THIS_VAR_NAME ), '' )
+.     THIS_VARMAX   = FST( FORMAT( NMAX( EACH_REC, THIS_VAR_NAME) ), SMAX ( EACH_REC, THIS_VAR_NAME ), '' )
+.     THIS_VALID_VALUE_CNT = NVALID ( EACH_REC , varnamec( EACH_REC, EACH_VAR ))
+.     THIS_VALLAB_CNT      = nvallab( EACH_REC,  THIS_VAR_NAME)
+.     THIS_MIN_VALID_VALUE = SMISS
+.     THIS_MAX_VALID_VALUE = SMISS
+
+.     execute SUBPROCEDURE DCC_VARLABS
+
+.     IFTHEN (THIS_VARMIN EQ '')
+.       ifthen (THIS_VALID_VALUE_CNT > 0)
+.         FOR INT_VAL = 1, THIS_VALID_VALUE_CNT
+.           TEMP_VALUE = format(NVVAL ( EACH_REC , THIS_VAR_NAME , INT_VAL ))
+.           if (INT_VAL = 1)  THIS_MIN_VALID_VALUE = TEMP_VALUE
+.           ifthen( numbr(THIS_MIN_VALID_VALUE) > numbr(TEMP_VALUE) )
+.             THIS_MIN_VALID_VALUE = TEMP_VALUE
+.           endif
+.         END FOR
+.       elseif (THIS_VALLAB_CNT gt 0)
+.         FOR INT_VAL = 1, THIS_VALLAB_CNT
+.           TEMP_VALUE = VALLABSV ( EACH_REC , THIS_VAR_NAME , INT_VAL )
+.           if (INT_VAL = 1)  THIS_MIN_VALID_VALUE = TEMP_VALUE
+.           ifthen( numbr(THIS_MIN_VALID_VALUE) > numbr( TEMP_VALUE) )
+.             THIS_MIN_VALID_VALUE = TEMP_VALUE
+.           endif
+.         END FOR
+.       endif
+.     ENDIF
+
+.     IFTHEN (THIS_VARMAX EQ '')
+.       ifthen (THIS_VALID_VALUE_CNT > 0)
+.         FOR INT_VAL = 1, THIS_VALID_VALUE
+.           TEMP_VALUE = format(NVVAL ( EACH_REC , THIS_VAR_NAME , INT_VAL ))
+.           if (INT_VAL = 1)  THIS_MAX_VALID_VALUE = TEMP_VALUE
+.           ifthen( numbr(THIS_MAX_VALID_VALUE) > NUMBR(TEMP_VALUE) )
+.             THIS_MAX_VALID_VALUE = TEMP_VALUE
+.           endif
+.         END FOR
+.       elseif (THIS_VALLAB_CNT gt 0)
+ifthen(THIS_VAR_NAME EQ 'fhrace')
+WRITE 'FHRACE: LOOKING AT VALUE LABELS: CNT = ' THIS_VALLAB_CNT
+ENDIF
+.         FOR INT_VAL = 1, THIS_VALLAB_CNT
+.           TEMP_VALUE = VALLABSV ( EACH_REC , THIS_VAR_NAME , INT_VAL )
+ifthen(THIS_VAR_NAME EQ 'fhrace')
+WRITE 'FHRACE: LOOKING AT VALUE LABELS: temp value = ' TEMP_VALUE
+ENDIF
+.           if (INT_VAL = 1)  THIS_MAX_VALID_VALUE = TEMP_VALUE
+.           ifthen( numbr(THIS_MAX_VALID_VALUE) < numbr( TEMP_VALUE) )
+.             THIS_MAX_VALID_VALUE = TEMP_VALUE
+.           endif
+ifthen(THIS_VAR_NAME EQ 'fhrace')
+WRITE 'FHRACE: LOOKING AT VALUE LABELS: THIS_MAX_VALID_VALUE  = ' THIS_MAX_VALID_VALUE
+ENDIF
+.         END FOR
+.       endif
+.     ENDIF
+
+
+
+.     THIS_MISS_1   = MISS (EACH_REC, THIS_VAR_NAME , 1)
+.     THIS_MISS_2   = MISS (EACH_REC, THIS_VAR_NAME , 2)
+.     THIS_MISS_3   = MISS (EACH_REC, THIS_VAR_NAME , 3)
+.     THIS_VARMIN_CALC = MIN(numbr(THIS_VARMIN),
+                             numbr(THIS_MIN_VALID_VALUE),
+                             numbr(THIS_MISS_1),
+                             numbr(THIS_MISS_2),
+                             numbr(THIS_MISS_3) )
+.     THIS_VARMAX_CALC = MAX(numbr(THIS_VARMAX),
+                             numbr(THIS_MAX_VALID_VALUE),
+                             numbr(THIS_MISS_1),
+                             numbr(THIS_MISS_2),
+                             numbr(THIS_MISS_3) )
+
+
+ifthen(THIS_VAR_NAME EQ 'fhrace')
+WRITE THIS_VARMIN
+      THIS_MIN_VALID_VALUE
+      THIS_MISS_1
+      THIS_MISS_2
+      THIS_MISS_3
+
+WRITE THIS_VARMAX
+      THIS_MAX_VALID_VALUE
+      THIS_MISS_1
+      THIS_MISS_2
+      THIS_MISS_3
+ENDIF
+
+
+
+
+
+
+
+C     Update Info to Match REDCap
+.     ifthen (THIS_VTYPE eq 3)
+.       if ( THIS_VARMIN EQ '1' ) THIS_VARMIN = ''
+.       if ( THIS_VARMIN EQ '3660000' ) THIS_VARMIN = ''
+.       if ( THIS_VARMAX EQ '1' ) THIS_VARMAX = ''
+.       if ( THIS_VARMAX EQ '3660000' ) THIS_VARMAX = ''
+.       THIS_VARMIN = fst( datec( numbr(THIS_VARMIN), '<date_format>'), '')
+.       THIS_VARMAX = fst( datec( numbr(THIS_VARMAX), '<date_format>'), '')
+.     elseif (THIS_VTYPE eq 4)
+.       THIS_VARMIN = timec( numbr(THIS_VARMIN), 'HH:MM')
+.       THIS_VARMAX = timec( numbr(THIS_VARMAX), 'HH:MM')
+.       if( THIS_VARMAX eq '24:00' ) THIS_VARMAX = '23:59'
+.     endif
+
+.     recode  THIS_VAR_REDCAP_VALIDATION = THIS_VTYPE( 1 = '' )
+                                          ( 2 = '' )
+                                          ( 3 = 'date_mdy' )
+                                          ( 4 = 'time' )
+                                          ( 5 = 'integer' )
+                                          ( 6 = 'number' )
+                                          ( 7 = 'number' )
+                                          ( 8 = 'number' )
+
+
+.     THIS_FIELD_TYPE = 'text'
+.     ifthen ( nvallab( EACH_REC,  THIS_VAR_NAME) eq 0)
+.       | No value labels to choose.  Must be text.
+.     elseif (THIS_VTYPE < 5)
+.       | Strings, Categories, dates and time are all text.
+.     elseif (THIS_VTYPE eq 5)
+.       THIS_NUMERIC_RANGE = abs(THIS_VARMAX_CALC - THIS_VARMIN_CALC)
+.       ifthen (THIS_NUMERIC_RANGE eq nvallab( EACH_REC,  THIS_VAR_NAME) )
+|         All numbers have value labels
+.         ifthen( THIS_NUMERIC_RANGE le 3)
+.           THIS_FIELD_TYPE = 'radio'
+.         elseif (THIS_NUMERIC_RANGE <= 200)
+.           THIS_FIELD_TYPE = 'dropdown'
+.         else
+.           THIS_FIELD_TYPE = 'text'  | too many for a drop down.
+.         endif
+.       else
+|         Not all numbers have value labels.
+.         ifthen (THIS_NUMERIC_RANGE <= 200)
+.           THIS_FIELD_TYPE = 'dropdown'
+.         else
+.           THIS_FIELD_TYPE = 'text'
+.         endif
+.       endif
+.     elseif (THIS_VTYPE > 5)
+.       | stays as text and includ the correct range including missing values.
+.       THIS_VARMIN = format(THIS_VARMIN_CALC)
+.       THIS_VARMAX = format(THIS_VARMAX_CALC)
+.     endif
+
+| crazy field min and maxs must be removed if it is a drop down or radio.  ONLY TEXT can have mins and maxs
+| for radios and dropdowns there is no field type either!
+.     ifthen ( THIS_FIELD_TYPE eq 'dropdown'  or 'radio')
+.       THIS_VARMIN = ''
+.       THIS_VARMAX = ''
+.       THIS_VAR_REDCAP_VALIDATION = ''
+.     endif
+
+|     SIR value labels to REDCap dropdowns
+.     REDCAP_VALLABS = '""'
+.     ifthen (THIS_FIELD_TYPE = 'dropdown' or 'radio')
+.       REDCAP_VALLABS = '"'
+
+.       ifthen (THIS_VALID_VALUE_CNT > 0)
+c         valid values trumps everything
+.         FOR INT_VAL = 1, THIS_VALID_VALUE_CNT
+.           THIS_VALID_VALUE = NVVAL ( EACH_REC , THIS_VAR_NAME , INT_VAL )
+.           if(exists( THIS_VALID_VALUE  ) eq 0 ) next for
+.           REDCAP_VALLABS = REDCAP_VALLABS +
+                             trim( pack( format( THIS_VALID_VALUE ) ) ) +
+                             ', '
+.           THIS_VALUE_LABEL = trim( pack( vallabsc (EACH_REC, THIS_VAR_NAME, THIS_VALID_VALUE ) ) )
+.           | Some valid values do not have value labels
+.           if(exists(THIS_VALUE_LABEL ) eq 0) THIS_VALUE_LABEL = trim( pack( format( THIS_VALID_VALUE ) ) )
+.           ifthen (PATTERN (THIS_VALUE_LABEL , '@"@') = 1 )
+.             THIS_VALUE_LABEL = REPLACE (THIS_VALUE_LABEL, '"','',9,1,0)
+.             execute subprocedure WARNING_DOUBLE_QOUTES
+.           endif
+.           REDCAP_VALLABS = REDCAP_VALLABS + THIS_VALUE_LABEL
+.           if (INT_VAL lt  THIS_VALID_VALUE_CNT ) REDCAP_VALLABS = REDCAP_VALLABS +  ' | '
+.         end for
+
+.       elseif (THIS_NUMERIC_RANGE eq nvallab( EACH_REC,  THIS_VAR_NAME) )
+|         equal number of value labels to range, including missing values in range
+.         for EACH_LABEL = 1, nvallab( EACH_REC,  THIS_VAR_NAME)
+.           REDCAP_VALLABS = REDCAP_VALLABS + trim( pack( VALLABSV( EACH_REC, THIS_VAR_NAME, EACH_LABEL ) ) )
+.           REDCAP_VALLABS = REDCAP_VALLABS + ', '
+.           THIS_VALUE_LABEL = trim( pack( VALLABSN( EACH_REC, THIS_VAR_NAME ,EACH_LABEL ) ) )
+.           ifthen (PATTERN (THIS_VALUE_LABEL , '@"@') = 1 )
+.             THIS_VALUE_LABEL = REPLACE (THIS_VALUE_LABEL, '"','',9,1,0)
+.             execute subprocedure WARNING_DOUBLE_QOUTES
+.           endif
+.           REDCAP_VALLABS = REDCAP_VALLABS + THIS_VALUE_LABEL
+.           if (EACH_LABEL lt  nvallab( EACH_REC,  THIS_VAR_NAME) ) REDCAP_VALLABS = REDCAP_VALLABS +  ' | '
+.           IFTHEN (LEN(REDCAP_VALLABS ) GT 3900 )
+.             WRITE '!!!WARNING!!! VALUE LABLES FOR ' THIS_SIR_REC_NAME ':' THIS_VAR_NAME /
+                    5T  ' WERE TRUNCATED: MAX LENGTH=3900'
+.             EXIT FOR
+.           ENDIF
+.         end for
+.       else
+if (THIS_VAR_NAME EQ 'fhrace') write 'else'
+|         range > # of value labels
+|         create drop down based on range.  Include value labels for missing values.
+.         for EACH_INT = THIS_VARMIN_CALC, THIS_VARMAX_CALC
+.           REDCAP_VALLABS = REDCAP_VALLABS + FORMAT(EACH_INT) + ","
+.           THIS_VALUE_LABEL = trim( pack( vallabsc (EACH_REC,THIS_VAR_NAME,EACH_INT) ) )
+.           ifthen (PATTERN (THIS_VALUE_LABEL , '@"@') = 1 )
+.             THIS_VALUE_LABEL = REPLACE (THIS_VALUE_LABEL, '"','',9,1,0)
+.             execute subprocedure WARNING_DOUBLE_QOUTES
+.           endif
+.           ifthen (exists(vallabsc (EACH_REC,THIS_VAR_NAME,EACH_INT) ) eq 1)
+.             REDCAP_VALLABS = REDCAP_VALLABS + THIS_VALUE_LABEL
+.           else
+.             REDCAP_VALLABS = REDCAP_VALLABS + format(EACH_INT)
+.           endif
+.           if (EACH_INT lt  THIS_VARMAX_CALC ) REDCAP_VALLABS = REDCAP_VALLABS +  ' | '
+.         end for
+.       endif
+.       REDCAP_VALLABS = REDCAP_VALLABS + '"'
+.     endif
+ifthen(THIS_VAR_NAME EQ 'fhrace')
+WRITE // 'fhrace: ' THIS_VTYPE
+ THIS_VARLENG
+ "MIN: " THIS_VARMIN
+ "MAX: " THIS_VARMAX
+ "CNT: " THIS_VALID_VALUE_CNT
+ "validtion: " THIS_VAR_REDCAP_VALIDATION
+ THIS_FIELD_TYPE
+ //
+ REDCAP_VALLABS
+ "CAL MIN: " THIS_VARMIN_CALC
+ "CALC MAX: " THIS_VARMAX_CALC
+ENDIF
+
+
+.     ifthen (EXISTS (REDCAP_VALLABS) EQ 0)
+.       write 'error in value labels.  Missing text'/
+              'Var: ' THIS_VAR_NAME ': '
+              REDCAP_VALLABS //
+              'Terminating program'
+.             exit program
+.
+.     endif
+.     execute subprocedure REPLACE_COMMAS
+
+|     Action tags are helpers like setting default values for dates, times and username.  Plus they can hide fields
+.     THIS_ACTION_TAGS = ""
+.     execute subprocedure ADD_DCC_ACTION_TAGS
+
+C     !!!!  WARNING !!!!
+c     Variable NameS must be unique in REDCAP.
+C     Do NOT prepend the CASE ID, IT IS ALREADY UNIQUE
+.     ifNOTThen( THIS_VAR_NAME EQ lower( trim( varnamec( 0, 1 ) ) ) )
+.       IFTHEN (PREFIX_VAR_NAMES EQ 1)
+.         THIS_VAR_NAME = THIS_SQL_REC_NAME + '_' + THIS_VAR_NAME
+.       ELSE
+.         IFTHEN (VAR_NAME_COUNTS( EACH_REC, EACH_VAR, 1) > 1)
+|           The variable name must be unique in REDCap.
+.           THIS_VAR_NAME = THIS_SIR_REC_NAME + '_' + THIS_VAR_NAME
+.           RENAMED_VARIABLES = RENAMED_VARIABLES + THIS_VAR_NAME + LF
+.         ENDIF
+.       ENDIF
+.     endif
+
+.     REDCAP_DATA_FILE_HEADER = trim(',' + THIS_VAR_NAME)
+
+C  THIS NEEDS SERIOUS HELP.  IT IS NOT CORRECT
+.     write( redcap_data/NOEOL ) REDCAP_DATA_FILE_HEADER
+C  THE COLUMNS ARE ALL MESSED UP.
+
+.     REDCAP_CSV_LINE = THIS_VAR_NAME + ',' +
+                    THIS_SQL_REC_NAME + ',' +
+                    ',' +
+                    THIS_FIELD_TYPE + ',' +
+                    THIS_VARLAB + ',' +
+                    REDCAP_VALLABS + ',' +
+                    ',' +
+                    THIS_VAR_REDCAP_VALIDATION + ',' +
+                    THIS_VARMIN + ',' + THIS_VARMAX + ',' +
+                    ',' +
+                    ',' +
+                    ',' +
+                    ',' +
+                    ',' +
+                    ',' +
+                    ',' + THIS_ACTION_TAGS
+.     write( EACH_FILENAME ) REDCAP_CSV_LINE
+.     write( redcap_data_dict ) REDCAP_CSV_LINE
+.   FIRST_TIME_THROUGH = 0
+.   end for
+.   CLOSE (EACH_FILENAME)
+. end for
+
+
+
+. ifthen (REDCAP_EVENT_MAP eq 1)
+.   execute subprocedure CALC_REDCAP_EVENTS
+.   close events
+.   CLOSE event_map
+. endif
+
+
+
+<COMMENT> 'Renamed Variables ' RENAMED_VARIABLES
+<COMMENT> 'Finished Making REDCap files'
+
+. subprocedure REPLACE_COMMAS
+.   THIS_VARLAB = replace( THIS_VARLAB, ',', ':', 99, 1, 0 )
+. end subprocedure
+
+. subprocedure WARNING_DOUBLE_QOUTES
+.   ifthen (nglobal('SHOW_WARNINGS') eq 1 )
+.     write "Rec: " EACH_REC
+            " Var: " THIS_VAR_NAME
+            " Label: " THIS_VALUE_LABEL
+            ' HAD ILLEAGLE DOUBLE QOUTE'
+.   endif
+. end subprocedure
+
+subprocedure ADD_DCC_ACTION_TAGS
+|     DCC specific action tages on standardized variables
+.     ifthen (THIS_VAR_NAME eq 'dccdate')
+.       THIS_ACTION_TAGS = "@TODAY @HIDDEN @READONLY"
+.     elseif (THIS_VAR_NAME eq 'dcctime')
+.       THIS_ACTION_TAGS = "@NOW @HIDDEN @READONLY"
+.     elseif (THIS_VAR_NAME eq 'dccwho')
+.       THIS_ACTION_TAGS = "@USERNAME @HIDDEN @READONLY"
+.     elseif (THIS_VAR_NAME eq 'dstamp')
+.       THIS_ACTION_TAGS = "@TODAY @HIDDEN @READONLY"
+.     elseif (THIS_VAR_NAME eq 'dccedits')
+.       THIS_ACTION_TAGS = "@HIDDEN @READONLY"
+.     elseif (THIS_VAR_NAME eq 'dwho')
+.       THIS_ACTION_TAGS = "@HIDDEN @READONLY"
+.     endif
+|     MORE MIGHT BE POSSIBLE: DWHO=CREATED BY, DCCEDITS="# OF EDITS"
+end subprocedure
+
+subprocedure DCC_VARLABS
+|     DCC standardized tags
+.     ifthen (THIS_VAR_NAME eq 'dccdate')
+.       THIS_VARLAB = "Mod. date"
+.     elseif (THIS_VAR_NAME eq 'dcctime')
+.       THIS_VARLAB = "Mod. at"
+.     elseif (THIS_VAR_NAME eq 'dccwho')
+.       THIS_VARLAB = "Mod. by"
+.     elseif (THIS_VAR_NAME eq 'dstamp')
+.       THIS_VARLAB = "Created at"
+.     elseif (THIS_VAR_NAME eq 'dccedits')
+.       THIS_VARLAB = "edits"
+.     elseif (THIS_VAR_NAME eq 'dwho')
+.       THIS_VARLAB = "Created by"
+.     endif
+|     MORE MIGHT BE POSSIBLE: DWHO=CREATED BY, DCCEDITS="# OF EDITS"
+end subprocedure
+
+subprocedure CALC_REDCAP_EVENTS
+C CREATE EVENTS
+. REDCAP_EVENT_DISPLAY = sglobal('REDCAP_NOKEYS')
+. REDCAP_EVENT_NAME = sglobal('REDCAP_NOKEYS') + '_arm_1'
+. execute subprocedure ADD_EVENT_TO_FILE
+
+. REDCAP_EVENT_DISPLAY = sglobal('REDCAP_MULT_KEYS')
+. REDCAP_EVENT_NAME = sglobal('REDCAP_MULT_KEYS') + '_arm_1'
+. execute subprocedure ADD_EVENT_TO_FILE
+
+.   FOR N = NGLOBAL('REDCAP_EVENT_START'), NGLOBAL('REDCAP_EVENT_END')
+.     REDCAP_EVENT_DISPLAY = SGLOBAL('REDCAP_KEYFIELD') + ' ' + FORMAT(N)
+.     REDCAP_EVENT_NAME    = SGLOBAL('REDCAP_KEYFIELD') +
+                          '_' + format(N) +
+                          '_arm_1'
+.     execute subprocedure ADD_EVENT_TO_FILE
+.   end for
+
+
+
+C EVENT MAPPING
+. for EACH_REC = 1, STOP_REC
+.   compute THIS_SIR_REC_NAME = trim( lower( recname( EACH_REC ) ) )
+.   if( exists( THIS_SIR_REC_NAME ) eq 0 ) next for
+.   KEY_COUNT = nkeys(EACH_REC)
+.   ifthen (KEY_COUNT > 0)
+.     KEY_NAME_1 = keyname(EACH_REC,  1 + dbtype(0))  | 1st= caseid, 2nd = key name in case structured dbs
+.   else
+.     KEY_NAME_1 = ''
+.   endif
+.   REDCAP_EVENT_NAME = ''
+.   THIS_LINE = ''
+.   ifthen (KEY_COUNT = 0)
+.     REDCAP_EVENT_NAME = sglobal('REDCAP_NOKEYS') + '_arm_1'
+.     execute subprocedure ADD_EVENT_TO_MAP_FILE
+.   elseif( KEY_COUNT = 1)
+.     ifthen( upper(SGLOBAL('REDCAP_KEYFIELD')) EQ upper(KEY_NAME_1) )
+.       FOR N = NGLOBAL('REDCAP_EVENT_START') , NGLOBAL('REDCAP_EVENT_END')
+.         REDCAP_EVENT_NAME = lower(KEY_NAME_1) +
+                              '_' + format(N) +
+                              '_arm_1'
+.         execute subprocedure ADD_EVENT_TO_MAP_FILE
+.       END FOR
+.     else
+.       REDCAP_EVENT_NAME = sglobal('REDCAP_MULT_KEYS') + '_arm_1'
+.       execute subprocedure ADD_EVENT_TO_MAP_FILE
+.     endif
+.   else
+C multiple keyed record type conver to infinitely repeating forms
+.     REDCAP_EVENT_NAME = sglobal('REDCAP_MULT_KEYS') + '_arm_1'
+.     execute subprocedure ADD_EVENT_TO_MAP_FILE
+.   endif
+. end for
+end subprocedure
+
+subprocedure ADD_EVENT_TO_MAP_FILE
+. THIS_LINE = '1,' + REDCAP_EVENT_NAME  + ',' + THIS_SIR_REC_NAME
+. write (event_map) THIS_LINE
+end subprocedure
+
+subprocedure ADD_EVENT_TO_FILE
+. THIS_LINE = REDCAP_EVENT_DISPLAY + ',1,' + REDCAP_EVENT_NAME  + ','
+. write (events) THIS_LINE
+end subprocedure
+END PROGRAM
+END PROCEDURE

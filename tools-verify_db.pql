@@ -1,4 +1,4 @@
-PROCEDURE      TOOLS.VERIFY_DB:T  (157437,49451)  |Last amended Oct 31, 2013,13:44:11
+PROCEDURE      TOOLS.VERIFY_DB:T  (158242,51345)  |Last amended Jan 14, 2016,14:15:45
 subroutine VERIFY_DB ( DB_NAME, DB_PATH ) RETURNING ( VERIFY_STATUS )
 . STRING  *     32   DB_NAME               | database name to verify
 . STRING  *    600   DB_PATH               | database file path
@@ -11,7 +11,8 @@ subroutine VERIFY_DB ( DB_NAME, DB_PATH ) RETURNING ( VERIFY_STATUS )
 . write GEN_STR1
 . VERIFY_STATUS = UNK   | DEFAULT IS UNKNOWN
 . VERIFY_FILE = DB_PATH + '\VERIFY' + DB_NAME + '.txt'
-. execute dbms "SET OUTPUT '" + VERIFY_FILE + "'"
+. COMSTR = "SET OUTPUT '" + VERIFY_FILE + "'"
+. execute dbms COMSTR
 . execute dbms 'VERIFY'
 . execute dbms 'CLEAR OUTPUT'
 . open (VERF) read dsnvar = VERIFY_FILE

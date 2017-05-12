@@ -1,262 +1,286 @@
-PROCEDURE      GUI_MAIN.DECLARE_VARIABLES:T  (158208,45506)  |Last amended Dec 11, 2015,12:38:26
+PROCEDURE      GUI_MAIN.DECLARE_VARIABLES:T  (158288,65128)  |Last amended Feb 29, 2016,18:05:28
 <comment> write "initialize DCC vars"
-. string  *    600   GEN_STR1               | Generic/General String
-. integer *      1   CASE_TYPE              | What variable type is the case id
-. string  *     36   CASE_NAME              | Variable name of case, varname(0, 1)
-. string  *     72   CASE_LABEL             | Variable label of case, vavarname(0, 1)
-. string  *     36   CASE_TEMP_VALUE        | Case Test Value
-. string  *     36   CASE_VALUE             | Case Value
-. real    *      8   CASE_VALUE#            | Numeric Case Value
-. integer *      1   CASE_FOUND             | Does the case exists.
-. string  *     36   BUFFER_NAME            | Buffer Name
-. string  *    300   BUFFER_LINE            | Text to add to buffer
-. integer *      4   BUFF#                  | Current line number to write in buffer
-. integer *      1   YES NO
-. integer *      1   MEM_O MEM_T            | No need to remember compile or text value.
-. integer *      4   CYCLE_NUM              | Cycle through some numbers
+string  *    600   GEN_STR1               | Generic/General String
+integer *      1   CASE_TYPE              | What variable type is the case id
+string  *     36   CASE_NAME              | Variable name of case, varname(0, 1)
+string  *     72   CASE_LABEL             | Variable label of case, varlabel(0, 1)
+string  *     36   CASE_TEMP_VALUE        | Case Test Value
+string  *     36   CASE_VALUE             | Case Value
+real    *      8   CASE_VALUE#            | Numeric Case Value
+integer *      1   CASE_FOUND             | Does the case exists.
+string  *     36   BUFFER_NAME            | Buffer Name
+string  *    300   BUFFER_LINE            | Text to add to buffer
+integer *      4   BUFF#                  | Current line number to write in buffer
+integer *      1   YES NO
+integer *      1   MEM_O MEM_T            | No need to remember compile or text value.
+integer *      4   CYCLE_NUM              | Cycle through some numbers
 | Auto Log Out
-. integer *      1   TIME_LEFT              | Minutes until Auto Log Out
-. time               COUNT_DOWN ('HH:MM:SS')
-. integer *      1   PROCEED                | Control Flow Varialbe.  Yes/No
-. integer *      2   RESVAR                 | Response Variable
-. integer *      2   POS
-. integer *      2   REPOS                  | REPOSitition the list to what was selected before.
-. integer *      4   DUMMY                  | Dummy Variable
-. integer *      2   REC_TYPE_NUM           | RECORD NUMBER
-. integer *      2   PREVIOUS_REC_TYPE_NUM  | Previous Record type number
-. integer *      2   REC_ROW_COUNT_INITIAL  | How many rows of records are there INITIALLY
-. integer *      2   REC_ROW_COUNT          | How many rows of records are there
-. string  *     32   RECORD_NAME            | Record Type Name
-. string  *     72   REC_LABEL              | Record Label
-. integer *      2   FORM_COUNT             | Space out the forms
-. integer *      2   KEY_COUNT              | key count
+integer *      1   TIME_LEFT              | Minutes until Auto Log Out
+time               COUNT_DOWN ('HH:MM:SS')
+integer *      1   PROCEED                | Control Flow Varialbe.  Yes/No
+integer *      2   RESVAR                 | Response Variable
+integer *      2   POS
+integer *      2   REPOS                  | REPOSitition the list to what was selected before.
+integer *      4   DUMMY                  | Dummy Variable
+integer *      2   REC_TYPE_NUM           | RECORD NUMBER
+integer *      2   PREVIOUS_REC_TYPE_NUM  | Previous Record type number
+integer *      2   REC_ROW_COUNT_INITIAL  | How many rows of records are there INITIALLY
+integer *      2   REC_ROW_COUNT          | How many rows of records are there
+string  *     32   RECORD_NAME            | Record Type Name
+string  *     72   REC_LABEL              | Record Label
+integer *      2   FORM_COUNT             | Space out the forms
+integer *      2   KEY_COUNT              | key count
 
-. string  *     36   KEY_NAME              | Key Name
-. string  *     36   KEY_VALUE             | Key Value
+string  *     36   KEY_NAME              | Key Name
+string  *     36   KEY_VALUE             | Key Value
 
-. string  *     36   KEY_NAME_1
-                     KEY_NAME_2
-                     KEY_NAME_3
-                     KEY_NAME_4
-. string  *     36   KEY_VALUE_1
-                     KEY_VALUE_2
-                     KEY_VALUE_3
-                     KEY_VALUE_4
-                     KEY_VALUE_5
-                     KEY_VALUE_6
-                     KEY_VALUE_7
-. integer *      1   KEY_TYPE_1
-                     KEY_TYPE_2
-                     KEY_TYPE_3
-                     KEY_TYPE_4
-                     KEY_TYPE_5
-                     KEY_TYPE_6
-                     KEY_TYPE_7
-. string  *     72   KEY_LABEL_1
-                     KEY_LABEL_2
-                     KEY_LABEL_3
-                     KEY_LABEL_4
-. string  *     36   KEY$N                  | generic key name
-. string  *     36   KEY$V                  | key value (can be key1, key2, key3, or key4.    Added a couple of spaces for manipulations like adding double qoutes
-. integer *      1   KEY$T                  | generic key type
-. string  *     36   PREVIOUS_KEY_NAME_1
-                     PREVIOUS_KEY_NAME_2
-                     PREVIOUS_KEY_NAME_3
-                     PREVIOUS_KEY_NAME_4    | Previous Keys
-. string  *     36   PREVIOUS_KEY_VALUE_1
-                     PREVIOUS_KEY_VALUE_2
-                     PREVIOUS_KEY_VALUE_3
-                     PREVIOUS_KEY_VALUE_4   | Previous Values
-. string  *     36   VAR_NAME               | Variable name
-. string  *     36   VAR_NAME_CB            | Variable Name with Curly Brackets
-. string  *    100   VAR_LABEL              | Variable label
-. string  *     72   VAR_FORMAT             | Variable Format
-. string  *    100   VTYPE_MAP              | generic Variable Type Map
-. real    *      8   KEY_MIN KEY_MAX        | generic Key Min and Max Values
-. integer *      4   KEY_LABEL_COUNT        | generic How many labels are associated with the variable
-. string  *    700   STRING_VARGET          | Value as a string, var get
-. integer *      4   VALID_COUNT            | generic How many valid values are there
-. integer *      1   VAL_VAR                | validation variable
-. string  *     80   REC_VIA                | Passing Keys with VIA to subprocedures.
-. date               DATE#V ('MMiDDiYYYY')  | Right format for a Date Key
-. time               TIME#V ('HHiMMiSS')    | Right format for a Time Key
-. integer *      2   KEY_FOCUS
-. integer *      1   REFRESH_START_KEYNUM   | Key Number to start the refresh.
-. integer *      1   VIEW_CASE_DELETE
-                     VIEW_SPLASH
-                     VIEW_HOME
-                     VIEW_NEW_CASE
-                     VIEW_OLD_KEYS
-                     VIEW_NEW_KEYS
-                     VIEW_TABLE
-                     VIEW_CASE_SUMMARY
-                     VIEW_DBA
-                     VIEW_HIDDEN
-                     VIEW_BULK_RECORD_DELETE            |  Which Page View, easily rearrange pages
-. string  *     36   SCREEN_RECTYPE_CHECK   | Is a record type correctly linked to a screen name?
-. string  *     36   SCREEN_NAME            | Start of Screen Name
-. string  *    300   SCREEN_MEMBER          | Fully qualified Name for PQL Painter Screen
-. string  *    300   DVP_MEMBER             | Fully qualified Name for DVPainter Screen
-. string  *     80   MEMBER_NAME            | Member name
-. string  *    600   MEMBER_LINE            | Line to either add to member or read from member
-. string  *     80   FAMILY_NAME            | Family name
-. integer *      1   FAMILY_EXISTS          | 0=No, 1=Yes
-. string  *    300   FULL_PATH_MEMBER       | Procfile, Family and Member
-. string  *    300   GUIPROCF_MEMBER        | GUIPROCF + Family + Member
-. integer *      1   EXIT__#                | How did they exit the screen?
-. integer *      4   DEBUG_LINE
-. integer *      2   FORM_LIST_LAST_LINE    | Last line that the user clicked.  Reloading the keys is a problem for the user.  Do NOT reload if user is clicking on same form again.
+string  *     36   KEY_NAME_1
+                   KEY_NAME_2
+                   KEY_NAME_3
+                   KEY_NAME_4
+string  *     36   KEY_VALUE_1
+                   KEY_VALUE_2
+                   KEY_VALUE_3
+                   KEY_VALUE_4
+                   KEY_VALUE_5
+                   KEY_VALUE_6
+                   KEY_VALUE_7
+integer *      1   KEY_TYPE_1
+                   KEY_TYPE_2
+                   KEY_TYPE_3
+                   KEY_TYPE_4
+                   KEY_TYPE_5
+                   KEY_TYPE_6
+                   KEY_TYPE_7
+string  *     72   KEY_LABEL_1
+                   KEY_LABEL_2
+                   KEY_LABEL_3
+                   KEY_LABEL_4
+string  *     36   KEY$N                  | generic key name
+string  *     36   KEY$V                  | key value (can be key1, key2, key3, or key4.    Added a couple of spaces for manipulations like adding double qoutes
+integer *      1   KEY$T                  | generic key type
+string  *     36   PREVIOUS_KEY_NAME_1
+                   PREVIOUS_KEY_NAME_2
+                   PREVIOUS_KEY_NAME_3
+                   PREVIOUS_KEY_NAME_4    | Previous Keys
+string  *     36   PREVIOUS_KEY_VALUE_1
+                   PREVIOUS_KEY_VALUE_2
+                   PREVIOUS_KEY_VALUE_3
+                   PREVIOUS_KEY_VALUE_4   | Previous Values
+string  *     36   VAR_NAME               | Variable name
+string  *     36   VAR_NAME_CB            | Variable Name with Curly Brackets
+string  *    100   VAR_LABEL              | Variable label
+string  *     72   VAR_FORMAT             | Variable Format
+string  *    100   VTYPE_MAP              | generic Variable Type Map
+real    *      8   KEY_MIN KEY_MAX        | generic Key Min and Max Values
+integer *      4   KEY_LABEL_COUNT        | generic How many labels are associated with the variable
+string  *    700   STRING_VARGET          | Value as a string, var get
+integer *      4   VALID_COUNT            | generic How many valid values are there
+integer *      1   VAL_VAR                | validation variable
+string  *     80   REC_VIA                | Passing Keys with VIA to subprocedures.
+date               DATE#V ('MMiDDiYYYY')  | Right format for a Date Key
+time               TIME#V ('HHiMMiSS')    | Right format for a Time Key
+integer *      2   KEY_FOCUS
+integer *      1   REFRESH_START_KEYNUM   | Key Number to start the refresh.
+| GUI PAGES
+integer *      1   VIEW_HOME
+                   VIEW_LIST_CASES
+                   VIEW_OLD_KEYS
+                   VIEW_NEW_KEYS
+                   VIEW_TABLE
+                   VIEW_CASE_DELETE_SUMMARY
+                   VIEW_CASE_SUMMARY
+                   VIEW_DBA
+                   VIEW_HIDDEN
+                   VIEW_BULK_RECORD_DELETE
+string  *     36   SCREEN_RECTYPE_CHECK   | Is a record type correctly linked to a screen name?
+string  *     36   SCREEN_NAME            | Start of Screen Name
+string  *    300   SCREEN_MEMBER          | Fully qualified Name for PQL Painter Screen
+string  *    300   DVP_MEMBER             | Fully qualified Name for DVPainter Screen
+string  *     80   MEMBER_NAME            | Member name
+string  *    600   MEMBER_LINE            | Line to either add to member or read from member
+string  *     80   FAMILY_NAME            | Family name
+integer *      1   FAMILY_EXISTS          | 0=No, 1=Yes
+string  *    300   FULL_PATH_MEMBER       | Procfile, Family and Member
+string  *    100   OLD_FAMILY_NAME        | useful for transfering/copying members
+                   NEW_FAMILY_NAME
+                   OLD_MEMBER_NAME
+                   NEW_MEMBER_NAME
+string  *    300   GUIPROCF_MEMBER        | GUIPROCF + Family + Member
+integer *      1   EXIT__#                | How did they exit the screen?
+integer *      4   DEBUG_LINE
+integer *      2   FORM_LIST_LAST_LINE    | Last line that the user clicked.  Reloading the keys is a problem for the user.  Do NOT reload if user is clicking on same form again.
+
 | contains are customizable variables and variable necessary for customizing a user experience.
-. integer *      4   SOME_TOGGLE            | Used to turn things on or off.  Large int to handle various toggle values.
+integer *      4   SOME_TOGGLE            | Used to turn things on or off.  Large int to handle various toggle values.
+
 | Look and feel
-. integer *      1   BOLD
-                     NOT_BOLD
-                     ITALIC
-                     NOT_ITALIC
-                     UNDERL
-                     NOT_UNDERL             | Fonts specifications
-. integer *      1   SMALL
-                     LARGE
-                     XLARGE                 | Fonts Size specifications
-. string  *     20   NP_FONT                | Font type for lists
-. string  *     20   P_FONT                 | Font type for lables
-. STRING  *     20   ID_FONT                | Font type for ID
+integer *      1   BOLD
+                   NOT_BOLD
+                   ITALIC
+                   NOT_ITALIC
+                   UNDERL
+                   NOT_UNDERL             | Fonts specifications
+integer *      1   SMALL
+                   LARGE
+                   XLARGE                 | Fonts Size specifications
+string  *     20   NP_FONT                | Font type for lists
+string  *     20   P_FONT                 | Font type for lables
+STRING  *     20   ID_FONT                | Font type for ID
+
 | Record Information and Navigation
-. integer *      2   array REC_INFO_NUM     (1000)  | Rec Number
-. string  *     32   array REC_INFO_NAME    (1000)  | Rec Name
-. string  *     32   array REC_INFO_FORM    (1000)  | Rec Name
-. string  *    200   array REC_INFO_DISPLAY (1000)  | Rec Display
+integer *      2   array REC_INFO_NUM     (1000)  | Rec Number
+string  *     32   array REC_INFO_NAME    (1000)  | Rec Name
+string  *     32   array REC_INFO_FORM    (1000)  | Rec Name
+string  *    200   array REC_INFO_DISPLAY (1000)  | Rec Display
+
 | Permissions
-. integer *      1   I_GUI_REC_NEW
-                     I_GUI_REC_READ
-                     I_GUI_REC_WRITE
-                     I_GUI_REC_DELETE
-                     I_GUI_REC_LOCK
-                     I_GUI_REC_TABLE
-                     I_GUI_CASE_LIST
-                     I_GUI_CASE_NEW
-                     I_GUI_CASE_DELETE
-                     I_GUI_CASE_LOCK
-                     I_GUI_SPECIAL
-                     I_GUI_REPORTS
-                     I_GUI_DBA               | customizable variables for the gui.
+integer *      1   I_GUI_REC_NEW
+                   I_GUI_REC_READ
+                   I_GUI_REC_WRITE
+                   I_GUI_REC_DELETE
+                   I_GUI_REC_LOCK
+                   I_GUI_REC_TABLE
+                   I_GUI_CASE_LIST
+                   I_GUI_CASE_NEW
+                   I_GUI_CASE_DELETE
+                   I_GUI_CASE_LOCK
+                   I_GUI_SPECIAL
+                   I_GUI_REPORTS
+                   I_GUI_DBA               | customizable variables for the gui.
+
 | management
-. INTEGER *      1   DB_LOCK_STATUS
-. string  *    300   HIPPA_TEXT_1
-                     HIPPA_TEXT_2            | Footer Text: Current set to HIPPA text
-. string  *    300   SPLASH_TEXT_1
-                     SPLASH_TEXT_2
-                     SPLASH_HEADER_TEXT      | First Text Displayed to User
+INTEGER *      1   DB_LOCK_STATUS
+string  *    300   HIPPA_TEXT_1
+                   HIPPA_TEXT_2            | Footer Text: Current set to HIPPA text
+string  *    300   SPLASH_TEXT_1
+                   SPLASH_TEXT_2
+                   SPLASH_HEADER_TEXT      | First Text Displayed to User
 | database
-. STRING  *     32   DB_PROC_FILE            | short cut to String to DBPROC FILE
-. STRING  *    100   DB_PROC_MEMBER          | stores member name to check, execute, etc.
-. string  *    300   DB_SR1_FILE             | string path to current database sr1  file
-. string  *    300   DB_FOLDER               | string path to current database folder
-. string  *    300   GUI_PROC_DIR            | GuiProcF directory
+STRING  *     32   DB_PROC_FILE            | short cut to String to DBPROC FILE
+STRING  *    100   DB_PROC_MEMBER          | stores member name to check, execute, etc.
+string  *    300   DB_SR1_FILE             | string path to current database sr1  file
+string  *    300   DB_FOLDER               | string path to current database folder
+string  *    300   GUI_PROC_DIR            | GuiProcF directory
 
 | Files
-. string  *    300   OUTPUT_FILE             | full path to output file
-. string  *    300   PATH_FILE               | File: Path
-. string  *    100   NAME_FILE               | File: Name
-. string  *      6   EXT_FILE                | File: Ext
-. string  *    400   FULL_FILE               | File: Full path, name and ext.
-. integer *      2   FILE_COUNT              | count files in a directory
-. string  *    600   FILE_LINE$              | Text from a file line
-. string  *    500   CURRENT_DIR             | Current Directory
+string  *    300   OUTPUT_FILE             | full path to output file
+string  *    300   PATH_FILE               | File: Path
+string  *    100   NAME_FILE               | File: Name
+string  *      6   EXT_FILE                | File: Ext
+string  *    400   FULL_FILE               | File: Full path, name and ext.
+integer *      2   FILE_COUNT              | count files in a directory
+string  *    600   FILE_LINE$              | Text from a file line
+string  *    500   CURRENT_DIR             | Current Directory
+
 | Debug
-. integer *      4   EASY_DEBUG_AUTONUM      | For debugging the timing of something.  Auto-increases by one.  Stick execute EASY_DEBUG in multiple locations and it will add it up for you.
-. string  *    100   EASY_DEBUG_TEXT         | SPECIFIC TEXT FOR DEBUGGER
-. integer *      4   TASK_WARNING            | holds task warning value.  One use: compare task warning before and after calling data entry screen.  If data entry screen needs compiling or has an error, the task warning value will increase.
+integer *      4   EASY_DEBUG_AUTONUM      | For debugging the timing of something.  Auto-increases by one.  Stick execute EASY_DEBUG in multiple locations and it will add it up for you.
+string  *    100   EASY_DEBUG_TEXT         | SPECIFIC TEXT FOR DEBUGGER
+integer *      4   TASK_WARNING            | holds task warning value.  One use: compare task warning before and after calling data entry screen.  If data entry screen needs compiling or has an error, the task warning value will increase.
+
 | Visual
-. string  *      7   HTML_COLOR   | for assigning colors to areas.  calculated.
-. string  *      7   HTML_BLUE1   TO HTML_BLUE6
-                     HTML_GREEN1  TO HTML_GREEN6
-                     HTML_ORANGE1 TO HTML_ORANGE6
-                     HTML_YELLOW1 TO HTML_YELLOW6
-                     HTML_RED1    TO HTML_RED6
-                     HTML_BLACK1  TO HTML_BLACK6
-                     HTML_GREY
-                     HTML_WHITE
-                     HTML_COLUMBIA_BLUE       |Standardized colors 1=LIGHT 6=DARK
-. integer *      4   RECURSIVE_COUNT          | Use to limit recursive calls.
-. integer *      4   BUFFER_COUNT             | How many buffers are there
-. string  *    600   HYPER_LINK
+string  *      7   HTML_COLOR   | for assigning colors to areas.  calculated.
+string  *      7   HTML_BLUE1   TO HTML_BLUE6
+                   HTML_GREEN1  TO HTML_GREEN6
+                   HTML_ORANGE1 TO HTML_ORANGE6
+                   HTML_YELLOW1 TO HTML_YELLOW6
+                   HTML_RED1    TO HTML_RED6
+                   HTML_BLACK1  TO HTML_BLACK6
+                   HTML_GREY
+                   HTML_WHITE
+                   HTML_COLUMBIA_BLUE       |Standardized colors 1=LIGHT 6=DARK
+
+integer *      4   RECURSIVE_COUNT          | Use to limit recursive calls.
+integer *      4   BUFFER_COUNT             | How many buffers are there
+string  *    600   HYPER_LINK
 
 | Keys
-. integer *      2   DB_ROW                | database row
-. string  *     32   array DB_REC_KEYS   ( 200, 8 ) |row, key1, key2, key3, key4, key5, key6
-. string  *     32   array REC_KEY_LIST  ( 200, 8 ) |value, key1, key2, key3, key4, key5, key6
-. integer *      2   array REC_KEY_LIST_POINTER   ( 8 )      | next row to add to array for each key
-. string  *     32   array MATCH_VALUE   ( 8 )      | User matching criteria.  Updated when 1st match is encountered
-. integer *      1   START_KEY             | which key was clicked
-. integer *      1   KEY_REFRESH_START     | First key to refresh
-. integer *      1   FIRST_MATCH           | First row that matched user defined criteria was encountered.  If so set all match values to current row values
-. string  *     32   CURRENT_KEY_VALUE     | what is the value of this key
-. integer *      1   PREVIOUS_KEYS_MATCH   | if all previous keys match check current key value to see if it is unique
-. integer *      1   KEY_VTYPE
-. string  *    123   KEY_VALUE_LABEL       | Key value label
-. integer *      2   EACH_RECORD_NUM       | Loop through Record Types
+integer *      2   DB_ROW                | database row
+string  *     32   array DB_REC_KEYS   ( 200, 8 ) |row, key1, key2, key3, key4, key5, key6
+string  *     32   array REC_KEY_LIST  ( 200, 8 ) |value, key1, key2, key3, key4, key5, key6
+integer *      2   array REC_KEY_LIST_POINTER   ( 8 )      | next row to add to array for each key
+string  *     32   array MATCH_VALUE   ( 8 )      | User matching criteria.  Updated when 1st match is encountered
+integer *      1   START_KEY             | which key was clicked
+integer *      1   KEY_REFRESH_START     | First key to refresh
+integer *      1   FIRST_MATCH           | First row that matched user defined criteria was encountered.  If so set all match values to current row values
+string  *     32   CURRENT_KEY_VALUE     | what is the value of this key
+integer *      1   PREVIOUS_KEYS_MATCH   | if all previous keys match check current key value to see if it is unique
+integer *      1   KEY_VTYPE
+string  *    123   KEY_VALUE_LABEL       | Key value label
+integer *      2   EACH_RECORD_NUM       | Loop through Record Types
 |
-. string  *    123   DISPLAY_TEXT          | text to output to window
-. string  *    600   COMSTR                | Command String
-. string  *      1   USER_AGREEMENT        | 0=No,  1=YES
+string  *    123   DISPLAY_TEXT          | text to output to window
+string  *    600   COMSTR                | Command String
+string  *      1   USER_AGREEMENT        | 0=No,  1=YES
+string  *     32   VIEW_PORT             | Size of device: desktop, tablet, phone
+integer *      4   RECORD_COUNT          | NRECS
 
-. value labels KEY$T (1) 'String' (2) 'Categorical' (3) 'Date' (4) 'Time' (5) 'Number' (6) 'Number' (7) 'Number' (8) 'Scaled Var.  See Codebook.'
-. value label VAL_VAR (0) 'valid' (1) 'not valid' (2) 'out of range' (3) 'blank or missing' (4) 'missing (code:1)' (5) 'missing (code:2)' (6) 'missing  (code:3)' (7) 'too long'
-. value label DB_LOCK_STATUS (-1) 'Unknown. No access to file' (0) 'Unlocked' (1) 'Locked'
+. value labels KEY$T (1) 'String'
+                     (2) 'Categorical'
+                     (3) 'Date'
+                     (4) 'Time'
+                     (5) 'Number'
+                     (6) 'Number'
+                     (7) 'Number'
+                     (8) 'Scaled Var.  See Codebook.'
+. value labelS VAL_VAR (0) 'valid'
+                       (1) 'not valid'
+                       (2) 'out of range'
+                       (3) 'blank or missing'
+                       (4) 'missing (code:1)'
+                       (5) 'missing (code:2)'
+                       (6) 'missing  (code:3)'
+                       (7) 'too long'
+. value labelS DB_LOCK_STATUS (-1) 'Unknown. No access to file'
+                              (0) 'Unlocked'
+                              (1) 'Locked'
 
-. set NO    (0) YES   (1)
-. set MEM_T (1) MEM_O (4)
-|
-. set VIEW_HOME (1) VIEW_NEW_CASE (2) VIEW_OLD_KEYS(3) VIEW_NEW_KEYS(4) VIEW_TABLE (5)
-      VIEW_CASE_DELETE (6)  VIEW_CASE_SUMMARY (7) VIEW_DBA (8) VIEW_BULK_RECORD_DELETE (9) VIEW_HIDDEN (10)
-
-. set NOT_BOLD NOT_ITALIC NOT_UNDERL  ( 0 )
-. set BOLD     ITALIC     UNDERL      ( 1 )
-. set SMALL (1 ) LARGE (3 ) XLARGE (5 )
+. set NO    (0)    YES   (1)
+      MEM_T (1)    MEM_O (4)
+      NOT_BOLD     NOT_ITALIC     NOT_UNDERL  ( 0 )
+      BOLD         ITALIC         UNDERL      ( 1 )
+      SMALL (1 )   LARGE (3 )     XLARGE (5 )
 . set ID_FONT ( 'Courier New' )
 . set NP_FONT ( 'lucida console' )
 . set P_FONT  ( 'arial' )
 
-
-set HTML_BLUE6  ( '#13275a' )
-    HTML_BLUE5  ( '#1a3579' )
-    HTML_BLUE4  ( '#264fb6' )
-    HTML_BLUE3  ( '#336af3' )
-    HTML_BLUE2  ( '#9ab5f9' )
-    HTML_BLUE1  ( '#ccdafb' )
+set HTML_BLUE6   ( '#13275a' )
+    HTML_BLUE5   ( '#1a3579' )
+    HTML_BLUE4   ( '#264fb6' )
+    HTML_BLUE3   ( '#336af3' )
+    HTML_BLUE2   ( '#9ab5f9' )
+    HTML_BLUE1   ( '#ccdafb' )
     HTML_ORANGE6 ( '#5a4513' )
     HTML_ORANGE5 ( '#795d1a' )
     HTML_ORANGE4 ( '#b58c26' )
     HTML_ORANGE3 ( '#f2bb33' )
     HTML_ORANGE2 ( '#f9dd9a' )
     HTML_ORANGE1 ( '#fbedcc' )
-    HTML_RED6 ('#5f0000' )
-    HTML_RED5 ('#7f0000' )
-    HTML_RED4 ('#bf0000' )
-    HTML_RED3 ('#ff0000' )
-    HTML_RED2 ('#ff8080' )
-    HTML_RED1 ('#febfbf' )
-    HTML_GREEN6 ('#1e440e')
-    HTML_GREEN5 ('#285b13')
-    HTML_GREEN4 ('#3b881c')
-    HTML_GREEN3 ('#4fb626')
-    HTML_GREEN2 ('#a8db93')
-    HTML_GREEN1 ('#d3ecc9')
-    HTML_YELLOW6 ('#5f5f1c')
-    HTML_YELLOW5 ('#7f7f26')
-    HTML_YELLOW4 ('#bfbf39')
-    HTML_YELLOW3 ('#ffff4c')
-    HTML_YELLOW2 ('#ffffa6')
-    HTML_YELLOW1 ('#fefed2')
-    HTML_BLACK6 ('#303030')
-    HTML_BLACK5 ('#404040')
-    HTML_BLACK4 ('#606060')
-    HTML_BLACK3 ('#808080')
-    HTML_BLACK2 ('#c8c8c8')
-    HTML_BLACK1 ('#efefef')
+    HTML_RED6    ( '#5f0000' )
+    HTML_RED5    ( '#7f0000' )
+    HTML_RED4    ( '#bf0000' )
+    HTML_RED3    ( '#ff0000' )
+    HTML_RED2    ( '#ff8080' )
+    HTML_RED1    ( '#febfbf' )
+    HTML_GREEN6  ( '#1e440e' )
+    HTML_GREEN5  ( '#285b13' )
+    HTML_GREEN4  ( '#3b881c' )
+    HTML_GREEN3  ( '#4fb626' )
+    HTML_GREEN2  ( '#a8db93' )
+    HTML_GREEN1  ( '#d3ecc9' )
+    HTML_YELLOW6 ( '#5f5f1c' )
+    HTML_YELLOW5 ( '#7f7f26' )
+    HTML_YELLOW4 ( '#bfbf39' )
+    HTML_YELLOW3 ( '#ffff4c' )
+    HTML_YELLOW2 ( '#ffffa6' )
+    HTML_YELLOW1 ( '#fefed2' )
+    HTML_BLACK6  ( '#303030' )
+    HTML_BLACK5  ( '#404040' )
+    HTML_BLACK4  ( '#606060' )
+    HTML_BLACK3  ( '#808080' )
+    HTML_BLACK2  ( '#c8c8c8' )
+    HTML_BLACK1  ( '#efefef' )
     HTML_GREY    ( '#EEEEEE' )
     HTML_WHITE   ( '#FFFFFF' )
     HTML_COLUMBIA_BLUE ('#2060A4')
-
 END PROCEDURE

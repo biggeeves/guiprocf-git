@@ -1,4 +1,4 @@
-PROCEDURE      GUI_MAIN.BUFFER_SUBS:T  (157424,78847)  |Last amended Oct 18, 2013,21:54:07
+PROCEDURE      GUI_MAIN.BUFFER_SUBS:T  (158242,49461)  |Last amended Jan 14, 2016,13:44:21
 subprocedure BUFFER_START
 <comment> write 'Sub: BUFFER_START: ' BUFFER_NAME
 . BUFF# = 1
@@ -19,6 +19,4 @@ subprocedure BUFFER_ADD_CASE
 .   BUFFER_LINE = BUFFER_LINE + CASE_VALUE
 . endif
 end subprocedure
-
-
 END PROCEDURE

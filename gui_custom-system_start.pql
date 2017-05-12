@@ -1,0 +1,8 @@
+PROCEDURE      GUI_CUSTOM.SYSTEM_START:T  (158331,55561)  |Last amended Apr 12, 2016,15:26:01
+c set attributes for important files
+program
+. execute dbms 'attribute DCCPROCF  filename = "\\Dccmaincsfs\Data4\DCC\Procfile\DCCPROCF.srp"'
+end program
+
+call DCCPROCF.ATC.STARTUP_CONTROLLER
+END PROCEDURE

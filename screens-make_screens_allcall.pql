@@ -1,5 +1,5 @@
-PROCEDURE      SCREENS.MAKE_SCREENS_ALLCALL:T  (157613,40186)  |Last amended Apr 25, 2014,11:09:46
-PROGRAM
+PROCEDURE      SCREENS.MAKE_SCREENS_ALLCALL:T  (158331,57775)  |Last amended Apr 12, 2016,16:02:55
+PROGRAM crwarn
 . INTEGER *      2   REC_TYPE_NUM    | RECORD_TYPE NUMBER
 . STRING  *    256   MEMBER_NAME
 . string  *    256   RECORD_NAME
@@ -7,8 +7,14 @@ PROGRAM
 . INTEGER *      2   MY_IOSTAT       | IOSTAT FOR OPENING MEMBER
 . string  *     32   DB_PROC_FILE    | points to database procfile
 . INTEGER *      1   RESVAR
+. string  *    300   COMSTR
 
-. DB_PROC_FILE = 'SIR'+ PFORMAT(SYSTEM(39),'zz') +'4'
+. ifthen ( sglobal('sirver') eq 'XS.01.20' )
+.   DB_PROC_FILE = 'SIR'+ pformat( system(39), 'zzzz' ) + '4'
+. elseif ( sglobal('sirver') eq 'XS.01.19' )
+.   DB_PROC_FILE = 'SIR'+ pformat( system(39), 'zz' ) + '4'
+. endif
+
 . MEMBER_NAME  = 'SCREENS.ALLCALL'
 
 C CHECK IF DB PROCFILE IS AROUND.
@@ -16,8 +22,8 @@ C CHECK IF DB PROCFILE IS AROUND.
 .   display infobox 'No DB_PROC_FILE defined.  EXITING.  CONTACT ADMIN.'
 .   EXIT PROGRAM
 . ENDIF
-
-. execute dbms ["set procfile " + DB_PROC_FILE ] | screens go into database procfile file, not the guiprocf
+. COMSTR =  "set procfile " + DB_PROC_FILE  | screens go into database procfile file, not the guiprocf
+. execute dbms COMSTR
 
 
 C CHECK FOR EXISTING SCREENS.ALLCALL

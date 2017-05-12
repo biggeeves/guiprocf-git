@@ -1,0 +1,8 @@
+PROCEDURE      TOOLS.WINDOW_MINIMIZE:T  (158351,51572)  |Last amended May 02, 2016,14:19:32
+program crwarn
+integer * 1 t
+ifNOTthen( nglobal( 'gseclev' ) eq 1 or 2 )
+. t= WINMOVE(1,1,0,0)
+endif
+end program
+END PROCEDURE

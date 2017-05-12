@@ -1,4 +1,4 @@
-PROCEDURE      DAILY.CHECK_DELETIONS:T  (157464,47339)  |Last amended Nov 27, 2013,13:08:59
+PROCEDURE      DAILY.CHECK_DELETIONS:T  (158404,47491)  |Last amended Jun 24, 2016,13:11:31
 program
 . string * 300 EMAIL$
 . string * 300 ATTFILE$ ALLDELFILE
@@ -16,9 +16,9 @@ program
 . EMAIL$ = 'gn2003@columbia.edu,ventura@nyspi.columbia.edu'
 . ifthen (fileis (ATTFILE$) eq 1)
 .   EXEC$  = '\\192.168.53.236\SIRXS\Email\blat "' + ATTFILE$  +'" -to ' + EMAIL$ +
-             ' -subject "' +  trimlr(DBNAME(0)) + 'deletion reasons" ' +
+             ' -subject "' +  trimlr(DBNAME(0)) + ' Reasons for Deletions" ' +
              ' -attacht "' + ATTFILE$ + '"' +
-             ' -body " ' +  trimlr(DBNAME(0)) + ': Reasons for deletion"'
+             ' -body " ' +  trimlr(DBNAME(0)) + ': Reasons for deletions"'
 .   pql escape EXEC$ RETURNING ESCAPERESULT
 .   ifthen (ESCAPERESULT eq 0)
 .     open (delfile) append lrecl=300 dsnvar=ALLDELFILE

@@ -1,4 +1,4 @@
-PROCEDURE      GUI_MAIN.LIST_CUSTOMIZATIONS:T  (158207,61771)  |Last amended Dec 10, 2015,17:09:31
+PROCEDURE      GUI_MAIN.LIST_CUSTOMIZATIONS:T  (158213,58096)  |Last amended Dec 16, 2015,16:08:16
 SUBPROCEDURE LIST_CUSTOMIZATIONS
 | A DATABASE MUST BE ATTACHED TO LOOK FOR CUSTOMIZATIONS
 . if( system( 40 ) EQ 0 ) EXIT SUBPROCEDURE
@@ -11,63 +11,24 @@ DO REPEAT MEMNAME = CASE_INFO
                     CXID
                     GUI_SETTINGS
                     PERMISSIONS
-                    REC_LIST_LOAD
                     REC_INFO
+                    REC_LIST_LOAD
                     SPLASH_TEXT
                     USER_AGREEMENT
 . ifthen( meminfo( DB_PROC_FILE+'.GUI_CUSTOM.MEMNAME:T',1 ) = MEM_T )
-.   check item CUSTOM_!MEMNAME
+.   set item CHECK_!MEMNAME, '+'
+. else
+.   set item CHECK_!MEMNAME, ''
 . endif
 END REPEAT
-CIF EQ 1,2
-. ifthen( meminfo( DB_PROC_FILE+'.GUI_CUSTOM.CASE_INFO:T',1 ) = MEM_T )
-.   check item CUSTOM_CASE_INFO
-. endif
 
-. ifthen( meminfo( DB_PROC_FILE+'.GUI_CUSTOM.CASE_INFO_DETAILS:T',1 ) = MEM_T )
-.   check item CUSTOM_CASE_INFO_DETAILS
-. endif
-
-. ifthen( meminfo( DB_PROC_FILE+'.GUI_CUSTOM.CASE_LIST_LOAD:T',1 ) = MEM_T )
-.   check item CUSTOM_CASE_LIST_LOAD
-. endif
-
-. ifthen( meminfo( DB_PROC_FILE+'.GUI_CUSTOM.CASES_SUMMARY:T',1 ) = MEM_T )
-.   check item CUSTOM_CASES_SUMMARY
-. endif
-
-| custom check id
-. ifthen ( meminfo( DB_PROC_FILE +'.NAVIGATE.CXID:T', 1 ) = MEM_O )
-.   check item CUSTOM_CXID
-. endif
-
-. ifthen( meminfo( DB_PROC_FILE+'.GUI_CUSTOM.GUI_SETTINGS:T',1 ) = MEM_T )
-.   check item CUSTOM_GUI_SETTINGS
-. endif
-
-. ifthen( meminfo( DB_PROC_FILE+'.GUI_CUSTOM.PERMISSIONS:T',1 ) = MEM_T )
-.   check item CUSTOM_PERMISSIONS
-. endif
-
-. ifthen( meminfo( DB_PROC_FILE+'.GUI_CUSTOM.REC_LIST_LOAD:T',1 ) = MEM_T )
-.   check item CUSTOM_REC_LIST_LOAD
-. ENDIF
-
-. ifthen( meminfo( DB_PROC_FILE+'.GUI_CUSTOM.REC_INFO:T',1 ) = MEM_T )
-.   check item CUSTOM_REC_INFO
-. ENDIF
-
-| Custom Splash Text Under Database/Project Name
-. ifthen( meminfo( DB_PROC_FILE+'.GUI_CUSTOM.SPLASH_TEXT:O',1 ) = MEM_O )
-.   check item CUSTOM_SPLASH_TEXT
-. endif
-
-CIF END
 | custom subject info to display when a case is selected
 . ifthen( meminfo( DB_PROC_FILE +'.NAVIGATE.SUBJINFO:O', 1 ) = MEM_O )
-.   check item CUSTOM_SUBJINFO
+.   set item CHECK_SUBJECT_INFO, '+'
 . elseif( meminfo( DB_PROC_FILE +'.GUI_CUSTOM.SUBJINFO:O', 1 ) = MEM_O )
-.   check item CUSTOM_SUBJINFO
+.   set item CHECK_SUBJECT_INFO, '+'
+. else
+.   set item CHECK_SUBJECT_INFO, ''
 . endif
 END SUBPROCEDURE
 END PROCEDURE

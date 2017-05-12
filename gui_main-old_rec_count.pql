@@ -1,4 +1,4 @@
-PROCEDURE      GUI_MAIN.OLD_REC_COUNT:T  (158026,58789)  |Last amended Jun 12, 2015,16:19:49
+PROCEDURE      GUI_MAIN.OLD_REC_COUNT:T  (158242,50875)  |Last amended Jan 14, 2016,14:07:55
 subprocedure OLD_REC_COUNT
 <comment> write 'Sub: OLD_REC_COUNT: Case:' CASE_VALUE'  Rec: ' REC_TYPE_NUM
 . ifthen (exists(REC_TYPE_NUM) eq 0)
@@ -21,7 +21,8 @@ ifthen (dbtype(0) eq 1)
 endif
 . BUFFER_LINE = 'set item ' + format(OLD_REC_COUNTER) + ', OLD_REC_COUNT '   ;execute subprocedure BUFFER_WRITE
 . BUFFER_LINE = 'end retrieval'                                              ;execute subprocedure BUFFER_WRITE
-. execute dbms ['INCLUDE BUFFER ' + BUFFER_NAME]
+. COMSTR = 'INCLUDE BUFFER ' + BUFFER_NAME
+. execute dbms COMSTR
 . REC_ROW_COUNT = fst( getint( OLD_REC_COUNTER ), 0 )
 <comment> write 'Sub: OLD_REC_COUNTER: ' REC_ROW_COUNT
 end subprocedure

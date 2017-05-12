@@ -1,0 +1,18 @@
+PROCEDURE      EXPORT_TO_MYSQL.CASE_CRITERIA:T  (158694,54179)  |Last amended Apr 10, 2017,15:02:59
+c sample
+c process cases
+c   <your code will be inserted here before anything else is run>
+C   end rec
+c   process rec
+c   end rec
+c end cases
+
+c   SAMPLE CODE BELOW
+cif eq 1,1
+if (COUNT( recnum('BIGFAMX') ) EQ 0 ) NEXT CASE
+include_case = 0
+process rec BIGFAMX
+. if(fhalive = 1) include_case  = 1 | only if one or more child or marked as alive
+end rec
+CIF END
+END PROCEDURE

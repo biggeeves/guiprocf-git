@@ -1,19 +1,21 @@
-PROCEDURE      GUI_MAIN.CASE_INFO:T  (157965,66314)  |Last amended Apr 12, 2015,18:25:14
+PROCEDURE      GUI_MAIN.CASE_INFO:T  (158332,57041)  |Last amended Apr 13, 2016,15:50:41
 c display case specific info
 
 subprocedure CASE_INFO
 <comment> write 'Sub: CASE_INFO'
+. REMOVE ALL CASE_BREAD_CRUMB
 . ifthen ( exists ( CASE_VALUE ) eq 1 )
-.   set item CASE_BREAD_CRUMB,  CASE_VALUE
+.   GEN_STR1 = '<body readonly="true" bgcolor="#2B65EC">' +
+               '<p align="center">' +
+               '<font color="#FFFFFF" size="+6" face="arial"><b>'
+.   GEN_STR1 = GEN_STR1 + CASE_VALUE
 . else
-.   set item CASE_BREAD_CRUMB,  'No Case Selected'
+.   GEN_STR1 = GEN_STR1 + 'No Case Selected'
 . endif
+. GEN_STR1 = GEN_STR1 + '</b></font></p></body>'
+. APPEND LINE CASE_BREAD_CRUMB, GEN_STR1 html
 
 . set item DELETE_CASE_LABEL, '  Delete ' + CASE_LABEL + ':   ' + CASE_VALUE + '?'
-
-. ifthen ( meminfo( DB_PROC_FILE + '.NAVIGATE.SUBJINFO:O',1) = MEM_O)
-.   execute subroutine [DB_PROC_FILE  + '.NAVIGATE.SUBJINFO'] (FORM_INFO CASE_VALUE )
-. endif
 
 end subprocedure
 END PROCEDURE

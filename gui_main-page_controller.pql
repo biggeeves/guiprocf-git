@@ -1,0 +1,84 @@
+PROCEDURE      GUI_MAIN.PAGE_CONTROLLER:T  (158288,70415)  |Last amended Feb 29, 2016,19:33:35
+subprocedure PAGE_DELETE_CASE
+<comment> write 'OLD_CASE_SEARCH_Library: '
+. if(  m_page = VIEW_CASE_DELETE_SUMMARY) exit subprocedure  | already on page
+. CASE_TEMP_VALUE = trimlr(upper(gettxt(CASE_SEARCH)))
+. select item CASE_LIST , 0
+. execute subprocedure CASE_VALIDATE       | pass var CASE_TEMP_VALUE
+. if (PROCEED EQ NO) exit SUBPROCEDURE
+. execute subprocedure CASE_LIST_SEARCH     | pass var CASE_TEMP_VALUE
+. ifthen (CASE_FOUND EQ NO)
+.   SET ITEM CASE_DISPLAY_MESSAGE, CASE_TEMP_VALUE + ' was not found.'
+.   exit SUBPROCEDURE
+. endif
+. m_page = VIEW_CASE_DELETE_SUMMARY
+. set item DELETE_CASE_LABEL, CASE_VALUE
+. execute subprocedure PAGE
+. execute subprocedure ITEM_VISIBLE
+. execute subprocedure ITEM_ENABLE
+. execute subprocedure CASE_ALL_DATA_DISPLAY
+end subprocedure
+
+
+subprocedure PAGE_CASEIDS
+. if( m_page = VIEW_HOME) exit subprocedure | already on page
+. m_page = VIEW_HOME
+. execute subprocedure PAGE
+. execute subprocedure ITEM_VISIBLE
+. execute subprocedure ITEM_ENABLE
+. focus item CASE_SEARCH
+end subprocedure
+
+subprocedure PAGE_LIST_CASES
+. if( m_page = VIEW_LIST_CASES) exit subprocedure | already on page
+. m_page = VIEW_LIST_CASES
+. execute subprocedure PAGE
+. execute subprocedure ITEM_VISIBLE
+. execute subprocedure ITEM_ENABLE
+end subprocedure
+
+
+subprocedure PAGE_CASE_SUMMARY
+. if( m_page eq VIEW_CASE_SUMMARY) exit subprocedure  | already on page
+. m_page = VIEW_CASE_SUMMARY
+. execute subprocedure PAGE
+. execute subprocedure ITEM_VISIBLE
+end subprocedure
+
+subprocedure PAGE_DBA
+. if( m_page eq VIEW_DBA) exit subprocedure   | already on page
+. m_page = VIEW_DBA
+. execute subprocedure PAGE
+. execute subprocedure ITEM_VISIBLE
+end subprocedure
+
+
+subprocedure PAGE_TABLE
+. if( m_page eq VIEW_TABLE ) exit subprocedure | already on page
+. ifthen( getpos( CASE_LIST ) eq 0 )
+.   display infobox "Please select a " + CASE_LABEL
+.   exit subprocedure
+. elseif( getpos( FORM_LIST ) eq 0 )
+.   display infobox "Please select a form"
+.   exit subprocedure
+. endif
+
+. m_page = VIEW_TABLE
+. execute subprocedure PAGE
+. execute subprocedure ITEM_VISIBLE
+. execute subprocedure REC_TABLE_DISPLAY
+end subprocedure
+
+subprocedure PAGE_HIDDEN
+. m_page = VIEW_HIDDEN
+. execute subprocedure PAGE
+. execute subprocedure ITEM_VISIBLE
+end subprocedure
+
+subprocedure PAGE_BULK_RECORD
+. m_page = VIEW_BULK_RECORD_DELETE
+. execute subprocedure PAGE
+. execute subprocedure ITEM_VISIBLE
+. execute subprocedure CASE_ALL_DATA_DISPLAY
+end subprocedure
+END PROCEDURE

@@ -1,32 +1,33 @@
-PROCEDURE      GUI_MAIN.ITEM_VISIBLE:T  (158017,49004)  |Last amended Jun 03, 2015,13:36:44
+PROCEDURE      GUI_MAIN.ITEM_VISIBLE:T  (158330,50192)  |Last amended Apr 11, 2016,13:56:32
 subprocedure ITEM_VISIBLE
 | first section is the show/hide portion.
 | defaults for every page
 
-| ALWAYS HIDDEN
-. hide item TIME_LABEL
-. hide item TABEL_LABEL
+| Default HIDDEN
+. hide item CASE_BREAD_CRUMB
+. hide item PAGE_DELETE_CASE
+. hide item PAGE_DBA
+. hide item REC_FORM_SELECTED
 . hide item REC_TYPE_SELECTED
 . hide item SCREEN_LABEL
-. hide item REC_FORM_SELECTED
-. hide item PAGE_CASE_DELETE
+. hide item TIME_LABEL
+. hide item TABEL_LABEL
 
-| ALWAYS VISIBLE
-. show item DB_FOOTER
+| Default VISIBLE
 . show item LOG_OUT
-. show item OPTIONS
 
-| Default Hidden
-
+| Case Database Specific
 . ifthen (dbtype(0) eq 1)
 .   show item PAGE_CASEIDS
 .   enable item PAGE_CASEIDS
+. else
+.   hide item CASE_BREAD_CRUMB
+.   hide item PAGE_CASEIDS
 . endif
-. show item PAGE_OLD_KEYS; ifnot(m_page = VIEW_OLD_KEYS ) enable item PAGE_OLD_KEYS
 
 
 
-c GUI PROCFILE: LIVE OR RELEASE CANIDATE.
+c GUI PROCFILE: LIVE OR RELEASE CANDIDATE.
 . execute subroutine SYSPROC.TOOLS.FILENAME (dsn('GUIPROCF')) RETURNING (PATH_FILE,NAME_FILE,EXT_FILE)
 . ifthen(upper(trim(NAME_FILE)) EQ 'GUIPROCF-RC')
 .   check item USE_GUI_RC
@@ -34,18 +35,6 @@ c GUI PROCFILE: LIVE OR RELEASE CANIDATE.
 . else
 .   check item USE_GUI_PG
 .   uncheck item USE_GUI_RC
-. endif
-
-. ifthen ( DB_LOCK_STATUS EQ 1)
-.   show item LOCK_STATUS_LABEL
-.   set item LOCK_STATUS_LABEL, '   LOCKED'
-.   check item DB_LOCKER
-.   uncheck item DB_UNLOCKER
-. else
-.   hide item LOCK_STATUS_LABEL
-.   set item LOCK_STATUS_LABEL, '   DB LOCK: UNKNOWN'
-.   check item DB_UNLOCKER
-.   uncheck item DB_LOCKER
 . endif
 
 . ifthen (sglobal('COMMENT') eq '.')
@@ -60,112 +49,103 @@ c GUI PROCFILE: LIVE OR RELEASE CANIDATE.
 .   check item POP_UP_DEBUG_INFO
 . endif
 
-C DBA BUTTON
-. hide item PAGE_DBA
-. if (I_GUI_DBA = 1) show item PAGE_DBA
-
 c page dependent items
+c ------  Home Page -------------------
 . ifthen (m_page = VIEW_HOME)
 .   focus item CASE_SEARCH
 .   disable item PAGE_CASEIDS
-.   show item PAGE_OLD_KEYS
-.   disable item PAGE_OLD_KEYS
+
+c   case list
 .   ifthen(I_GUI_CASE_LIST EQ 1)
-.     show item CASE_LIST
-.     show item CASE_LISTLABEL
-.     show item CASE_LISTBOX
+.     show item PAGE_LIST_CASES
 .   else
-.     hide item CASE_LIST
-.     hide item CASE_LISTLABEL
-.     hide item CASE_LISTBOX
+.     hide item PAGE_LIST_CASES
 .   endif
+
+C   NEW CASE BUTTON
 .   ifthen(I_GUI_CASE_NEW EQ 1)
-.     show item PAGE_NEWIDS
+.     ifthen (dbtype(0) eq 1)
+.       show item CASE_NEWB
+.     endif
 .   else
-.     hide item PAGE_NEWIDS
+.     hide item CASE_NEWB
 .   endif
-
-| Create a new case ID
-. elseif (m_page = VIEW_NEW_CASE)
-.   focus item CASE_NEW
-.   show item PAGE_CASEIDS
-.   disable item PAGE_OLD_KEYS
-
-| Main form page
-. elseif (m_page = VIEW_OLD_KEYS )  | Main page for speicific case ID
-.   focus item FORM_LIST
-.   disable item PAGE_OLD_KEYS
-.   ifthen (dbtype(0) eq 1)
-.     show item CASE_BREAD_CRUMB
-.     show item CASE_LABEL_BREAD_CRUMB
-.   else
-.     hide item CASE_BREAD_CRUMB
-.     hide item CASE_LABEL_BREAD_CRUMB
-.   endif
-.   show item REC_BREAD_CRUMB
 
 C   DELETE CASE BUTTON
 .   ifthen (dbtype(0) eq 1)
-.     if(I_GUI_DBA = 1) show item PAGE_CASE_DELETE
+.     if(I_GUI_DBA = 1) show item PAGE_DELETE_CASE
+.     if(I_GUI_CASE_DELETE = 1) show item PAGE_DELETE_CASE
 .   endif
-
-C   REC TABLE BUTTON
-.   hide item PAGE_TABLE
-.   if(I_GUI_REC_TABLE = 1) show item PAGE_TABLE
-
-C   Case Summary Button
-.   show item PAGE_CASE_SUMMARY
-
-C   Case Memo Button
-.   ifthen ( exists( recnum ('CASE_MEMO') ) eq 0 )
-.     hide item GOTO_CASE_MEMO
-.   endif
+.   if (I_GUI_DBA = 1) show item PAGE_DBA
 
 c   Report Button
-.   ifthen ( I_GUI_REPORTS eq 1 )
+.   ifthen( I_GUI_REPORTS eq 1 )
 .     show item PAGE_CASE_SUMMARY
 .   else
 .     hide item PAGE_CASE_SUMMARY
 .   endif
 
+c   Database Lock Status
+.   execute subprocedure SHOW_DB_LOCK_STATUS
 
-| Choose keys for a new form
-. elseif (m_page = VIEW_NEW_KEYS)
-.   ifthen (dbtype(0) eq 1)
-.     show item CASE_BREAD_CRUMB
-.     show item CASE_LABEL_BREAD_CRUMB
-.   else
-.     hide item CASE_BREAD_CRUMB
-.     hide item CASE_LABEL_BREAD_CRUMB
-.   endif
-.   show item REC_BREAD_CRUMB
 
-. elseif (m_page = VIEW_CASE_SUMMARY)
-.   ifthen (dbtype(0) eq 1)
-.     show item CASE_BREAD_CRUMB
-.     show item CASE_LABEL_BREAD_CRUMB
-.   else
-.     hide item CASE_BREAD_CRUMB
-.     hide item CASE_LABEL_BREAD_CRUMB
-.   endif
+c -------------------------------------
+c ------  Case List Page --------------
+. elseif (m_page = VIEW_LIST_CASES)
+.   show item DCC_LOGO
 
-. elseif (m_page = VIEW_TABLE)
-.   ifthen (dbtype(0) eq 1)
-.     show item CASE_BREAD_CRUMB
-.     show item CASE_LABEL_BREAD_CRUMB
-.   else
-.     hide item CASE_BREAD_CRUMB
-.     hide item CASE_LABEL_BREAD_CRUMB
-.   endif
-.   show item REC_BREAD_CRUMB
 
-. elseif (m_page = VIEW_CASE_DELETE)
+c -------------------------------------
+c ------  Delete a CASE ID Page -------
+
+. elseif (m_page = VIEW_CASE_DELETE_SUMMARY)
 .   hide item CASE_BREAD_CRUMB
-.   hide item CASE_LABEL_BREAD_CRUMB
+
+
+c -------------------------------------
+c ------  Forms Page-------------------
+
+. elseif (m_page = VIEW_OLD_KEYS )  | Main page for speicific case ID
+.   focus item FORM_LIST
+.   ifthen (dbtype(0) eq 1)
+.     show item CASE_BREAD_CRUMB
+.   else
+.     hide item CASE_BREAD_CRUMB
+.   endif
+C   Case Memo Button
+.   ifthen( exists( recnum ('CASE_MEMO') ) eq 0 )
+.     hide item GOTO_CASE_MEMO
+.   endif
+
+c ------  New Keys --------------------
+
+. elseif( m_page = VIEW_NEW_KEYS )
+.   ifthen( dbtype(0) eq 1 )
+.     show item CASE_BREAD_CRUMB
+.   else
+.     hide item CASE_BREAD_CRUMB
+.   endif
+
+c ------  Case Summary ----------------
+. elseif ( m_page = VIEW_CASE_SUMMARY )
+.   ifthen ( dbtype(0) eq 1 )
+.     show item CASE_BREAD_CRUMB
+.   else
+.     hide item CASE_BREAD_CRUMB
+.   endif
+
+c ------  All Keys In Table -----------
+. elseif ( m_page = VIEW_TABLE )
+.   ifthen ( dbtype(0) eq 1 )
+.     show item CASE_BREAD_CRUMB
+.   else
+.     hide item CASE_BREAD_CRUMB
+.   endif
 . endif
 
-c pemission based visibility
-. ifNOTthen (I_GUI_REC_NEW EQ 1)
+c -------------------------------------
+C PEMISSION BASED VISIBILITY
+. ifNOTthen ( I_GUI_REC_NEW EQ 1 )
 .   hide item PAGE_NEW_KEYS
 . endif
 

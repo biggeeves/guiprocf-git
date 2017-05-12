@@ -1,0 +1,28 @@
+PROCEDURE      GUI_MAIN.PAGE_NEW_KEYS:T  (158240,55854)  |Last amended Jan 12, 2016,15:30:54
+subprocedure PAGE_NEW_KEYS
+. if( m_page eq VIEW_NEW_KEYS) exit subprocedure | already on page
+. ifthen( dbtype(0) eq 1 )
+.   ifthen( getpos( CASE_LIST) eq 0)
+.     display infobox "Please select a " + CASE_LABEL
+.     EXIT SUBPROCEDURE
+.   endif
+. endif
+. ifthen( getpos( FORM_LIST) eq 0)
+.   execute subprocedure OLD_KEY_PAGE_DISPLAY_LIBRARY
+.   execute subprocedure ITEM_VISIBLE
+.   display infobox "Please select a form."
+.   EXIT SUBPROCEDURE
+. endif
+| Non-Keyed records go directly to form
+. ifthen( KEY_COUNT eq 0)
+.   execute subprocedure GOTO_SCREEN_LIBRARY  | double clicked - go to screen
+.   EXIT SUBPROCEDURE | no need to change to new rec page
+. endif
+
+. m_page = VIEW_NEW_KEYS
+. execute subprocedure PAGE
+. execute subprocedure ITEM_VISIBLE
+. execute subprocedure NEW_KEY_VISIBLE
+. focus item NEW_KEY_VALUE_1
+END SUBPROCEDURE
+END PROCEDURE

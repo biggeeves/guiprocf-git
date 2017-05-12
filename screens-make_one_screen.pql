@@ -1,4 +1,4 @@
-PROCEDURE      SCREENS.MAKE_ONE_SCREEN:T  (158207,67079)  |Last amended Dec 10, 2015,18:37:59
+PROCEDURE      SCREENS.MAKE_ONE_SCREEN:T  (158331,57800)  |Last amended Apr 12, 2016,16:03:20
 C MAKE ONE DATA ENTRY SCREEN THAT WORKS WITH THE MAIN DATA ENTRY GUI
 C PASS THE SCREEN NUMBER YOU WANT TO MAKE
 
@@ -23,15 +23,19 @@ C PASS THE SCREEN NUMBER YOU WANT TO MAKE
 . string  *    256   comstr
 . INTEGER *      1   RESVAR
 
-. DB_PROC_FILE = 'SIR'+ PFORMAT(SYSTEM(39),'zz') +'4'
+. ifthen ( sglobal('sirver') eq 'XS.01.20' )
+.   DB_PROC_FILE = 'SIR'+ pformat( system(39), 'zzzz' ) + '4'
+. elseif ( sglobal('sirver') eq 'XS.01.19' )
+.   DB_PROC_FILE = 'SIR'+ pformat( system(39), 'zz' ) + '4'
+. endif
 
-. ifthen( 0 eq len(DB_PROC_FILE) or exists(DB_PROC_FILE) )
+. ifthen( 0 eq len( DB_PROC_FILE ) or exists( DB_PROC_FILE ) )
 .   display infobox 'No DB_PROC_FILE defined.  EXITING.  CONTACT ADMIN.'
 .   RETURN
 . endif
 
-
-. execute dbms ["set procfile " + DB_PROC_FILE ] | screens go into database procfile file, not the guiprocf
+. COMSTR = "set procfile " + DB_PROC_FILE  | screens go into database procfile file, not the guiprocf
+. execute dbms COMSTR
 
 . set NO (0) YES (1)
 
@@ -52,9 +56,6 @@ c create the non-existent family
 . endif
 
 C DOUBLE CHECK FOR FAMILY NAME
-
-C CHECK FOR EXISTING SCREENS
-C  ASK IF YOU WANT TO OVERRIDE EXITSING
 
 C CHECK FOR EXISTING ALL CALL
 C  ASK BEFORE OVER WRITING
@@ -78,7 +79,7 @@ ifthen ( meminfo (DB_PROC_FILE + '.' + MEMBER_NAME + ':T', 1 )  > 0 ) | MEMBER A
 ENDIF
 
 
-. open ( MEMBER_NAME ) dsnvar = MEMBER_NAME iostat = MY_IOSTAT  write lrecl=200 REPLACE member
+. open ( MEMBER_NAME ) dsnvar = MEMBER_NAME iostat = MY_IOSTAT  write lrecl=300 REPLACE member
 . ifthen (MY_IOSTAT NE 0)
 .   write 'unable to write to member.  exiting.  screen not made.  IOSTAT:' MY_IOSTAT
 .   RETURN
@@ -89,7 +90,8 @@ ENDIF
 . MEMBER_LINE =         '     SUBROUTINE SCREENS.' +  RECORD_NAME + '( CASE$ KEY$1 KEY$2 KEY$3 KEY$4 KEY$5 KEY$6 ) REPLACE'  ; execute subprocedure MEMBER_WRITE
 . write ( MEMBER_NAME ) 'STRING * 32 CASE$  KEY$1  KEY$2  KEY$3  KEY$4  KEY$5  KEY$6' /
                         'CALL GUIPROCF.SCREENS.INC_VARS'
-. write ( MEMBER_NAME ) ['RECNUMBER# = RECNUM("' + format(REC_TYPE_NUM) + '")']
+. MEMBER_LINE =         'RECNUMBER# = RECNUM("' + format(REC_TYPE_NUM) + '")'
+. write ( MEMBER_NAME ) MEMBER_LINE
 . write ( MEMBER_NAME ) 'CALL GUIPROCF.SCREENS.INC_HEADER'
 
 . KEY_COUNT = nkeys( REC_TYPE_NUM )
@@ -109,25 +111,64 @@ ENDIF
 . for EACH_KEY = 1, KEY_COUNT
 .   KEY_NAME = keyname( REC_TYPE_NUM, dbtype( 0 ) + EACH_KEY )
 .   ifthen ( vtype( REC_TYPE_NUM, KEY_NAME ) = 3 )
-.     write ( MEMBER_NAME ) ['DATE KEY_' + format( EACH_KEY ) + ' ( "' + datemap( REC_TYPE_NUM, KEY_NAME ) + '" )']
+.     MEMBER_LINE = 'DATE KEY_' + format( EACH_KEY ) +
+                    ' ( "' + datemap( REC_TYPE_NUM, KEY_NAME ) + '" )'
+.     write ( MEMBER_NAME ) MEMBER_LINE
+.     MEMBER_LINE = 'KEY_' + format( EACH_KEY ) +
+                    ' = KEY$' + format( EACH_KEY )
+.     write ( MEMBER_NAME ) MEMBER_LINE
+
 .     USING_KEYS = USING_KEYS + ' KEY_' + format( EACH_KEY )
-.   elseif ( vtype( REC_TYPE_NUM, KEY_NAME ) = 4 )
-.     write ( MEMBER_NAME ) ['TIME KEY_' + format( EACH_KEY ) + ' ( "' + timemap( REC_TYPE_NUM, KEY_NAME ) + '" )']
+
+.   elseif( vtype( REC_TYPE_NUM, KEY_NAME ) = 4 )
+.     MEMBER_LINE = 'TIME KEY_' + format( EACH_KEY ) +
+                    ' ( "' + timemap( REC_TYPE_NUM, KEY_NAME ) + '" )'
+.     write ( MEMBER_NAME ) MEMBER_LINE
+.     MEMBER_LINE = 'KEY_' + format( EACH_KEY ) +
+                    ' = KEY$' + format( EACH_KEY )
+.     write ( MEMBER_NAME ) MEMBER_LINE
 .     USING_KEYS = USING_KEYS + ' KEY_' + format( EACH_KEY )
-.   elseif ( vtype( REC_TYPE_NUM, KEY_NAME ) >= 5 )
-.     write ( MEMBER_NAME ) ['REAL * 8 KEY#' + format( EACH_KEY )]
-.     write ( MEMBER_NAME ) ['KEY#' + format( EACH_KEY ) + ' = numbr( KEY$' + format( EACH_KEY ) + ')']
+
+.   elseif( vtype( REC_TYPE_NUM, KEY_NAME ) >= 5 )
+.     MEMBER_LINE = 'REAL * 8 KEY#' + format( EACH_KEY )
+.     write ( MEMBER_NAME ) MEMBER_LINE
+.     MEMBER_LINE = 'KEY#' + format( EACH_KEY ) +
+                    ' = numbr( KEY$' + format( EACH_KEY ) + ')'
+.     write ( MEMBER_NAME ) MEMBER_LINE
 .     USING_KEYS = USING_KEYS + ' KEY#' + format( EACH_KEY )
+
 .   else
 .     USING_KEYS = USING_KEYS + ' KEY$' + format( EACH_KEY )
 .   endif
 .   if (EACH_KEY < KEY_COUNT ) USING_KEYS = USING_KEYS + ', '
 . end for
+
 . ifthen ( dbtype ( 0 ) EQ 1  ) | If it is a CASE structured db
 .   USING_KEYS = '     USING ( ' + USING_KEYS  + ')'
 . ELSE
 .   USING_KEYS = '     VIA ( "",' + USING_KEYS  + ')'
 . endif
+. for EACH_KEY = 1, KEY_COUNT
+.   VAR_NAME = keyname( REC_TYPE_NUM, dbtype( 0 ) + EACH_KEY )
+.   ifthen( vtype( REC_TYPE_NUM,  VAR_NAME  ) < 3 ) | strings
+.     KEY_NAME = 'KEY$'
+.   elseif( vtype( REC_TYPE_NUM,  VAR_NAME  ) < 5 ) | dates and times
+.     KEY_NAME = 'KEY_'
+.   else
+.     KEY_NAME = 'KEY#'
+.   endif
+.   KEY_NAME =  KEY_NAME + format( EACH_KEY )
+
+.   MEMBER_LINE = 'ifthen (exists (' + KEY_NAME  + ' ) eq 0 ) '
+.   execute subprocedure MEMBER_WRITE
+.   MEMBER_LINE = '. display infobox "Error: Key' + format(EACH_KEY) +
+                  ', ' + VAR_NAME + ', is system missing."'
+.   execute subprocedure MEMBER_WRITE
+.   MEMBER_LINE = '. return'
+.   execute subprocedure MEMBER_WRITE
+.   MEMBER_LINE = 'endif'
+.   execute subprocedure MEMBER_WRITE
+. end for
 
 . MEMBER_LINE = 'CALL SCREEN "' + RECORD_NAME + '"'; execute subprocedure MEMBER_WRITE
 . MEMBER_LINE = '     AT 1, 1'; execute subprocedure MEMBER_WRITE
@@ -151,9 +192,9 @@ ENDIF
                          '      AT 2, 4 WIDTH 83' /
                          '      FONT (BOLD ) '/
                          'FDISPLAY       TEXT (' /
-       '      MESSTEXT$' /
-       '      )' /
-       '      AT 2,90 WIDTH 42' /
+                         '      MESSTEXT$' /
+                         '      )' /
+                         '      AT 2,90 WIDTH 42' /
                          '      FONT (BOLD ) ' / /
 
 . DO REPEAT REP_VAR = DWHO   DSTAMP    DCCDATE  DCCWHO  DCCTIME  DCCEDITS /
@@ -232,7 +273,8 @@ c put keys at the top of the file
 . close MEMBER_NAME
 
 C COMPILE SCREEN
-. EXECUTE DBMS ["CALL " + MEMBER_NAME ]
+. COMSTR = "CALL " + MEMBER_NAME
+. EXECUTE DBMS COMSTR
 
 
 subprocedure MEMBER_WRITE

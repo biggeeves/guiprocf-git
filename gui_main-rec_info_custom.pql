@@ -1,14 +1,27 @@
-PROCEDURE      GUI_MAIN.REC_INFO_CUSTOM:T  (157464,47178)  |Last amended Nov 27, 2013,13:06:18
+PROCEDURE      GUI_MAIN.REC_INFO_CUSTOM:T  (158311,59334)  |Last amended Mar 23, 2016,16:28:54
 subprocedure REC_INFO_CUSTOM
 . remove all FORM_INFO
 . ifthen (meminfo(DB_PROC_FILE + ".GUI_CUSTOM.REC_INFO:O", 1) EQ MEM_O)
 <COMMENT> write 'executing ' DB_PROC_FILE ' .GUI_CUSTOM.REC_INFO'
 .   ifthen (meminfo(DB_PROC_FILE + ".GUI_CUSTOM.REC_INFO:O", 8) EQ 0)
-.     execute subroutine [DB_PROC_FILE + '.GUI_CUSTOM.REC_INFO'] (CASE_VALUE REC_TYPE_NUM FORM_INFO) RETURNING (PROCEED) DYNAMIC
+.     ifthen (0 eq exists(CASE_VALUE) or
+                   exists(REC_TYPE_NUM) or
+                   exists(FORM_INFO) )
+.     display infobox 'An error occurred getting the neccessary info.' +
+                       CHAR(13) +CHAR(13) +
+                      'Contact your DBA- compile: GUI_CUSTOM.REC_INFO'
+.     else
+.     execute subroutine [DB_PROC_FILE + '.GUI_CUSTOM.REC_INFO']
+       (CASE_VALUE REC_TYPE_NUM FORM_INFO) RETURNING (PROCEED) DYNAMIC
+.     endif
 .   else
-.     display infobox 'There is custom information available but not displayed.' +CHAR(13) +CHAR(13) +
+.     display infobox 'Custom information is available but not displayed.' +
+                       CHAR(13) +CHAR(13) +
                       'Contact your DBA- compile: GUI_CUSTOM.REC_INFO'
 .   endif
+. else
+|   see if there is case level information to show
+.   execute subprocedure SUBJECT_INFO
 . endif
 end subprocedure
 END PROCEDURE

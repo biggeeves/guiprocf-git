@@ -1,4 +1,4 @@
-PROCEDURE      DBA.DB_LOCK_STATUS:T  (157200,40897)  |Last amended Mar 08, 2013,11:21:37
+PROCEDURE      DBA.DB_LOCK_STATUS:T  (158331,56543)  |Last amended Apr 12, 2016,15:42:23
 subprocedure DB_LOCK_STATUS
 . open (LOCK_DBS) read lrecl=300 iostat =  FILE_IOSTAT
 .   ifthen (FILE_IOSTAT eq 0)
@@ -7,8 +7,10 @@ subprocedure DB_LOCK_STATUS
 .       if ( upper(trim(DBNAME(0))) EQ upper(trimlr(substr(FILE_LINE$, 1, 32))) ) GEN_STR1 = trimlr(substr(FILE_LINE$, 35, 8))
 .     end loop
 .     done:
-.     ifthen (GEN_STR1 eq 'LOCKED') DB_LOCK_STATUS = 1
-.     else DB_LOCK_STATUS = 0
+.     ifthen (GEN_STR1 eq 'LOCKED')
+.       DB_LOCK_STATUS = 1
+.     else
+.       DB_LOCK_STATUS = 0
 .     endif
 .   else
 .     DB_LOCK_STATUS = -1

@@ -1,9 +1,13 @@
-PROCEDURE      TOOLS.SET_DB_PROCFILE_DEFAULT:T  (158208,38388)  |Last amended Dec 11, 2015,10:39:48
+PROCEDURE      TOOLS.SET_DB_PROCFILE_DEFAULT:T  (158331,57665)  |Last amended Apr 12, 2016,16:01:05
 c set the procfile to the database procfile
 program
-. string  *     32   DB_PROC_FILE    | points to database procfile
+. string  *    32    DB_PROC_FILE    | points to database procfile
 . string  *   300    COMSTR
-. DB_PROC_FILE = 'SIR'+ pformat( system( 39 ), 'zz' ) + '4'
+. ifthen ( sglobal('sirver') eq 'XS.01.20' )
+.   DB_PROC_FILE = 'SIR'+ pformat( system(39), 'zzzz' ) + '4'
+. elseif ( sglobal('sirver') eq 'XS.01.19' )
+.   DB_PROC_FILE = 'SIR'+ pformat( system(39), 'zz' ) + '4'
+. endif
 . ifthen ( 0 eq len( DB_PROC_FILE ) or exists( DB_PROC_FILE ) )
 .   display infobox 'No DB_PROC_FILE defined.  EXITING.  CONTACT ADMIN.'
 .   exit program

@@ -1,7 +1,7 @@
-PROCEDURE      GUI_MAIN.CUSTOM_INI:T  (158155,38459)  |Last amended Oct 19, 2015,10:40:59
+PROCEDURE      GUI_MAIN.CUSTOM_INI:T  (158299,48358)  |Last amended Mar 11, 2016,13:25:58
 c Make global references local DB members
 
-global GUI_CUSTOM_PERMISSIONS = 0
+global GUI_CUSTOM_PERMISSIONS  = 0
 global GUI_CUSTOM_GUI_SETTINGS = 0
 
 PROGRAM
@@ -9,7 +9,11 @@ PROGRAM
 . integer * 1   MEM_T
 . integer * 1   ANYX
 . set MEM_T (1)
-. DB_PROC_FILE = 'SIR'+ pformat( SYSTEM(39), 'zz' ) + '4'
+. ifthen ( sglobal('sirver') eq 'XS.01.20' )
+.   DB_PROC_FILE = 'SIR'+ pformat( system(39), 'zzzz' ) + '4'
+. elseif ( sglobal('sirver') eq 'XS.01.19' )
+.   DB_PROC_FILE = 'SIR'+ pformat( system(39), 'zz' ) + '4'
+. endif
 . ANYX = GLOBALS( 'DB_PROC_FILE', DB_PROC_FILE )
 . ifthen ( meminfo( DB_PROC_FILE + '.GUI_CUSTOM.PERMISSIONS:T', 1) eq MEM_T)
 .   ANYX = globaln( 'GUI_CUSTOM_PERMISSIONS', 1)

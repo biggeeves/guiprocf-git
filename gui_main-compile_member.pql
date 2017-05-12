@@ -1,4 +1,4 @@
-PROCEDURE      GUI_MAIN.COMPILE_MEMBER:T  (158208,40993)  |Last amended Dec 11, 2015,11:23:13
+PROCEDURE      GUI_MAIN.COMPILE_MEMBER:T  (158242,50839)  |Last amended Jan 14, 2016,14:07:19
 subprocedure COMPILE_MEMBER
 . ifthen ( 0 eq len( DB_PROC_FILE) or
              exists( DB_PROC_FILE) or
@@ -7,7 +7,8 @@ subprocedure COMPILE_MEMBER
 .   EXIT SUBPROCEDURE
 . endif
 
-. execute dbms 'set procfile ' + DB_PROC_FILE | make sure the screens go to the database procfile
+. COMSTR = 'set procfile ' + DB_PROC_FILE | make sure the screens go to the database procfile
+. execute dbms COMSTR
 
 . ifthen( meminfo( DB_PROC_FILE + "." + FAMILY_NAME + "." + MEMBER_NAME+ ":T", 1) = MEM_T)
 .   COMSTR = 'call ' + DB_PROC_FILE + "." + FAMILY_NAME + "." + MEMBER_NAME

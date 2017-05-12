@@ -1,4 +1,4 @@
-PROCEDURE      GUI_MAIN.SPLASH_PAGE:T  (158207,45009)  |Last amended Dec 10, 2015,12:30:09
+PROCEDURE      GUI_MAIN.SPLASH_PAGE:T  (158215,65227)  |Last amended Dec 18, 2015,18:07:07
 C EVERYTHING THAT IS DISPLAYED ON THE INITIAL PAGE
 
 SUBPROCEDURE SPLASH_PAGE
@@ -37,27 +37,6 @@ SUBPROCEDURE SPLASH_PAGE
 . else
 .   hide item CU_IMGAGE
 . endif
-| Optional User Defined Images
-| intialially hide all user set images
 
-cif eq 1,2
-. hide item splash_header
-. hide item splash_footer
-
-. ifthen (fileis(DB_FOLDER + 'images\' ) = -1) | It is a directory
-.   FILE_COUNT = filecnt(DB_FOLDER +  'images\*.bmp')
-.   for EACH_FILE = 1, FILE_COUNT
-.     NAME_FILE = filen(DB_FOLDER  + 'images\*.bmp', EACH_FILE)
-.     FULL_FILE = DB_FOLDER + 'images\' + NAME_FILE
-.     ifthen (NAME_FILE = 'splash_header.bmp')
-.       set image splash_header, FULL_FILE 2  | 2= centered
-.       show item splash_header
-.     elseif (NAME_FILE = 'splash_footer.bmp')
-.       set image splash_footer, FULL_FILE 2  | 2= centered
-.       show item splash_footer
-.     endif
-.   end for
-. endif
-cif end
 END SUBPROCEDURE
 END PROCEDURE

@@ -1,0 +1,9 @@
+PROCEDURE      GUI_MAIN.SET_DCC_LOGO:T  (158310,56496)  |Last amended Mar 22, 2016,15:41:36
+subprocedure SET_DCC_LOGO
+. if( exists( sglobal( 'GDATA4' ) ) eq 0 ) exit subprocedure   | global is not set
+. if( fileis( sglobal( 'GDATA4' ) ) eq 0 ) exit subprocedure | no such file or directory
+. ifthen( fileis( sglobal('GDATA4') + "DCC\Procfile\images\dcc-logo.bmp" ) eq 1 )
+.   set image dcc_logo, sglobal('GDATA4') + "DCC\Procfile\images\dcc-logo.bmp"
+. endif
+end subprocedure
+END PROCEDURE

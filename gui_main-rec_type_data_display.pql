@@ -1,4 +1,4 @@
-PROCEDURE      GUI_MAIN.REC_TYPE_DATA_DISPLAY:T  (157965,57092)  |Last amended Apr 12, 2015,15:51:32
+PROCEDURE      GUI_MAIN.REC_TYPE_DATA_DISPLAY:T  (158297,55299)  |Last amended Mar 09, 2016,15:21:39
 | The data must already be in the referenced array
 | everything you need to refresh keys
 |
@@ -103,6 +103,10 @@ SUBPROCEDURE REFRESH_KEYS
 <comment> write 'These keys: ' KEY_REFRESH_START  ' - ' [KEY_COUNT + dbtype(0)]
 
 ifthen (DB_ROW eq 0 )
+. remove all OLD_KEY_LIST_1
+. remove all OLD_KEY_LIST_2
+. remove all OLD_KEY_LIST_3
+. remove all OLD_KEY_LIST_4
 . append item OLD_KEY_LIST_1, "No data"
 . exit subprocedure
 endif

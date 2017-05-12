@@ -1,4 +1,4 @@
-PROCEDURE      GUI_MAIN.CASE_VALIDATE:T  (157965,65216)  |Last amended Apr 12, 2015,18:06:56
+PROCEDURE      GUI_MAIN.CASE_VALIDATE:T  (158288,62441)  |Last amended Feb 29, 2016,17:20:41
 subprocedure CASE_VALIDATE   |   CASE_TEMP_VALUE MUST BE PASSED IN
 C note, I'm not sure where the case id is going to be, either the new id field or the search field or a hidden field.  Who knows right now.
 <COMMENT> WRITE 'Sub: CASE_VALIDATE: ' CASE_TEMP_VALUE
@@ -8,9 +8,18 @@ C note, I'm not sure where the case id is going to be, either the new id field o
 .   EXIT SUBPROCEDURE
 . endif
 . PROCEED = YES
-. if( exists( CASE_TEMP_VALUE ) EQ 0 ) display infobox 'Sorry, no ' + CASE_NAME + ' was specified.'; exit subprocedure
-. if( len( CASE_TEMP_VALUE ) EQ 0 ) display infobox 'Oops, ' + CASE_NAME + ' is blank.'; exit subprocedure
-. if ( CASE_TEMP_VALUE eq '' ) display infobox 'Cannot create a blank case.'; exit subprocedure
+. ifthen( exists( CASE_TEMP_VALUE ) EQ 0 )
+.   SET ITEM CASE_DISPLAY_MESSAGE,  'Sorry, no ' + CASE_NAME + ' was specified.'
+.   PROCEED = NO
+. elseif( len( CASE_TEMP_VALUE ) EQ 0 )
+.   SET ITEM CASE_DISPLAY_MESSAGE,  'Oops, ' + CASE_NAME + ' is blank.'
+.   PROCEED = NO
+. elseif( CASE_TEMP_VALUE eq '' )
+.   SET ITEM CASE_DISPLAY_MESSAGE,  'Cannot create a blank case.'
+.   PROCEED = NO
+. endif
+
+. if( PROCEED EQ NO ) EXIT SUBPROCEDURE
 
 C Look for customizations.  Graceful fallback
 . ifthen( meminfo( 'GUI_CUSTOM.CXID:O',1) = MEM_O)
@@ -19,7 +28,8 @@ C Look for customizations.  Graceful fallback
 .   execute subroutine DB_PROC_FILE.NAVIGATE.CXID (CASE_TEMP_VALUE) returning (PROCEED) DYNAMIC
 . endif
 . ifthen (PROCEED <> 1)
-.   display infobox 'Can not continue with ' + CASE_TEMP_VALUE + '.'
+.   SET ITEM CASE_DISPLAY_MESSAGE, 'Can not continue with ' + CASE_TEMP_VALUE + '.'
+.   PROCEED = NO
 .   EXIT SUBPROCEDURE
 . endif
 
@@ -30,7 +40,8 @@ C Look for customizations.  Graceful fallback
 .   execute subroutine DB_PROC_FILE.GUI_CUSTOM.ID_ACCESS (CASE_TEMP_VALUE) returning (PROCEED) DYNAMIC
 . endif
 . ifthen (PROCEED <> 1)
-.   display infobox 'Sorry, access is limited.'
+.   SET ITEM CASE_DISPLAY_MESSAGE, 'Sorry, access is limited.'
+.   PROCEED = NO
 .   EXIT SUBPROCEDURE
 . endif
 
@@ -40,7 +51,7 @@ c validate ID before continuing
 .   PROCEED = YES
 . else
 .   PROCEED = NO
-.   display infobox 'Sorry, ' + CASE_TEMP_VALUE +', is not a valid value for ' + CASE_NAME
+.   SET ITEM CASE_DISPLAY_MESSAGE, 'Sorry, ' + CASE_TEMP_VALUE +', is not valid.'
 . endif
 end subprocedure
 END PROCEDURE
